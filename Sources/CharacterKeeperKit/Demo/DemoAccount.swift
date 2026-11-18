@@ -21,6 +21,29 @@ public enum DemoAccount {
             number: "\(playerNumber)-2003", campaign: .pathfinder2, name: "Morrow Ashgrove",
             factions: [], standing: [NamedValue(name: "Fame", value: 0)]),
         CharacterSummary(
+            number: "\(playerNumber)-2004", campaign: .pathfinder2, name: "Zenobia Everbright",
+            factions: [
+                NamedValue(name: "Envoy's Alliance", value: 31), NamedValue(name: "Grand Archive", value: 27),
+                NamedValue(name: "Horizon Hunters", value: 52), NamedValue(name: "Radiant Oath", value: 18),
+                NamedValue(name: "Verdant Wheel", value: 40), NamedValue(name: "Vigilant Seal", value: 23)],
+            standing: [NamedValue(name: "Fame", value: 191)]),
+        CharacterSummary(
+            number: "\(playerNumber)-1301", campaign: .pathfinder1, name: "Bartholomew Quillfeather",
+            factions: [
+                NamedValue(name: "Dark Archive", value: 12), NamedValue(name: "Grand Lodge", value: 9),
+                NamedValue(name: "Lantern Lodge", value: 15), NamedValue(name: "Liberty's Edge", value: 7),
+                NamedValue(name: "Scarab Sages", value: 20), NamedValue(name: "Sczarni", value: 4),
+                NamedValue(name: "Shadow Lodge", value: 11), NamedValue(name: "Silver Crusade", value: 18),
+                NamedValue(name: "Sovereign Court", value: 6), NamedValue(name: "The Exchange", value: 13)],
+            standing: [NamedValue(name: "Fame", value: 115)]),
+        CharacterSummary(
+            number: "\(playerNumber)-801", campaign: .starfinder1, name: "Kessa Brightwater",
+            factions: [
+                NamedValue(name: "Acquisitives", value: 10), NamedValue(name: "Dataphiles", value: 14),
+                NamedValue(name: "Exo-Guardians", value: 8), NamedValue(name: "Second Seekers", value: 16),
+                NamedValue(name: "Wayfinders", value: 12)],
+            standing: [NamedValue(name: "Total Reputation", value: 60)]),
+        CharacterSummary(
             number: "\(playerNumber)-701", campaign: .starfinder2, name: "Zix-7", factions: [], standing: []),
         CharacterSummary(
             number: "\(playerNumber)-702", campaign: .starfinder2, name: "Captain Oreth Vane",

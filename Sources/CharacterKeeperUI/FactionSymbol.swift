@@ -1,7 +1,8 @@
 import CharacterKeeperKit
 import SwiftUI
 
-/// A faction's symbol from Paizo's Community Use Package, or nothing when the faction has none.
+/// A faction's symbol from Paizo's Community Use Package, or nothing when the faction has none. Fame gets a
+/// rosette: art when the build has it, otherwise an SF Symbol.
 struct FactionSymbol: View {
     let faction: String
     var size: CGFloat = 32
@@ -9,11 +10,14 @@ struct FactionSymbol: View {
     var body: some View {
         if let image = Self.image(for: faction) {
             image.resizable().scaledToFit().frame(width: size, height: size)
+        } else if faction == "Fame" {
+            Image(systemName: "rosette").resizable().scaledToFit().foregroundStyle(.purple)
+                .frame(width: size * 0.75, height: size)
         }
     }
 
     private static func image(for faction: String) -> Image? {
-        let name = FactionArt.symbolName(for: faction)
+        let name = faction == "Fame" ? "fame" : FactionArt.symbolName(for: faction)
         guard !name.isEmpty,
               let url = Bundle.module.url(forResource: name, withExtension: "png", subdirectory: "Factions"),
               let data = try? Data(contentsOf: url) else { return nil }

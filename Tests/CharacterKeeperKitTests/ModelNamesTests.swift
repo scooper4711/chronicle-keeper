@@ -58,6 +58,6 @@ struct FactionArtTests {
         let folder = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
             .appendingPathComponent("../../Sources/CharacterKeeperUI/Resources/Factions")
         let files = try FileManager.default.contentsOfDirectory(atPath: folder.path)
-        #expect(Set(files.map { ($0 as NSString).deletingPathExtension }) == FactionArt.available)
+        #expect(Set(files.map { ($0 as NSString).deletingPathExtension }).subtracting(["fame"]) == FactionArt.available)
     }
 }
