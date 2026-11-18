@@ -87,14 +87,13 @@ struct OrganizedPlayClientTests {
         let stub = try signedInStub()
         let signIn = try Fixture.text("sign-in")
         stub.on("myAccount/player") { html(signIn) }
-        stub.on("/ajax/", method: "POST") {
-            html(signIn.replacingOccurrences(
-                of: "<table cellspacing=\"18\"",
-                with: "<div class=\"errorMessage\">Incorrect email or password.</div><table cellspacing=\"18\""))
-        }
+        // Paizo's real answer to a wrong password (captured 2026-11-18 with a made-up account).
+        let rejected = try Fixture.text("sign-in-rejected-ajax")
+        stub.on("/ajax/", method: "POST") { html(rejected) }
         let store = InMemoryCredentialStore()
         let client = OrganizedPlayClient(http: stub, credentials: store)
-        await #expect(throws: OrganizedPlayError.signInRejected(paizoSays: "Incorrect email or password.")) {
+        let paizoSays = "That email address and password combination is not valid."
+        await #expect(throws: OrganizedPlayError.signInRejected(paizoSays: paizoSays)) {
             try await client.signIn(account)
         }
         #expect(store.load() == nil)

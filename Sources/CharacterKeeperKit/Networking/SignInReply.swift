@@ -30,7 +30,9 @@ public enum SignInReply {
     static func errorText(in html: String) -> String {
         guard let document = try? SwiftSoup.parse(html),
               let elements = try? document.select(errorSelector).array() else { return "" }
-        let texts = elements.compactMap { try? $0.text().trimmingCharacters(in: .whitespacesAndNewlines) }
+        // The innermost match: Paizo nests its message inside a box of the same class with an "Important" title.
+        let innermost = elements.filter { (try? $0.select(errorSelector).size()) == 1 }
+        let texts = innermost.compactMap { try? $0.text().trimmingCharacters(in: .whitespacesAndNewlines) }
         return String(texts.first { !$0.isEmpty }?.prefix(200) ?? "")
     }
 
