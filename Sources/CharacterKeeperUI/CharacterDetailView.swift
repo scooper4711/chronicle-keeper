@@ -158,24 +158,70 @@ struct PortraitButton: View {
 /// Paizo's own reputation and Fame totals, as the Summary tab shows them.
 struct ReputationGrid: View {
     let summary: CharacterSummary
+    // A switch to compare the two layouts; one of them goes when we choose.
+    @AppStorage("reputationLayout") private var layout = ReputationLayout.beside
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Reputation").font(.headline)
+            HStack {
+                Text("Reputation").font(.headline)
+                Spacer()
+                Picker("Layout", selection: $layout) {
+                    ForEach(ReputationLayout.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
+                }
+                .pickerStyle(.segmented).labelsHidden().frame(width: 160)
+            }
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), alignment: .leading)], spacing: 12) {
                 ForEach(summary.factions + summary.standing, id: \.name) { value in
-                    HStack(spacing: 12) {
-                        FactionSymbol(faction: value.name, size: 64)
-                        VStack(alignment: .leading) {
-                            Text("\(value.value)").font(.title.bold()).monospacedDigit()
-                            Text(value.name).font(.callout).foregroundStyle(.secondary)
-                        }
-                    }
+                    ReputationTile(value: value, layout: layout)
                 }
             }
             if summary.factions.isEmpty && summary.standing.isEmpty {
                 Text("paizo.com shows no reputation for this character yet.").foregroundStyle(.secondary)
             }
+        }
+    }
+}
+
+enum ReputationLayout: String, CaseIterable {
+    case beside
+    case behind
+}
+
+struct ReputationTile: View {
+    let value: NamedValue
+    let layout: ReputationLayout
+
+    var body: some View {
+        switch layout {
+        case .beside: beside
+        case .behind: behind
+        }
+    }
+
+    private var beside: some View {
+        HStack(spacing: 12) {
+            FactionSymbol(faction: value.name, size: 64)
+            text
+        }
+    }
+
+    /// A large, faded symbol fills the tile and the text sits on top of it.
+    private var behind: some View {
+        text
+            .frame(maxWidth: .infinity, minHeight: 88, alignment: .leading)
+            .padding(.horizontal, 12)
+            .background(alignment: .leading) {
+                FactionSymbol(faction: value.name, size: 96).opacity(0.3).padding(.leading, 4)
+            }
+            .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    private var text: some View {
+        VStack(alignment: .leading) {
+            Text("\(value.value)").font(.title.bold()).monospacedDigit()
+            Text(value.name).font(.callout).foregroundStyle(.secondary)
         }
     }
 }
