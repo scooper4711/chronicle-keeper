@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Character Keeper's privacy manifest, for the iPhone and iPad app (ios/App is a synchronized folder) and the Mac
+     app (scripts/build-app.sh copies this one into Contents/Resources). No tracking and no data collected: the
+     paizo.com sign-in goes only to paizo.com, and everything else stays on the user's devices and their own iCloud.
+     The app uses none of the required-reason APIs. -->
+<plist version="1.0">
+<dict>
+    <key>NSPrivacyTracking</key>
+    <false/>
+    <key>NSPrivacyTrackingDomains</key>
+    <array/>
+    <key>NSPrivacyCollectedDataTypes</key>
+    <array/>
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array/>
+</dict>
+</plist>

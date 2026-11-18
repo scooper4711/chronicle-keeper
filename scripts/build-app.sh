@@ -22,6 +22,8 @@ cp "$BINARY" "$APP/Contents/MacOS/$EXECUTABLE"
 for bundle in "$(dirname "$BINARY")"/*.bundle; do
     [ -d "$bundle" ] && cp -R "$bundle" "$APP/Contents/Resources/"
 done
+cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
+cp ios/App/PrivacyInfo.xcprivacy "$APP/Contents/Resources/PrivacyInfo.xcprivacy"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -34,6 +36,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <string>Character Keeper</string>
     <key>CFBundleExecutable</key>
     <string>$EXECUTABLE</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundleIdentifier</key>
     <string>io.github.scooper4711.CharacterKeeper</string>
     <key>CFBundleInfoDictionaryVersion</key>
