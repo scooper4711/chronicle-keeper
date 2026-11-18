@@ -1,7 +1,8 @@
 import Foundation
 
-/// Which factions have a symbol the app may ship: the first edition factions (not the countries) from Paizo's Community Use Package, and
-/// the Pathfinder Society (2nd Edition) ones from Paizo's faction pages (paizo.com/pathfindersociety/factions).
+/// Which factions have a symbol the app may ship: the first edition factions (not the countries) from Paizo's
+/// Community Use Package, the Pathfinder Society (2nd Edition) ones from Paizo's faction pages
+/// (paizo.com/pathfindersociety/factions), and the Starfinder Society glyph for Total Reputation.
 public enum FactionArt {
     /// The symbols the app ships, by normalized name (lowercase letters and digits only).
     public static let available: Set<String> = [
