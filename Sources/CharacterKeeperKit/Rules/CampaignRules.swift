@@ -19,8 +19,10 @@ public struct CampaignRules: Sendable {
     public var hasFactions: Bool { campaign != .starfinder2 }
 
     /// The XP an adventure of this kind awards on the normal track, when the Guide fixes it.
+    /// Every Starfinder Society (second edition) adventure so far awards 4 XP, whatever its kind.
     public func normalXP(for kind: AdventureKind) -> Double? {
-        isSecondEdition ? secondEditionXP(kind) : firstEditionXP(kind)
+        if campaign == .starfinder2 { return 4 }
+        return isSecondEdition ? secondEditionXP(kind) : firstEditionXP(kind)
     }
 
     /// The reputation an adventure of this kind normally awards. Some scenarios add bonus reputation.

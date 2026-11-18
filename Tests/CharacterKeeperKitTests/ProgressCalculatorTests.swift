@@ -71,6 +71,16 @@ struct ProgressCalculatorTests {
         #expect(progress.xp == 2)
     }
 
+    @Test func everyStarfinderSecondEditionAdventureIsFourXP() {
+        let freeRPGDay = SessionFactory.session(
+            title: "Starfinder Free RPG Day", summary: "Launch into Second Edition!",
+            points: SessionPoints(achievementPoints: 2, gmCredits: 0, campaign: .starfinder2), reputation: nil
+        )
+        let progress = starfinder.progress(of: freeRPGDay, settings: CharacterSettings())
+        #expect(progress.xp == 4)
+        #expect(progress.xpSource == .rules)
+    }
+
     @Test(arguments: [(6.0, false, 4.0), (12, true, 4), (8, false, 4), (24, false, 12), (2, false, 2), (0.0, false, 0)])
     func estimatesXPFromAchievementPoints(acp: Double, isGameMaster: Bool, xp: Double) {
         let points = SessionPoints(achievementPoints: acp, gmCredits: 0, campaign: .pathfinder2)
