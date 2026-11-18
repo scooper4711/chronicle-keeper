@@ -37,11 +37,11 @@ struct CharacterStoreTests {
     @Test func aFailedRefreshKeepsTheSavedData() async throws {
         let repository = InMemoryCharacterRepository()
         try repository.saveSnapshot(snapshot())
-        let store = store(repository) { throw OrganizedPlayError.signInRejected }
+        let store = store(repository) { throw OrganizedPlayError.noCredentials }
         store.load()
         await store.refresh()
         #expect(store.roster.characters.count == 1)
-        #expect(store.errorMessage == OrganizedPlayError.signInRejected.errorDescription)
+        #expect(store.errorMessage == OrganizedPlayError.noCredentials.errorDescription)
         #expect(!store.isRefreshing)
     }
 

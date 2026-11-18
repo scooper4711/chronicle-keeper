@@ -83,14 +83,44 @@ struct OrganizedPlayClientTests {
         await #expect(throws: OrganizedPlayError.noCredentials) { try await client.fetchAccount() }
     }
 
-    @Test func reportsARejectedSignIn() async throws {
+    @Test func reportsARejectedSignInWithPaizosWords() async throws {
+        let stub = try signedInStub()
+        let signIn = try Fixture.text("sign-in")
+        stub.on("myAccount/player") { html(signIn) }
+        stub.on("/ajax/", method: "POST") {
+            html(signIn.replacingOccurrences(
+                of: "<table cellspacing=\"18\"",
+                with: "<div class=\"errorMessage\">Incorrect email or password.</div><table cellspacing=\"18\""))
+        }
+        let store = InMemoryCredentialStore()
+        let client = OrganizedPlayClient(http: stub, credentials: store)
+        await #expect(throws: OrganizedPlayError.signInRejected(paizoSays: "Incorrect email or password.")) {
+            try await client.signIn(account)
+        }
+        #expect(store.load() == nil)
+    }
+
+    @Test func aSignInThatLeadsNowhereIsASiteChange() async throws {
         let stub = try signedInStub()
         let signIn = try Fixture.text("sign-in")
         stub.on("myAccount/player") { html(signIn) }
         let store = InMemoryCredentialStore()
         let client = OrganizedPlayClient(http: stub, credentials: store)
-        await #expect(throws: OrganizedPlayError.signInRejected) { try await client.signIn(account) }
+        let error = await #expect(throws: OrganizedPlayError.self) { try await client.signIn(account) }
+        #expect(error.map(FailureMessage.isSiteChange) == true)
         #expect(store.load() == nil)
+    }
+
+    @Test func aCaptchaStopsTheSignInBeforeSendingThePassword() async throws {
+        let stub = try signedInStub()
+        let signIn = try Fixture.text("sign-in")
+        stub.on("DirectAction/signIn") { html(signIn + "<div class=\"g-recaptcha\" data-sitekey=\"x\"></div>") }
+        let client = OrganizedPlayClient(http: stub, credentials: InMemoryCredentialStore())
+        await #expect(throws: OrganizedPlayError.signInChanged(
+            reason: "paizo.com now asks for a captcha, which the app can't answer")) {
+            try await client.signIn(account)
+        }
+        #expect(!stub.sentRequests.contains { $0.httpMethod == "POST" })
     }
 
     @Test func keepsCredentialsThatWork() async throws {
@@ -120,7 +150,9 @@ struct OrganizedPlayClientTests {
 
     @Test func errorsDescribeTheProblem() {
         #expect(OrganizedPlayError.incompletePaging(read: 50, total: 77).errorDescription?.contains("50 of 77") == true)
-        #expect(OrganizedPlayError.signInRejected.errorDescription?.contains("password") == true)
+        #expect(OrganizedPlayError.signInRejected(paizoSays: "").errorDescription?.contains("password") == true)
+        #expect(OrganizedPlayError.signInRejected(paizoSays: "No such account.").errorDescription?
+            .contains("No such account.") == true)
     }
 
     @Test func signInFormReadsItsFields() throws {

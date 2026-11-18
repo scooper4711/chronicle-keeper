@@ -29,9 +29,9 @@ public actor OrganizedPlayClient {
 
     /// Signs in with new credentials and keeps them only when paizo.com accepts them.
     public func signIn(_ account: Credentials) async throws {
-        try await submitSignIn(account)
+        let reply = try await submitSignIn(account)
         let check = try await get(endpoints.summaryPage, operation: "Checking the sign-in")
-        guard !SignInFormParser.isSignInPage(check.text) else { throw OrganizedPlayError.signInRejected }
+        try SignInReply.check(reply: reply, accountPage: check.text)
         try credentials.save(account)
     }
 
@@ -74,18 +74,20 @@ public actor OrganizedPlayClient {
         let response = try await get(url, operation: operation)
         guard SignInFormParser.isSignInPage(response.text) else { return response.text }
         guard let account = credentials.load(), account.isComplete else { throw OrganizedPlayError.noCredentials }
-        try await submitSignIn(account)
+        let reply = try await submitSignIn(account)
         let retry = try await get(url, operation: operation)
-        guard !SignInFormParser.isSignInPage(retry.text) else { throw OrganizedPlayError.signInRejected }
+        try SignInReply.check(reply: reply, accountPage: retry.text)
         return retry.text
     }
 
-    private func submitSignIn(_ account: Credentials) async throws {
+    /// Submits the sign-in form and returns paizo.com's answer.
+    private func submitSignIn(_ account: Credentials) async throws -> String {
         let page = try await get(endpoints.signInPage, operation: "Opening the sign-in page")
+        try SignInReply.checkSupported(signInPage: page.text)
         let form = try SignInFormParser.form(in: page.text)
         let url = endpoints.ajaxUpdate(path: form.ajaxActionPath, containerID: form.containerID)
         let request = URLRequest.postAjaxForm(url, fields: form.fields(for: account))
-        _ = try await http.send(request).validated(operation: "Signing in")
+        return try await http.send(request).validated(operation: "Signing in").text
     }
 
     private func get(_ url: URL, operation: String, ajax: Bool = false) async throws -> HTTPResponse {

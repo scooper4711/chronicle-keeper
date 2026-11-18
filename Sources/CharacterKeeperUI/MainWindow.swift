@@ -78,7 +78,10 @@ struct StatusBar: View {
                 Text("Reading paizo.com…")
             } else if let error = store.errorMessage {
                 Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-                Text(error).lineLimit(2)
+                // Never cut short: a site-change message ends with where to find an update.
+                Text(error)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
             } else if let date = store.lastRefresh {
                 Text("Read \(date, format: .relative(presentation: .named))")
             }

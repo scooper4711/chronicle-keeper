@@ -51,7 +51,7 @@ public final class AccountSession {
             show(.signedIn(email: account.email), store: Self.liveStore(live))
             await store.refresh()
         } catch {
-            signInError = error.localizedDescription
+            signInError = FailureMessage.text(for: error)
         }
     }
 

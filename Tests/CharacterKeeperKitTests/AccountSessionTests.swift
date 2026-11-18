@@ -18,7 +18,9 @@ struct AccountSessionTests {
         stub.on("myAccount/allsessions") { HTTPResponse(data: Data(page1.utf8)) }
         stub.on("/ajax/") { HTTPResponse(data: Data(page2.utf8)) }
         stub.on("DirectAction/signIn") { HTTPResponse(data: Data(signIn.utf8)) }
-        stub.on("/ajax/", method: "POST") { HTTPResponse(data: Data("<html></html>".utf8)) }
+        // A refused sign-in shows the form again; an accepted one answers with something else.
+        let reply = acceptsSignIn ? "<html></html>" : signIn
+        stub.on("/ajax/", method: "POST") { HTTPResponse(data: Data(reply.utf8)) }
         return AccountSession.LiveAccount(
             client: OrganizedPlayClient(http: stub, credentials: credentials),
             credentials: credentials, repository: InMemoryCharacterRepository())
@@ -51,7 +53,8 @@ struct AccountSessionTests {
         let session = AccountSession(live: try live(acceptsSignIn: false, credentials: credentials))
         await session.signIn(account)
         #expect(session.mode == .signedOut)
-        #expect(session.signInError == OrganizedPlayError.signInRejected.errorDescription)
+        #expect(session.signInError == FailureMessage.text(for: OrganizedPlayError.signInRejected(paizoSays: "")))
+        #expect(session.signInError?.contains(FailureMessage.remedy) == true)
         #expect(credentials.load() == nil)
     }
 

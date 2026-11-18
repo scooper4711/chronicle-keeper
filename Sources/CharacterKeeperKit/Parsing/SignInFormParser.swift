@@ -26,8 +26,11 @@ public struct SignInForm: Equatable, Sendable {
 public enum SignInFormParser {
     /// True when the page asks for a password, which means the app isn't signed in.
     public static func isSignInPage(_ html: String) -> Bool {
-        html.contains("type=\"password\"")
+        html.firstMatch(of: passwordInputPattern) != nil
     }
+
+    // Any quoting and spacing, so a small markup change still counts as the sign-in page.
+    nonisolated(unsafe) private static let passwordInputPattern = /(?i)type\s*=\s*["']?password\b/
 
     public static func form(in html: String) throws -> SignInForm {
         let operation = "Reading the sign-in page"

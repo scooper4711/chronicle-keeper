@@ -46,7 +46,7 @@ public final class CharacterStore {
             errorMessage = nil
             rebuild()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = FailureMessage.text(for: error)
         }
     }
 
