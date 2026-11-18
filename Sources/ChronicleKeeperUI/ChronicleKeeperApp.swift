@@ -22,6 +22,7 @@ public struct ChronicleKeeperApp: App {
                 .environment(\.portraits, portraits)
                 .task { await session.startSync(portraits: portraits) }
                 .task { await session.startBoons() }
+                .task { await session.startChronicles() }
             #if os(macOS)
                 .frame(minWidth: 860, minHeight: 520)
             #endif

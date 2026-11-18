@@ -255,6 +255,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Chronicle Keeper";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSCameraUsageDescription = "To photograph a paper chronicle sheet and attach it to an adventure.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Stephen Cooper. MIT License.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -283,6 +284,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Chronicle Keeper";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSCameraUsageDescription = "To photograph a paper chronicle sheet and attach it to an adventure.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Stephen Cooper. MIT License.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

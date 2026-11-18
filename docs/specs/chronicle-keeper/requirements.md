@@ -22,6 +22,9 @@ adventures played, faction reputation, XP and level.
 - **R1.7** The Boons tab is read for each character's boons, and every boon PDF is downloaded once. A boon that
   can't be downloaded yet is shown as not available yet, not as an error. A boon that matches no character, or
   more than one, is reported.
+- **R1.8** The user can attach their own chronicle sheet PDF to any session, or photograph a paper one on the
+  iPhone or iPad, replacing what was there before. Chronicle PDFs are never fetched from paizo.com: they are the
+  user's own files, kept and synced the same way as boon PDFs (R4.2).
 
 ## 2. Progress
 

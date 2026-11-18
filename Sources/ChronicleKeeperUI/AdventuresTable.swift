@@ -178,11 +178,14 @@ struct AdventureCells {
     }
 
     var title: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(session.adventure.titleWithLevels).lineLimit(2)
-            if session.isGameMaster {
-                Text("GM credit").font(.caption).foregroundStyle(.secondary)
+        HStack(alignment: .top, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(session.adventure.titleWithLevels).lineLimit(2)
+                if session.isGameMaster {
+                    Text("GM credit").font(.caption).foregroundStyle(.secondary)
+                }
             }
+            ChronicleButton(session: session, characterName: record.name, store: store)
         }
     }
 

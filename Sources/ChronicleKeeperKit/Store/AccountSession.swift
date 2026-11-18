@@ -59,6 +59,14 @@ public final class AccountSession {
         await liveStore.useBoonDownloads(BoonDownloads(library: library, source: live.client))
     }
 
+    /// Starts keeping chronicle PDFs: in iCloud Drive when the build has it, otherwise beside the app's files.
+    public func startChronicles() async {
+        guard liveStore.chronicleLibrary == nil else { return }
+        let local = live.repository.folder ?? FileManager.default.temporaryDirectory
+        let library = await ChronicleLibrary.standard(localFolder: local)
+        liveStore.useChronicleLibrary(library)
+    }
+
     public var canRefresh: Bool { mode != .signedOut && !store.isRefreshing }
 
     /// Signs in with new credentials, then reads the account.
@@ -91,9 +99,13 @@ public final class AccountSession {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent("Demo Boons", isDirectory: true)
         try? FileManager.default.removeItem(at: folder)
         let downloads = BoonDownloads(library: BoonLibrary(folder: folder), source: DemoBoons.Source())
+        let chronicleFolder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("Demo Chronicles", isDirectory: true)
+        try? FileManager.default.removeItem(at: chronicleFolder)
         Task {
             await demo.refresh()
             await demo.useBoonDownloads(downloads)
+            demo.useChronicleLibrary(ChronicleLibrary(folder: chronicleFolder))
         }
     }
 
