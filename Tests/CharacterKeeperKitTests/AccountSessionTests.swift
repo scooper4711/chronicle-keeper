@@ -107,3 +107,18 @@ struct DemoAccountTests {
         #expect(Set(lanternFair.map(\.adventure.productID)).count == 1)
     }
 }
+
+@MainActor
+struct CharacterStoreAttemptTests {
+    private struct Failure: Error, LocalizedError {
+        var errorDescription: String? { "Saving the portrait failed: disk full" }
+    }
+
+    @Test func attemptReturnsTheValueOrShowsTheError() {
+        let store = CharacterStore(repository: InMemoryCharacterRepository()) { DemoAccount.snapshot() }
+        #expect(store.attempt { 42 } == 42)
+        #expect(store.errorMessage == nil)
+        #expect(store.attempt { () throws -> Int in throw Failure() } == nil)
+        #expect(store.errorMessage == "Saving the portrait failed: disk full")
+    }
+}

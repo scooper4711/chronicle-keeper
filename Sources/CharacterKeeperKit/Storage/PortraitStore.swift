@@ -10,7 +10,7 @@ public struct PortraitError: Error, Equatable, LocalizedError {
     public var errorDescription: String? { "\(operation) failed: \(failure)" }
 }
 
-/// Keeps character portraits as PNG files no larger than 512 pixels, named by character number.
+/// Keeps character portraits as PNG files no larger than 512 pixels, named after the character number.
 public struct PortraitStore: Sendable {
     public static let maximumSide = 512
     public let folder: URL
@@ -37,7 +37,8 @@ public struct PortraitStore: Sendable {
               let image = CGImageSourceCreateThumbnailAtIndex(source, 0, Self.thumbnailOptions) else {
             throw PortraitError(operation: operation, failure: "the file isn't an image")
         }
-        let name = "\(number).png"
+        // A new name for every picture, so views that show the old one notice the change.
+        let name = "\(number)-\(UUID().uuidString.prefix(8)).png"
         try write(image, to: folder.appendingPathComponent(name), operation: operation)
         return name
     }

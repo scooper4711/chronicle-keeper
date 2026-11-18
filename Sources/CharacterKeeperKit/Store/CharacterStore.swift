@@ -76,6 +76,16 @@ public final class CharacterStore {
         rebuild()
     }
 
+    /// Runs work that may fail, showing its error the way a failed refresh shows; nil when it failed.
+    public func attempt<Value>(_ work: () throws -> Value) -> Value? {
+        do {
+            return try work()
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
+        }
+    }
+
     private func rebuild() {
         roster = CharacterRoster(
             summaries: snapshot?.characters ?? [], sessions: snapshot?.sessions ?? [], settings: settings)

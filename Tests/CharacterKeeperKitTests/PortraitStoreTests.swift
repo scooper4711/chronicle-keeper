@@ -12,7 +12,7 @@ struct PortraitStoreTests {
     @Test func savesAScaledDownPNGNamedByCharacter() throws {
         defer { try? FileManager.default.removeItem(at: store.folder) }
         let name = try store.save(imageData: try Self.pngData(width: 1600, height: 800), forCharacter: "123456-2001")
-        #expect(name == "123456-2001.png")
+        #expect(name.hasPrefix("123456-2001-") && name.hasSuffix(".png"))
         let file = try #require(store.url(forFileName: name))
         let source = try #require(CGImageSourceCreateWithURL(file as CFURL, nil))
         let image = try #require(CGImageSourceCreateImageAtIndex(source, 0, nil))

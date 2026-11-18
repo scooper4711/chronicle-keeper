@@ -63,7 +63,9 @@ public final class AccountSession {
     }
 
     public func startDemo() {
-        let demo = CharacterStore(repository: InMemoryCharacterRepository()) { DemoAccount.snapshot() }
+        let demo = CharacterStore(repository: InMemoryCharacterRepository()) {
+            DemoAccount.snapshot(fetchedAt: Date())
+        }
         show(.demo, store: demo)
         Task { await demo.refresh() }
     }
