@@ -40,4 +40,9 @@ public struct LevelRange: Hashable, Codable, Sendable {
     public var displayText: String {
         lowest == highest ? "Level \(lowest)" : "Levels \(lowest)–\(highest)"
     }
+
+    /// The bare numbers, for after a title: "3–7", or "1" for a single level.
+    public var shortText: String {
+        lowest == highest ? "\(lowest)" : "\(lowest)–\(highest)"
+    }
 }

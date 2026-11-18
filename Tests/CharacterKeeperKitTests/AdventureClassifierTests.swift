@@ -48,6 +48,17 @@ struct AdventureClassifierTests {
         #expect(range == LevelRange(lowest: lowest, highest: highest))
     }
 
+    @Test(arguments: [
+        ("#5-19: Demonic Afterparty", "designed for levels 3–7 (subtiers 3–4 and 5–7)",
+         "#5-19: Demonic Afterparty (3–7)"),
+        ("Pathfinder Bounty #19: Wake", "A Pathfinder Bounty designed for 1st-level characters",
+         "Pathfinder Bounty #19: Wake (1)"),
+        ("Starfinder Free RPG Day", "", "Starfinder Free RPG Day")
+    ])
+    func titleWithLevels(title: String, summary: String, expected: String) {
+        #expect(adventure(title, summary).titleWithLevels == expected)
+    }
+
     @Test func noLevelRangeWithoutADescription() {
         #expect(AdventureClassifier.levelRange(of: adventure("Starfinder Free RPG Day")) == nil)
     }

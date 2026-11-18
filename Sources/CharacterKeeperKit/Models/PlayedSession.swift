@@ -15,6 +15,15 @@ public struct AdventureReference: Hashable, Codable, Sendable {
     }
 }
 
+extension AdventureReference {
+    /// The title with the levels it is for after it, "#6-04: Return to the Grinding Grounds (3–7)", or the plain
+    /// title when its levels aren't known.
+    public var titleWithLevels: String {
+        guard let range = AdventureClassifier.levelRange(of: self) else { return title }
+        return "\(title) (\(range.shortText))"
+    }
+}
+
 /// The Points column: Achievement Points and GM credit.
 public struct SessionPoints: Hashable, Codable, Sendable {
     public let achievementPoints: Double
