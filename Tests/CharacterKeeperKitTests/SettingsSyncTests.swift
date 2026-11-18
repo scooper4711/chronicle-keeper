@@ -73,7 +73,7 @@ struct SettingsRecordTests {
         let decoded = try JSONDecoder().decode(CharacterSettings.self, from: old)
         #expect(decoded.defaultTrack == .slow)
         #expect(decoded.notes == "hi")
-        #expect(decoded.overrides.isEmpty && decoded.portraitFileName.isEmpty && decoded.xpAdjustment == 0)
+        #expect(decoded.overrides.isEmpty && decoded.portraitFileName.isEmpty && decoded.startingLevel == 1)
     }
 }
 

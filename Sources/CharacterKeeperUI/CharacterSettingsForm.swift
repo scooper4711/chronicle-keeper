@@ -1,7 +1,7 @@
 import CharacterKeeperKit
 import SwiftUI
 
-/// What the user adds about a character: default track, an XP adjustment, a character sheet link and notes.
+/// What the user adds about a character: default track, starting level, a character sheet link and notes.
 /// A refresh never touches these.
 struct CharacterSettingsForm: View {
     let record: CharacterRecord
@@ -19,10 +19,15 @@ struct CharacterSettingsForm: View {
                 .fixedSize()
             }
             .help("The track for sessions that don't show which track they were played on")
-            LabeledContent("XP adjustment") {
-                TextField("0", value: binding(\.xpAdjustment), format: .number)
-                    .frame(width: 80)
-                    .help("XP that paizo.com doesn't show, such as from boons; may be negative")
+            if startingLevels.count > 1 {
+                LabeledContent("Starting level") {
+                    Picker("Starting level", selection: binding(\.startingLevel)) {
+                        ForEach(startingLevels, id: \.self) { Text("Level \($0)").tag($0) }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                }
+                .help("The level the character began play at; Paizo allows 1st, 3rd, 5th or 7th")
             }
             TextField("Character sheet link", text: binding(\.characterSheetLink),
                       prompt: Text("https://… (Pathbuilder, Demiplane, Foundry, a PDF)"))
@@ -31,6 +36,10 @@ struct CharacterSettingsForm: View {
         }
         .textFieldStyle(.roundedBorder)
         .frame(maxWidth: 520, alignment: .leading)
+    }
+
+    private var startingLevels: [Int] {
+        CampaignRules(campaign: record.campaign).startingLevels
     }
 
     private func binding<Value>(_ path: WritableKeyPath<CharacterSettings, Value>) -> Binding<Value> {

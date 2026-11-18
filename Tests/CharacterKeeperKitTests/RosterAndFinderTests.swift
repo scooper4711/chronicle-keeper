@@ -31,9 +31,15 @@ struct RosterAndFinderTests {
         #expect(try character("123456-2701", in: roster).level.level == 3)
     }
 
-    @Test func xpAdjustmentChangesTheLevel() throws {
-        let adjusted = try roster(settings: ["123456-2002": CharacterSettings(xpAdjustment: 1)])
-        #expect(try character("123456-2002", in: adjusted).level.level == 7)
+    @Test func aHigherStartingLevelAddsItsXP() throws {
+        let started = try roster(settings: ["123456-2002": CharacterSettings(startingLevel: 5)])
+        #expect(try character("123456-2002", in: started).level.level == 10)
+    }
+
+    @Test func firstEditionCharactersAlwaysStartAtFirstLevel() throws {
+        let unchanged = try character("123456-701", in: roster()).level.level
+        let started = try roster(settings: ["123456-701": CharacterSettings(startingLevel: 5)])
+        #expect(try character("123456-701", in: started).level.level == unchanged)
     }
 
     @Test func listsSessionsNewestFirst() throws {

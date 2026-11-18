@@ -9,7 +9,7 @@ public enum SettingsMerge {
     ) -> CharacterSettings {
         var merged = remote
         merged.defaultTrack = pick(local.defaultTrack, remote.defaultTrack, ancestor.defaultTrack)
-        merged.xpAdjustment = pick(local.xpAdjustment, remote.xpAdjustment, ancestor.xpAdjustment)
+        merged.startingLevel = pick(local.startingLevel, remote.startingLevel, ancestor.startingLevel)
         merged.notes = pick(local.notes, remote.notes, ancestor.notes)
         merged.portraitFileName = pick(local.portraitFileName, remote.portraitFileName, ancestor.portraitFileName)
         merged.characterSheetLink =

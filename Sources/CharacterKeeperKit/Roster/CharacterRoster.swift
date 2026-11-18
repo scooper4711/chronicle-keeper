@@ -51,9 +51,9 @@ public struct CharacterRoster: Sendable {
     ) -> CharacterRecord {
         let calculator = ProgressCalculator(campaign: summary.campaign)
         let progress = calculator.history(of: sessions, settings: settings)
-        let xp = progress.reduce(settings.xpAdjustment) { $0 + $1.xp }
-        return CharacterRecord(
-            summary: summary, sessions: progress, level: calculator.level(forXP: xp), settings: settings)
+        let xp = progress.reduce(0) { $0 + $1.xp }
+        let level = calculator.level(forXP: xp, startingLevel: settings.startingLevel)
+        return CharacterRecord(summary: summary, sessions: progress, level: level, settings: settings)
     }
 }
 

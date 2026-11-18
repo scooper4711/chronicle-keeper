@@ -4,8 +4,8 @@ import Foundation
 public struct CharacterSettings: Hashable, Codable, Sendable {
     /// The track for sessions whose track can't be inferred.
     public var defaultTrack: Track
-    /// XP the site doesn't show, added to the sessions' total (may be negative).
-    public var xpAdjustment: Double
+    /// The level the character began play at (1, 3, 5 or 7 in second edition campaigns); it can't change later.
+    public var startingLevel: Int
     /// Corrections keyed by `PlayedSession.id`.
     public var overrides: [String: SessionOverride]
     public var notes: String
@@ -15,11 +15,11 @@ public struct CharacterSettings: Hashable, Codable, Sendable {
     public var characterSheetLink: String
 
     public init(
-        defaultTrack: Track = .normal, xpAdjustment: Double = 0,
+        defaultTrack: Track = .normal, startingLevel: Int = 1,
         overrides: [String: SessionOverride] = [:], notes: String = ""
     ) {
         self.defaultTrack = defaultTrack
-        self.xpAdjustment = xpAdjustment
+        self.startingLevel = startingLevel
         self.overrides = overrides
         self.notes = notes
         portraitFileName = ""
@@ -36,7 +36,7 @@ public struct CharacterSettings: Hashable, Codable, Sendable {
 
 extension CharacterSettings {
     private enum CodingKeys: String, CodingKey {
-        case defaultTrack, xpAdjustment, overrides, notes, portraitFileName, characterSheetLink
+        case defaultTrack, startingLevel, overrides, notes, portraitFileName, characterSheetLink
     }
 
     /// Reads settings written by any version: a field an older version didn't have gets its default, so a record
@@ -45,7 +45,7 @@ extension CharacterSettings {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         self.init(
             defaultTrack: try values.decodeIfPresent(Track.self, forKey: .defaultTrack) ?? .normal,
-            xpAdjustment: try values.decodeIfPresent(Double.self, forKey: .xpAdjustment) ?? 0,
+            startingLevel: try values.decodeIfPresent(Int.self, forKey: .startingLevel) ?? 1,
             overrides: try values.decodeIfPresent([String: SessionOverride].self, forKey: .overrides) ?? [:],
             notes: try values.decodeIfPresent(String.self, forKey: .notes) ?? "")
         portraitFileName = try values.decodeIfPresent(String.self, forKey: .portraitFileName) ?? ""

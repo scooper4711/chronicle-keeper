@@ -18,8 +18,8 @@ public struct SessionProgress: Hashable, Sendable, Identifiable {
     public let trackSource: TrackSource
     public let xp: Double
     public let xpSource: XPSource
-    /// The character's level at the start of the session, from the XP of every earlier session (each on its own
-    /// track). The character's XP adjustment isn't counted, since nothing says when that XP was earned.
+    /// The character's level at the start of the session: their starting level plus the XP of every earlier session,
+    /// each on its own track.
     public internal(set) var levelWhenPlayed = 1
 
     public var id: String { session.id }

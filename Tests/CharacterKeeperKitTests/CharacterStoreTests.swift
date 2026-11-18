@@ -58,10 +58,10 @@ struct CharacterStoreTests {
     @Test func settingsAreSavedAndLoadedAgain() throws {
         let repository = InMemoryCharacterRepository()
         let first = store(repository) { SnapshotFactory.snapshot() }
-        first.update(number) { $0.xpAdjustment = 2 }
+        first.update(number) { $0.startingLevel = 3 }
         let second = store(repository) { SnapshotFactory.snapshot() }
         second.load()
-        #expect(second.settings(for: number).xpAdjustment == 2)
+        #expect(second.settings(for: number).startingLevel == 3)
     }
 
     @Test func signOutForgetsSiteDataButKeepsSettings() async throws {

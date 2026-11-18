@@ -29,17 +29,19 @@ public struct ProgressCalculator: Sendable {
         var xpBefore = 0.0
         let leveled = oldestFirst.map { session in
             var session = session
-            session.levelWhenPlayed = level(forXP: xpBefore).level
+            session.levelWhenPlayed = level(forXP: xpBefore, startingLevel: settings.startingLevel).level
             xpBefore += session.xp
             return session
         }
         return leveled.reversed()
     }
 
-    public func level(forXP xp: Double) -> CharacterLevel {
+    /// The level a character reaches with this much XP, counting up from the level they began play at.
+    public func level(forXP xp: Double, startingLevel: Int = 1) -> CharacterLevel {
+        let start = rules.startingLevel(startingLevel)
         let earned = Int((max(xp, 0) / rules.xpPerLevel).rounded(.down))
-        let level = min(1 + earned, rules.maximumLevel)
-        let intoLevel = max(xp, 0) - Double(level - 1) * rules.xpPerLevel
+        let level = min(start + earned, rules.maximumLevel)
+        let intoLevel = max(xp, 0) - Double(level - start) * rules.xpPerLevel
         return CharacterLevel(level: level, xp: xp, xpIntoLevel: intoLevel, xpPerLevel: rules.xpPerLevel)
     }
 

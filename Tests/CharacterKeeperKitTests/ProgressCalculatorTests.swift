@@ -142,10 +142,29 @@ struct LevelWhenPlayedTests {
         #expect(history.map(\.levelWhenPlayed) == [1, 1, 1, 1])
     }
 
-    @Test func theXPAdjustmentDoesNotCountTowardsEarlierSessions() {
+    @Test func theStartingLevelCountsFromTheFirstSession() {
         let history = pathfinder.history(
-            of: scenarios(reputations: [4, 4]), settings: CharacterSettings(xpAdjustment: 24))
-        #expect(history.map(\.levelWhenPlayed) == [1, 1])
+            of: scenarios(reputations: [4, 4, 4, 4]), settings: CharacterSettings(startingLevel: 3))
+        #expect(history.map(\.levelWhenPlayed) == [4, 3, 3, 3])
+    }
+
+    /// "Regardless of their starting level, characters begin play with 0 XP."
+    @Test(arguments: [(1, 1), (3, 3), (5, 5), (7, 7), (4, 1), (9, 1)])
+    func secondEditionStartingLevels(chosen: Int, level: Int) {
+        let result = ProgressCalculator(campaign: .starfinder2).level(forXP: 0, startingLevel: chosen)
+        #expect(result.level == level)
+        #expect(result.xp == 0 && result.xpIntoLevel == 0)
+    }
+
+    @Test func xpCountsFromTheStartingLevel() {
+        let result = pathfinder.level(forXP: 30, startingLevel: 5)
+        #expect(result.level == 7)
+        #expect(result.xp == 30)
+        #expect(result.xpIntoLevel == 6)
+    }
+
+    @Test func theStartingLevelStopsAtTheMaximum() {
+        #expect(pathfinder.level(forXP: 1_000, startingLevel: 7).level == 20)
     }
 
     @Test func aSessionWithoutADateCountsAsTheOldest() {
@@ -189,7 +208,7 @@ struct CharacterSettingsTests {
     }
 
     @Test func decodesWithAllFields() throws {
-        var settings = CharacterSettings(defaultTrack: .slow, xpAdjustment: 2)
+        var settings = CharacterSettings(defaultTrack: .slow, startingLevel: 5)
         settings.portraitFileName = "123456-2001.png"
         let data = try JSONEncoder().encode(settings)
         #expect(try JSONDecoder().decode(CharacterSettings.self, from: data) == settings)
