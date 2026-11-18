@@ -1,10 +1,16 @@
 import Foundation
 
 /// Everything the app reads from My Organized Play in one refresh.
-public struct AccountSnapshot: Sendable {
+public struct AccountSnapshot: Codable, Sendable {
     public let characters: [CharacterSummary]
     public let sessions: [PlayedSession]
     public let fetchedAt: Date
+
+    public init(characters: [CharacterSummary], sessions: [PlayedSession], fetchedAt: Date) {
+        self.characters = characters
+        self.sessions = sessions
+        self.fetchedAt = fetchedAt
+    }
 }
 
 /// Signs in to paizo.com and reads the player's characters and sessions. It only ever reads.
