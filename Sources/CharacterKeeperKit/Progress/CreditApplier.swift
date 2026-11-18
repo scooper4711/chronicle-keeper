@@ -70,22 +70,22 @@ struct CreditApplier {
     ) -> SessionProgress {
         var session = session
         session.levelWhenPlayed = levelWhenPlayed
+        session.creditLevel = levelWhenPlayed
         bankedXP += session.xp
         session.totalXP = bankedXP
-        session.creditLevel = levelOf(bankedXP)
         session.applyOrder = order
         return session
     }
 
     /// Applies one held session now that the character has caught up to its range, capping it at the adventure's
-    /// own highest level: the excess, if any, is lost. `creditLevel` is the level the character ends up at once
-    /// this session's credit lands, not the level they were at just before it.
+    /// own highest level: the excess, if any, is lost. `creditLevel` is the level the character was at when the
+    /// credit landed — walking in, before this session's own XP is added — not the level it leaves them at.
     private func applyHeld(_ session: SessionProgress, order: Int, bankedXP: inout Double) -> SessionProgress {
         var session = session
+        session.creditLevel = levelOf(bankedXP)
         guard let range = AdventureClassifier.levelRange(of: session.session.adventure) else {
             bankedXP += session.xp
             session.totalXP = bankedXP
-            session.creditLevel = levelOf(bankedXP)
             session.applyOrder = order
             return session
         }
@@ -95,7 +95,6 @@ struct CreditApplier {
         session.xpLost = session.xp - applied
         bankedXP += applied
         session.totalXP = bankedXP
-        session.creditLevel = levelOf(bankedXP)
         session.applyOrder = order
         return session
     }

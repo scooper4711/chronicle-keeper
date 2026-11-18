@@ -141,8 +141,8 @@ struct LevelWhenPlayedTests {
         let catchUpResult = try #require(history.first { $0.session.id == catchUp.id })
         #expect(catchUpResult.applyOrder == 1)
         #expect(heldResult.applyOrder == 2)
-        // Caps out exactly at the held Chronicle's own highest level (4), the level it ends up at once it lands.
-        #expect(heldResult.creditLevel == 4)
+        // Credited at the level the character was at walking in, once caught up (3), not where it leaves them.
+        #expect(heldResult.creditLevel == 3)
         #expect(heldResult.xpLost > 25.9 && heldResult.xpLost < 26.1)
         #expect(heldResult.levelWhenPlayed == 1)
         // Capped at the held Chronicle's own highest level (4), not past it.
@@ -195,7 +195,8 @@ struct DrulGoodboyRegressionTests {
             "#6-18: Symposium on a Fallen God", "Pathfinder Quest (Series 2) #21: Infernal Infiltration",
             "#7-06: Brastlewark at War Part 1: The Gnome Defection"
         ])
-        #expect(byApplyOrder.map(\.creditLevel) == [1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4])
+        // The level the character was at walking in, before each session's own XP lands.
+        #expect(byApplyOrder.map(\.creditLevel) == [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3])
         let progress = byApplyOrder.map { $0.totalXP.truncatingRemainder(dividingBy: 12) }
         #expect(progress == [4, 6, 10, 2, 6, 10, 11, 1, 5, 9, 11, 3])
         #expect(byApplyOrder.allSatisfy { $0.xpLost == 0 })

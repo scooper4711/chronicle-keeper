@@ -43,8 +43,8 @@ adventures played, faction reputation, XP and level.
   adventure's own highest level: "a character's level cannot exceed the level of any Chronicle applied to them,
   [so] any out-of-level Chronicles applied are lost." The lost portion, if any, is shown. A held session the
   character never catches up to (nothing afterward reaches its range) is never applied at all.
-- **R2.8** Each session shows the level the character reaches once its own credit lands (not the level they were
-  at beforehand), marked when that session was held (R2.6), and sorts by when its credit was actually banked
+- **R2.8** Each session shows the level the character was at walking in, when its credit lands (not the level it
+  leaves them at), marked when that session was held (R2.6), and sorts by when its credit was actually banked
   (`applyOrder`), not necessarily by when it was played.
 
 ## 3. Using the record
