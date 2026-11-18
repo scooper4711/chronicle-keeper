@@ -81,8 +81,8 @@ struct AdventuresTable: View {
             Text("Kind")
             Text("Rep")
             Text("Track")
-            Text("XP").gridColumnAlignment(.trailing)
-            Text("Total").gridColumnAlignment(.trailing).help("The character's total XP through this session")
+            Text("XP Awarded").gridColumnAlignment(.trailing)
+            Text("Progress")
         }
         .font(.caption.bold())
         .foregroundStyle(.secondary)
@@ -102,8 +102,8 @@ struct AdventureRow: View {
             Text(cells.progress.kind.displayName)
             cells.reputation
             cells.trackMenu
-            cells.xp
-            cells.totalXP
+            cells.xpAwarded
+            cells.progressCell
         }
         .font(.callout)
     }
@@ -123,9 +123,9 @@ struct CompactAdventureRow: View {
                 HStack(spacing: 2) { Text("Rep"); cells.reputation }
                 Spacer()
                 cells.trackMenu
-                HStack(spacing: 2) { cells.xp; Text("XP") }
-                HStack(spacing: 2) { cells.totalXP; Text("total") }
+                HStack(spacing: 2) { cells.xpAwarded; Text("XP") }
             }
+            cells.progressCell
             .font(.caption)
             .foregroundStyle(.secondary)
         }
@@ -147,11 +147,10 @@ struct AdventureCells {
             .monospacedDigit()
     }
 
-    /// The level the credit landed at, with how far into it: "3 · 10/12", matching the sidebar's "Lv 5 · 7/12 XP".
+    /// The level the credit landed at: "3", or "3*" when it was a held Chronicle (see `progressCell` for how far
+    /// into that level it left the character).
     var level: some View {
-        let mark = progress.isOutOfLevelRange ? "*" : ""
-        let perLevel = XPText.of(record.level.xpPerLevel)
-        return Text("\(progress.creditLevel)\(mark) · \(XPText.of(progress.creditProgress))/\(perLevel)")
+        Text(progress.isOutOfLevelRange ? "\(progress.creditLevel)*" : "\(progress.creditLevel)")
             .monospacedDigit()
             .help(progress.isOutOfLevelRange
                 ? "The character was level \(progress.levelWhenPlayed) when this was played, outside the "
@@ -160,9 +159,22 @@ struct AdventureCells {
                     + "the nearest level in range."
                 : "")
             .accessibilityLabel(progress.isOutOfLevelRange
-                ? "Credited at level \(progress.creditLevel), \(XPText.of(progress.creditProgress)) XP into it: "
-                    + "played at level \(progress.levelWhenPlayed), outside the adventure's level range"
-                : "Level \(progress.creditLevel) when played, \(XPText.of(progress.creditProgress)) XP into it")
+                ? "Credited at level \(progress.creditLevel): played at level \(progress.levelWhenPlayed), "
+                    + "outside the adventure's level range"
+                : "Level \(progress.creditLevel) when played")
+    }
+
+    /// "10/12" with a short progress bar, matching the sidebar's level summary but sized for a table row.
+    var progressCell: some View {
+        let perLevel = record.level.xpPerLevel
+        return VStack(alignment: .leading, spacing: 1) {
+            Text("\(XPText.of(progress.creditProgress))/\(XPText.of(perLevel))").font(.caption2).monospacedDigit()
+            ProgressView(value: min(progress.creditProgress / perLevel, 1))
+                .progressViewStyle(.linear)
+                .frame(maxWidth: 70)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(XPText.of(progress.creditProgress)) of \(XPText.of(perLevel)) XP into the level")
     }
 
     var title: some View {
@@ -178,11 +190,12 @@ struct AdventureCells {
         Text(session.reputation.map(XPText.of) ?? "—").monospacedDigit()
     }
 
+    /// The XP the Chronicle awards, as the Guide's rules give it (slow track already applied). "Progress" (see
+    /// `progressCell`) shows what actually counted, which can be less when this was a held Chronicle (R2.7).
     @ViewBuilder
-    var xp: some View {
-        let banked = progress.xp - progress.xpLost
+    var xpAwarded: some View {
         HStack(spacing: 2) {
-            Text(XPText.of(banked)).monospacedDigit()
+            Text(XPText.of(progress.xp)).monospacedDigit()
             if progress.xpLost > 0 {
                 Text("(\(XPText.of(progress.xpLost)) lost)").font(.caption2).foregroundStyle(.secondary)
             }
@@ -196,11 +209,6 @@ struct AdventureCells {
                 + "adventure's own highest level (see the Guide to Organized Play's \"Applying Credit\")."
         }
         return progress.xpSource == .estimated ? "Estimated from the Achievement Points" : ""
-    }
-
-    /// The character's running total, banked through and including this session.
-    var totalXP: some View {
-        Text(XPText.of(progress.totalXP)).monospacedDigit().foregroundStyle(.secondary)
     }
 
     var trackMenu: some View {
