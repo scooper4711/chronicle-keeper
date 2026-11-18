@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import CharacterKeeperKit
 
@@ -39,5 +40,24 @@ struct ModelNamesTests {
         #expect(Track.slow.rewardFactor == 0.5)
         #expect(Track.normal.rewardFactor == 1)
         #expect(Track.allCases.map(\.displayName) == ["Normal", "Slow"])
+    }
+}
+
+@Suite("Faction art")
+struct FactionArtTests {
+    @Test func findsSymbolsByFactionName() {
+        #expect(FactionArt.symbolName(for: "Liberty's Edge") == "libertysedge")
+        #expect(FactionArt.symbolName(for: "Exchange") == "theexchange")
+        #expect(FactionArt.symbolName(for: "Exo-Guardians") == "exoguardians")
+        #expect(FactionArt.symbolName(for: "Horizon Hunters") == "horizonhunters")
+        #expect(FactionArt.symbolName(for: "Envoy's Alliance") == "envoysalliance")
+        #expect(FactionArt.symbolName(for: "Unknown Faction").isEmpty)
+    }
+
+    @Test func everyAvailableSymbolIsShipped() throws {
+        let folder = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+            .appendingPathComponent("../../Sources/CharacterKeeperUI/Resources/Factions")
+        let files = try FileManager.default.contentsOfDirectory(atPath: folder.path)
+        #expect(Set(files.map { ($0 as NSString).deletingPathExtension }) == FactionArt.available)
     }
 }

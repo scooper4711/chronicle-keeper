@@ -20,7 +20,8 @@ let package = Package(
         ),
         .target(
             name: "CharacterKeeperUI",
-            dependencies: ["CharacterKeeperKit", .product(name: "AppNotices", package: "tabletop-kit")]
+            dependencies: ["CharacterKeeperKit", .product(name: "AppNotices", package: "tabletop-kit")],
+            resources: [.copy("Resources/Factions")]
         ),
         // The macOS entry point; the app itself lives in CharacterKeeperUI so the iPad app can share it.
         .executableTarget(name: "CharacterKeeper", dependencies: ["CharacterKeeperUI"]),
