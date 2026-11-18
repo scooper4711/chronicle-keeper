@@ -17,6 +17,10 @@ public struct CharacterRecord: Hashable, Sendable, Identifiable {
 public struct CharacterRoster: Sendable {
     public let characters: [CharacterRecord]
     public let unmatchedSessions: [PlayedSession]
+    /// Each character's boons, by character number.
+    public private(set) var boonsByCharacter: [String: [Boon]] = [:]
+    /// Boons whose character name matches no character, or more than one.
+    public private(set) var unmatchedBoons: [Boon] = []
 
     public init(
         summaries: [CharacterSummary], sessions: [PlayedSession], settings: [String: CharacterSettings] = [:]
@@ -35,6 +39,25 @@ public struct CharacterRoster: Sendable {
             Self.record(summary, byNumber[summary.number] ?? [], settings[summary.number] ?? CharacterSettings())
         }
         unmatchedSessions = unmatched
+    }
+
+    /// Gives each boon to the character it names. The Boons tab shows only names, so a name two characters share
+    /// leaves the boon unmatched rather than guessing.
+    public mutating func attach(_ boons: [Boon]) {
+        let byName = Dictionary(grouping: characters) { $0.name.lowercased() }
+        boonsByCharacter = [:]
+        unmatchedBoons = []
+        for boon in boons {
+            if let matches = byName[boon.characterName.lowercased()], matches.count == 1 {
+                boonsByCharacter[matches[0].id, default: []].append(boon)
+            } else {
+                unmatchedBoons.append(boon)
+            }
+        }
+    }
+
+    public func boons(for number: String) -> [Boon] {
+        boonsByCharacter[number] ?? []
     }
 
     public func characters(in campaign: Campaign) -> [CharacterRecord] {

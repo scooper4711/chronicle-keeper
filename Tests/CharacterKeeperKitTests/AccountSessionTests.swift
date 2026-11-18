@@ -16,6 +16,8 @@ struct AccountSessionTests {
         let accountPage = acceptsSignIn ? summary : signIn
         stub.on("myAccount/player") { HTTPResponse(data: Data(accountPage.utf8)) }
         stub.on("myAccount/allsessions") { HTTPResponse(data: Data(page1.utf8)) }
+        let boons = try Fixture.text("boons")
+        stub.on("myAccount/rewards") { HTTPResponse(data: Data(boons.utf8)) }
         stub.on("/ajax/") { HTTPResponse(data: Data(page2.utf8)) }
         stub.on("DirectAction/signIn") { HTTPResponse(data: Data(signIn.utf8)) }
         // A refused sign-in shows the form again; an accepted one answers with something else.

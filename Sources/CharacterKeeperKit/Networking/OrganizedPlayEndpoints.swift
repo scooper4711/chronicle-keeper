@@ -20,6 +20,11 @@ public struct OrganizedPlayEndpoints: Sendable {
         url("/cgi-bin/WebObjects/Store.woa/wa/browse?path=organizedPlay/myAccount/allsessions")
     }
 
+    /// The Boons tab ("rewards" in the address).
+    public var boonsPage: URL {
+        url("/cgi-bin/WebObjects/Store.woa/wa/browse?path=organizedPlay/myAccount/rewards")
+    }
+
     /// An Ajax update: the component URL with the update container and a cache-busting timestamp, as the
     /// site's own script sends it.
     public func ajaxUpdate(path: String, containerID: String, timestamp: Date = Date()) -> URL {

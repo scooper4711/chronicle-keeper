@@ -4,13 +4,34 @@ import Foundation
 public struct AccountSnapshot: Codable, Sendable {
     public let characters: [CharacterSummary]
     public let sessions: [PlayedSession]
+    public let boons: [Boon]
     public let fetchedAt: Date
 
-    public init(characters: [CharacterSummary], sessions: [PlayedSession], fetchedAt: Date) {
+    public init(characters: [CharacterSummary], sessions: [PlayedSession], boons: [Boon] = [], fetchedAt: Date) {
         self.characters = characters
         self.sessions = sessions
+        self.boons = boons
         self.fetchedAt = fetchedAt
     }
+
+    private enum CodingKeys: String, CodingKey { case characters, sessions, boons, fetchedAt }
+
+    /// Reads a snapshot saved before the app read boons as having none.
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            characters: try values.decode([CharacterSummary].self, forKey: .characters),
+            sessions: try values.decode([PlayedSession].self, forKey: .sessions),
+            boons: try values.decodeIfPresent([Boon].self, forKey: .boons) ?? [],
+            fetchedAt: try values.decode(Date.self, forKey: .fetchedAt))
+    }
+}
+
+/// Where boon PDFs come from: paizo.com, or the demo account.
+public protocol BoonSource: Sendable {
+    /// The boon's PDF, or nil when the site answers with a page instead, as for a boon the character can't
+    /// download yet ("Must have played … to download").
+    func pdf(for boon: Boon) async throws -> Data?
 }
 
 /// Signs in to paizo.com and reads the player's characters and sessions. It only ever reads.
@@ -39,7 +60,29 @@ public actor OrganizedPlayClient {
         let summary = try await signedInPage(endpoints.summaryPage, operation: "Reading the Summary tab")
         let characters = try SummaryPageParser.characters(in: summary)
         let sessions = try await allSessions()
-        return AccountSnapshot(characters: characters, sessions: sessions, fetchedAt: Date())
+        let boonsPage = try await signedInPage(endpoints.boonsPage, operation: "Reading the Boons tab")
+        let boons = try BoonsPageParser.boons(in: boonsPage, base: endpoints.base)
+        return AccountSnapshot(characters: characters, sessions: sessions, boons: boons, fetchedAt: Date())
+    }
+
+    // MARK: - Boons
+
+    /// Downloads a boon's PDF, signing in first when paizo.com asks for it.
+    public func pdf(for boon: Boon) async throws -> Data? {
+        let operation = "Downloading the boon \(boon.name)"
+        let response = try await get(boon.downloadURL, operation: operation)
+        guard !Self.isPDF(response.data), SignInFormParser.isSignInPage(response.text) else {
+            return Self.isPDF(response.data) ? response.data : nil
+        }
+        let reply = try await submitSignIn(try storedAccount())
+        let retry = try await get(boon.downloadURL, operation: operation)
+        if Self.isPDF(retry.data) { return retry.data }
+        try SignInReply.check(reply: reply, accountPage: retry.text)
+        return nil
+    }
+
+    static func isPDF(_ data: Data) -> Bool {
+        data.starts(with: Data("%PDF".utf8))
     }
 
     // MARK: - Sessions
@@ -73,11 +116,15 @@ public actor OrganizedPlayClient {
     private func signedInPage(_ url: URL, operation: String) async throws -> String {
         let response = try await get(url, operation: operation)
         guard SignInFormParser.isSignInPage(response.text) else { return response.text }
-        guard let account = credentials.load(), account.isComplete else { throw OrganizedPlayError.noCredentials }
-        let reply = try await submitSignIn(account)
+        let reply = try await submitSignIn(try storedAccount())
         let retry = try await get(url, operation: operation)
         try SignInReply.check(reply: reply, accountPage: retry.text)
         return retry.text
+    }
+
+    private func storedAccount() throws -> Credentials {
+        guard let account = credentials.load(), account.isComplete else { throw OrganizedPlayError.noCredentials }
+        return account
     }
 
     /// Submits the sign-in form and returns paizo.com's answer.
@@ -95,3 +142,5 @@ public actor OrganizedPlayClient {
         return try await http.send(request).validated(operation: operation)
     }
 }
+
+extension OrganizedPlayClient: BoonSource {}

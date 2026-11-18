@@ -16,6 +16,7 @@ struct CharacterDetailView: View {
                     ReputationGrid(summary: record.summary)
                 }
                 AdventuresTable(record: record, store: store)
+                BoonsSection(boons: store.roster.boons(for: record.id), store: store)
                 CharacterSettingsForm(record: record, store: store)
             }
             .padding(20)

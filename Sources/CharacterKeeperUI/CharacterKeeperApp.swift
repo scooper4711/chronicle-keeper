@@ -21,6 +21,7 @@ public struct CharacterKeeperApp: App {
                 .environment(session)
                 .environment(\.portraits, portraits)
                 .task { await session.startSync(portraits: portraits) }
+                .task { await session.startBoons() }
             #if os(macOS)
                 .frame(minWidth: 860, minHeight: 520)
             #endif

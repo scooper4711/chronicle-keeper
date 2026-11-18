@@ -38,6 +38,8 @@ struct OrganizedPlayClientTests {
         let page2 = try Fixture.text("sessions-page2-ajax"), signIn = try Fixture.text("sign-in")
         stub.on("myAccount/player") { html(summary) }
         stub.on("myAccount/allsessions") { html(page1) }
+        let boons = try Fixture.text("boons")
+        stub.on("myAccount/rewards") { html(boons) }
         stub.on("/ajax/") { html(page2) }
         stub.on("DirectAction/signIn") { html(signIn) }
         stub.on("/ajax/", method: "POST") { html("<html></html>") }
@@ -50,6 +52,7 @@ struct OrganizedPlayClientTests {
         let snapshot = try await client.fetchAccount()
         #expect(snapshot.characters.count == 9)
         #expect(snapshot.sessions.count == 77)
+        #expect(snapshot.boons.count == 5)
         let pager = try #require(stub.sentRequests.first { $0.url?.path.contains("/ajax/") == true })
         #expect(pager.url?.query?.hasPrefix("_u=auc_") == true)
         #expect(pager.value(forHTTPHeaderField: "X-Requested-With") == "XMLHttpRequest")

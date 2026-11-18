@@ -51,6 +51,14 @@ public final class AccountSession {
         guard sync == nil, let folder = live.repository.folder else { return }
         sync = await SettingsSync.start(store: liveStore, portraits: portraits, folder: folder)
     }
+    /// Starts keeping boon PDFs: in iCloud Drive when the build has it, otherwise beside the app's files.
+    public func startBoons() async {
+        guard liveStore.boonDownloads == nil else { return }
+        let local = live.repository.folder ?? FileManager.default.temporaryDirectory
+        let library = await BoonLibrary.standard(localFolder: local)
+        await liveStore.useBoonDownloads(BoonDownloads(library: library, source: live.client))
+    }
+
     public var canRefresh: Bool { mode != .signedOut && !store.isRefreshing }
 
     /// Signs in with new credentials, then reads the account.
@@ -80,7 +88,13 @@ public final class AccountSession {
             DemoAccount.snapshot(fetchedAt: Date())
         }
         show(.demo, store: demo)
-        Task { await demo.refresh() }
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("Demo Boons", isDirectory: true)
+        try? FileManager.default.removeItem(at: folder)
+        let downloads = BoonDownloads(library: BoonLibrary(folder: folder), source: DemoBoons.Source())
+        Task {
+            await demo.refresh()
+            await demo.useBoonDownloads(downloads)
+        }
     }
 
     public func leaveDemo() {

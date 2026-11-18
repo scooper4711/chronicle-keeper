@@ -6,7 +6,7 @@ public enum DemoAccount {
     public static let playerNumber = "123456"
 
     public static func snapshot(fetchedAt: Date = Date(timeIntervalSince1970: 1_795_000_000)) -> AccountSnapshot {
-        AccountSnapshot(characters: characters, sessions: sessions, fetchedAt: fetchedAt)
+        AccountSnapshot(characters: characters, sessions: sessions, boons: DemoBoons.boons, fetchedAt: fetchedAt)
     }
 
     static let characters: [CharacterSummary] = [
