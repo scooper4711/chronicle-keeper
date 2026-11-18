@@ -1,0 +1,8 @@
+build/
+tmp/
+.build/
+coverage/
+ios/Local.xcconfig
+.DS_Store
+*.xcuserstate
+xcuserdata/

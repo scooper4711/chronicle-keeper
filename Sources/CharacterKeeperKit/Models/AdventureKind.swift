@@ -1,0 +1,43 @@
+import Foundation
+
+/// What sort of adventure a session was, which decides its normal XP.
+public enum AdventureKind: String, Hashable, Codable, Sendable, CaseIterable {
+    case scenario
+    case questSeries1
+    case questSeries2
+    case bounty
+    case adventure
+    case other
+
+    public var displayName: String {
+        switch self {
+        case .scenario: "Scenario"
+        case .questSeries1, .questSeries2: "Quest"
+        case .bounty: "Bounty"
+        case .adventure: "Adventure"
+        case .other: "Other"
+        }
+    }
+
+    /// Bounties can be replayed for credit; other adventures normally cannot.
+    public var isRepeatable: Bool { self == .bounty }
+}
+
+/// The character levels an adventure is designed for.
+public struct LevelRange: Hashable, Codable, Sendable {
+    public let lowest: Int
+    public let highest: Int
+
+    public init(lowest: Int, highest: Int) {
+        self.lowest = min(lowest, highest)
+        self.highest = max(lowest, highest)
+    }
+
+    public func contains(_ level: Int) -> Bool {
+        (lowest...highest).contains(level)
+    }
+
+    public var displayText: String {
+        lowest == highest ? "Level \(lowest)" : "Levels \(lowest)–\(highest)"
+    }
+}
