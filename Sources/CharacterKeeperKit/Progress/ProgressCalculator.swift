@@ -20,6 +20,22 @@ public struct ProgressCalculator: Sendable {
         )
     }
 
+    /// Every session, newest first, each with the level the character was when it was played. Sessions without a
+    /// date count as the oldest; sessions on the same day keep the site's order (newest first).
+    public func history(of sessions: [PlayedSession], settings: CharacterSettings) -> [SessionProgress] {
+        let oldestFirst = sessions.enumerated()
+            .sorted { ($0.element.date ?? .distantPast, -$0.offset) < ($1.element.date ?? .distantPast, -$1.offset) }
+            .map { progress(of: $0.element, settings: settings) }
+        var xpBefore = 0.0
+        let leveled = oldestFirst.map { session in
+            var session = session
+            session.levelWhenPlayed = level(forXP: xpBefore).level
+            xpBefore += session.xp
+            return session
+        }
+        return leveled.reversed()
+    }
+
     public func level(forXP xp: Double) -> CharacterLevel {
         let earned = Int((max(xp, 0) / rules.xpPerLevel).rounded(.down))
         let level = min(1 + earned, rules.maximumLevel)

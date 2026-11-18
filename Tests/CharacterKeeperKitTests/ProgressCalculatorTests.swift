@@ -118,6 +118,62 @@ struct ProgressCalculatorTests {
     }
 }
 
+/// The level a character was when they played each session.
+struct LevelWhenPlayedTests {
+    private let pathfinder = ProgressCalculator(campaign: .pathfinder2)
+
+    @Test func eachSessionCountsTheXPOfTheOnesBefore() {
+        let history = pathfinder.history(of: scenarios(reputations: [4, 4, 4, 4]), settings: CharacterSettings())
+        #expect(history.map(\.session.sessionNumber) == [4, 3, 2, 1])
+        #expect(history.map(\.levelWhenPlayed) == [2, 1, 1, 1])
+    }
+
+    @Test func slowTrackSessionsLevelMoreSlowly() {
+        let history = pathfinder.history(
+            of: scenarios(reputations: [2, 2, 2, 2, 2, 2, 4]), settings: CharacterSettings())
+        #expect(history.map(\.levelWhenPlayed) == [2, 1, 1, 1, 1, 1, 1])
+    }
+
+    @Test func aTrackOverrideMovesTheLaterLevels() {
+        let sessions = scenarios(reputations: [4, 4, 4, 4])
+        var settings = CharacterSettings()
+        settings.overrides[sessions[0].id] = SessionOverride(track: .slow)
+        let history = pathfinder.history(of: sessions, settings: settings)
+        #expect(history.map(\.levelWhenPlayed) == [1, 1, 1, 1])
+    }
+
+    @Test func theXPAdjustmentDoesNotCountTowardsEarlierSessions() {
+        let history = pathfinder.history(
+            of: scenarios(reputations: [4, 4]), settings: CharacterSettings(xpAdjustment: 24))
+        #expect(history.map(\.levelWhenPlayed) == [1, 1])
+    }
+
+    @Test func aSessionWithoutADateCountsAsTheOldest() {
+        var sessions = scenarios(reputations: [4, 4, 4])
+        sessions.append(SessionFactory.session(date: nil, sessionNumber: 9))
+        let history = pathfinder.history(of: sessions, settings: CharacterSettings())
+        #expect(history.map(\.session.sessionNumber) == [3, 2, 1, 9])
+        #expect(history.map(\.levelWhenPlayed) == [2, 1, 1, 1])
+    }
+
+    @Test func sessionsOnOneDayKeepTheSitesNewestFirstOrder() {
+        let day = Date(timeIntervalSince1970: 1_780_000_000)
+        let sessions = [3, 2, 1].map { SessionFactory.session(date: day, sessionNumber: $0) }
+        let history = pathfinder.history(of: sessions, settings: CharacterSettings())
+        #expect(history.map(\.session.sessionNumber) == [3, 2, 1])
+        #expect(history.map(\.levelWhenPlayed) == [1, 1, 1])
+    }
+
+    /// Scenarios a day apart, oldest first, numbered from 1; slow track allowed (Pathfinder).
+    private func scenarios(reputations: [Double]) -> [PlayedSession] {
+        reputations.enumerated().map { index, reputation in
+            SessionFactory.session(
+                reputation: reputation, date: Date(timeIntervalSince1970: 1_780_000_000 + Double(index) * 86_400),
+                sessionNumber: index + 1)
+        }
+    }
+}
+
 struct CharacterSettingsTests {
     @Test(arguments: [
         ("https://pathbuilder2e.com/launch.html?build=123", true),

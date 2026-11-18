@@ -50,6 +50,7 @@ struct AdventuresTable: View {
     private var header: some View {
         GridRow {
             Text("Date")
+            Text("Lv").help("The character's level when they played it")
             Text("Adventure")
             Text("Kind")
             Text("Rep")
@@ -61,13 +62,15 @@ struct AdventuresTable: View {
     }
 }
 
-/// One session as a grid row: what was played, how it counted, and a menu to correct its track.
+/// One session as a grid row: when and at what level it was played, what it was, how it counted, and a menu to
+/// correct its track.
 struct AdventureRow: View {
     let cells: AdventureCells
 
     var body: some View {
         GridRow {
             cells.date
+            cells.level
             cells.title
             Text(cells.progress.kind.displayName)
             cells.reputation
@@ -78,7 +81,7 @@ struct AdventureRow: View {
     }
 }
 
-/// One session on two lines, for narrow screens: the adventure, then its date, kind, reputation, track and XP.
+/// One session on two lines, for narrow screens: the adventure, then its date, level, kind, reputation, track and XP.
 struct CompactAdventureRow: View {
     let cells: AdventureCells
 
@@ -87,6 +90,7 @@ struct CompactAdventureRow: View {
             cells.title
             HStack(spacing: 8) {
                 cells.date
+                HStack(spacing: 2) { Text("Lv"); cells.level }
                 Text(cells.progress.kind.displayName)
                 HStack(spacing: 2) { Text("Rep"); cells.reputation }
                 Spacer()
@@ -112,6 +116,11 @@ struct AdventureCells {
     var date: some View {
         Text(session.date.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? "—")
             .monospacedDigit()
+    }
+
+    var level: some View {
+        Text("\(progress.levelWhenPlayed)").monospacedDigit()
+            .accessibilityLabel("Level \(progress.levelWhenPlayed) when played")
     }
 
     var title: some View {

@@ -26,14 +26,15 @@ enum SessionFactory {
         summary: String = "A Pathfinder Society Scenario designed for 1st- through 4th-level characters",
         points: SessionPoints = SessionPoints(achievementPoints: 4, gmCredits: 0, campaign: .pathfinder2),
         reputation: Double? = 4,
-        date: Date? = Date(timeIntervalSince1970: 1_780_000_000)
+        date: Date? = Date(timeIntervalSince1970: 1_780_000_000),
+        sessionNumber: Int = 1
     ) -> PlayedSession {
         var fields = PlayedSessionFields()
         fields.date = date
         fields.adventure = AdventureReference(productID: "abc123", title: title, summary: summary)
         fields.points = points
         fields.eventCode = "1234"
-        fields.sessionNumber = 1
+        fields.sessionNumber = sessionNumber
         fields.playerNumber = "123456-2001"
         fields.characterName = "Valeria Stonebrook"
         fields.reputation = reputation
