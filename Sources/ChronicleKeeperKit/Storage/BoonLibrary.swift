@@ -79,10 +79,7 @@ public struct BoonLibrary: Sendable {
 
     /// A name that is safe as a file or folder name on the Mac, iPad and iPhone.
     static func fileName(_ name: String) -> String {
-        let cleaned = name
-            .replacingOccurrences(of: "/", with: "-")
-            .replacingOccurrences(of: ":", with: "-")
-            .trimmingCharacters(in: .whitespacesAndNewlines.union(CharacterSet(charactersIn: ".")))
-        return cleaned.isEmpty ? "Boon" : String(cleaned.prefix(120))
+        let cleaned = DocumentFileName.of(name)
+        return cleaned == "File" ? "Boon" : cleaned
     }
 }

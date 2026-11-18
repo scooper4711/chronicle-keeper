@@ -79,6 +79,48 @@ struct CharacterStoreTests {
         let store = store { SnapshotFactory.snapshot() }
         #expect(store.settings(for: "nobody") == CharacterSettings())
     }
+
+    @Test func attachingAChronicleSavesItAndFindsItAgain() async throws {
+        let original = store { SnapshotFactory.snapshot() }
+        await original.refresh()
+        let folder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("chronicle-store-tests-\(UUID().uuidString)")
+        original.useChronicleLibrary(ChronicleLibrary(folder: folder))
+        let sessionID = "1234#1#Valeria Stonebrook"
+        original.attachChronicle(Data("%PDF-1.4".utf8), to: sessionID, characterName: "Valeria Stonebrook")
+        #expect(original.errorMessage == nil)
+        #expect(original.chronicleFiles[sessionID] != nil)
+
+        // A fresh store, pointed at the same library, finds the file that's already there.
+        let again = store { SnapshotFactory.snapshot() }
+        await again.refresh()
+        again.useChronicleLibrary(ChronicleLibrary(folder: folder))
+        #expect(again.chronicleFiles[sessionID] != nil)
+    }
+
+    @Test func removingAChronicleForgetsIt() async throws {
+        let store = store { SnapshotFactory.snapshot() }
+        await store.refresh()
+        let folder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("chronicle-store-tests-\(UUID().uuidString)")
+        store.useChronicleLibrary(ChronicleLibrary(folder: folder))
+        let sessionID = "1234#1#Valeria Stonebrook"
+        store.attachChronicle(Data("%PDF-1.4".utf8), to: sessionID, characterName: "Valeria Stonebrook")
+        store.removeChronicle(from: sessionID, characterName: "Valeria Stonebrook")
+        #expect(store.chronicleFiles[sessionID] == nil)
+    }
+
+    @Test func signingOutForgetsTheChronicleFiles() async throws {
+        let store = store { SnapshotFactory.snapshot() }
+        await store.refresh()
+        let folder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("chronicle-store-tests-\(UUID().uuidString)")
+        store.useChronicleLibrary(ChronicleLibrary(folder: folder))
+        store.attachChronicle(
+            Data("%PDF-1.4".utf8), to: "1234#1#Valeria Stonebrook", characterName: "Valeria Stonebrook")
+        store.signOut()
+        #expect(store.chronicleFiles.isEmpty)
+    }
 }
 
 enum SnapshotFactory {

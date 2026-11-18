@@ -16,6 +16,10 @@ public final class CharacterStore {
     public private(set) var isDownloadingBoons = false
     /// Where boon PDFs are kept and where they come from; nil until the app has looked up iCloud.
     public private(set) var boonDownloads: BoonDownloads?
+    /// Each session's chronicle PDF that is in the chronicle library, keyed by the session's own ID.
+    public private(set) var chronicleFiles: [String: URL] = [:]
+    /// Where chronicle PDFs are kept; nil until the app has looked up iCloud.
+    public private(set) var chronicleLibrary: ChronicleLibrary?
 
     private let repository: CharacterRepository
     private let fetchAccount: @Sendable () async throws -> AccountSnapshot
@@ -41,6 +45,7 @@ public final class CharacterStore {
             errorMessage = error.localizedDescription
         }
         rebuild()
+        locateChronicleFiles()
     }
 
     /// Reads the account again. The saved data stays as it was when this fails.
@@ -55,11 +60,48 @@ public final class CharacterStore {
             lastRefresh = fresh.fetchedAt
             errorMessage = nil
             rebuild()
+            locateChronicleFiles()
         } catch {
             errorMessage = FailureMessage.text(for: error)
             return
         }
         await downloadMissingBoons()
+    }
+
+    /// Starts keeping chronicle PDFs, and finds the ones already in the library.
+    public func useChronicleLibrary(_ library: ChronicleLibrary) {
+        chronicleLibrary = library
+        locateChronicleFiles()
+    }
+
+    /// Attaches a PDF to one session as its chronicle sheet, replacing any it already had.
+    public func attachChronicle(_ data: Data, to sessionID: String, characterName: String) {
+        guard let library = chronicleLibrary else { return }
+        let url = library.fileURL(characterName: characterName, sessionID: sessionID)
+        attempt { try library.save(data, to: url) }
+        guard errorMessage == nil else { return }
+        chronicleFiles[sessionID] = url
+    }
+
+    /// Removes a session's chronicle PDF.
+    public func removeChronicle(from sessionID: String, characterName: String) {
+        guard let library = chronicleLibrary else { return }
+        let url = library.fileURL(characterName: characterName, sessionID: sessionID)
+        attempt { try library.remove(at: url) }
+        guard errorMessage == nil else { return }
+        chronicleFiles[sessionID] = nil
+    }
+
+    private func locateChronicleFiles() {
+        guard let library = chronicleLibrary else { return }
+        var files: [String: URL] = [:]
+        for record in roster.characters {
+            for session in record.sessions {
+                let url = library.fileURL(characterName: record.name, sessionID: session.session.id)
+                if library.hasFile(at: url) { files[session.session.id] = url }
+            }
+        }
+        chronicleFiles = files
     }
 
     /// Starts keeping boon PDFs, and finds the ones already in the library.
@@ -117,6 +159,7 @@ public final class CharacterStore {
         lastRefresh = nil
         boonFiles = [:]
         unavailableBoons = []
+        chronicleFiles = [:]
         rebuild()
     }
 
