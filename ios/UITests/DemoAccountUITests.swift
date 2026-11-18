@@ -43,7 +43,8 @@ final class DemoAccountUITests: XCTestCase {
         let boons = app.staticTexts["Boons (2)"]
         XCTAssertTrue(boons.waitForExistence(timeout: 5), app.debugDescription)
         let open = app.buttons["Open"].firstMatch
-        XCTAssertTrue(open.waitForExistence(timeout: 10), "the demo boon PDFs did not download: \(app.debugDescription)")
+        XCTAssertTrue(open.waitForExistence(timeout: 10),
+                      "the demo boon PDFs did not download: \(app.debugDescription)")
         app.swipeUp()
         app.swipeUp()
         saveScreenshots("boons")
