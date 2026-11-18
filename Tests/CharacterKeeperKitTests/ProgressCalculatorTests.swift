@@ -214,6 +214,12 @@ struct LevelWhenPlayedTests {
         #expect(history.map(\.isOutOfLevelRange) == [true, false])
     }
 
+    /// The running total through each session, including a held Chronicle's XP once it's banked.
+    @Test func totalXPRunsCumulatively() {
+        let history = pathfinder.history(of: scenarios(reputations: [4, 2, 4]), settings: CharacterSettings())
+        #expect(history.reversed().map(\.totalXP) == [4, 6, 10])
+    }
+
     /// Only a *held* Chronicle (played below the adventure's own range) can lose XP: a big enough award can carry
     /// it past the adventure's own highest level in one step, and the Guide's "a character's level cannot exceed
     /// the level of any Chronicle applied to them" means the rest is lost. A session played in or above its own

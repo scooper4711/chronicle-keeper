@@ -37,6 +37,7 @@ public struct ProgressCalculator: Sendable {
                 levelWhenPlayed: session.levelWhenPlayed)
             session.xpLost = session.xp - applied
             xpBefore += applied
+            session.totalXP = xpBefore
             return session
         }
         return leveled.reversed()

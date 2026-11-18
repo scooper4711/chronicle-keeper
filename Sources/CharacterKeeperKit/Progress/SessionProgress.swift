@@ -34,6 +34,8 @@ public struct SessionProgress: Hashable, Sendable, Identifiable {
     /// would have risen past, this adventure's own highest level: "a character's level cannot exceed the level
     /// of any Chronicle applied to them" (Applying Credit). 0 when nothing was lost.
     public internal(set) var xpLost = 0.0
+    /// The character's total banked XP through and including this session (after any loss above is subtracted).
+    public internal(set) var totalXP = 0.0
 
     public var id: String { session.id }
 }

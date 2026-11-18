@@ -26,8 +26,11 @@ struct AdventuresTable: View {
 
     private var sessions: [SessionProgress] {
         guard sort == .level else { return record.sessions }
+        // The level actually played at, not the displayed credit level: a held Chronicle's "3*" still belongs
+        // with the sessions played at its true level, so the groups show when the character really leveled up.
         return record.sessions.sorted {
-            ($0.creditLevel, $0.session.date ?? .distantPast) < ($1.creditLevel, $1.session.date ?? .distantPast)
+            ($0.levelWhenPlayed, $0.session.date ?? .distantPast)
+                < ($1.levelWhenPlayed, $1.session.date ?? .distantPast)
         }
     }
 
@@ -84,6 +87,7 @@ struct AdventuresTable: View {
             Text("Rep")
             Text("Track")
             Text("XP").gridColumnAlignment(.trailing)
+            Text("Total").gridColumnAlignment(.trailing).help("The character's total XP through this session")
         }
         .font(.caption.bold())
         .foregroundStyle(.secondary)
@@ -104,6 +108,7 @@ struct AdventureRow: View {
             cells.reputation
             cells.trackMenu
             cells.xp
+            cells.totalXP
         }
         .font(.callout)
     }
@@ -124,6 +129,7 @@ struct CompactAdventureRow: View {
                 Spacer()
                 cells.trackMenu
                 HStack(spacing: 2) { cells.xp; Text("XP") }
+                HStack(spacing: 2) { cells.totalXP; Text("total") }
             }
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -192,6 +198,11 @@ struct AdventureCells {
                 + "adventure's own highest level (see the Guide to Organized Play's \"Applying Credit\")."
         }
         return progress.xpSource == .estimated ? "Estimated from the Achievement Points" : ""
+    }
+
+    /// The character's running total, banked through and including this session.
+    var totalXP: some View {
+        Text(XPText.of(progress.totalXP)).monospacedDigit().foregroundStyle(.secondary)
     }
 
     var trackMenu: some View {
