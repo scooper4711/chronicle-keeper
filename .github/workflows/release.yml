@@ -1,0 +1,72 @@
+name: Release
+
+# Builds the app and attaches a disk image to the GitHub release for a version tag, creating a draft release if
+# none exists yet. Run by hand, it builds the branch and keeps the disk image as a workflow artifact instead, to
+# try the build without releasing.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  dmg:
+    name: Build and attach the disk image
+    runs-on: macos-26
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ github.ref_name }}
+      # False for a trial build of a branch, run by hand.
+      RELEASING: ${{ startsWith(github.ref, 'refs/tags/') }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          # scripts/version.sh counts every commit for the build number.
+          fetch-depth: 0
+
+      - name: Derive the version from the tag
+        if: env.RELEASING == 'true'
+        run: echo "VERSION=${TAG#v}" >> "$GITHUB_ENV"
+
+      - name: Test
+        run: scripts/coverage.sh
+
+      - name: Add the Developer ID certificate to a temporary keychain
+        env:
+          DEVELOPER_ID_CERTIFICATE: ${{ secrets.DEVELOPER_ID_CERTIFICATE }}
+          DEVELOPER_ID_CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+        run: scripts/add-signing-certificate.sh
+
+      - name: Build the universal app
+        run: UNIVERSAL=1 scripts/build-app.sh
+
+      - name: Make the disk image
+        run: scripts/make-dmg.sh
+
+      - name: Notarize the disk image
+        if: env.RELEASING == 'true'
+        env:
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+        run: scripts/notarize.sh "build/CharacterKeeper-$VERSION.dmg"
+
+      - name: Keep the disk image of a trial build
+        if: env.RELEASING != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: disk-image
+          path: build/CharacterKeeper-*.dmg
+
+      - name: Attach the disk image to the release
+        if: env.RELEASING == 'true'
+        run: |
+          # A release made for a pushed tag normally appears right after the push; give it a moment.
+          for _ in 1 2 3 4 5 6; do
+            gh release view "$TAG" >/dev/null 2>&1 && break
+            sleep 10
+          done
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --draft --title "$TAG" --generate-notes
+          gh release upload "$TAG" "build/CharacterKeeper-$VERSION.dmg" --clobber

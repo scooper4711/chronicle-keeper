@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Lint, test and coverage
+    # Pull requests from forks never reach the self-hosted Mac mini.
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'macos-26' || 'mac-mini' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          # scripts/version.sh counts every commit for the build number.
+          fetch-depth: 0
+
+      - name: Show toolchain
+        run: swift --version
+
+      - name: Lint
+        run: |
+          command -v swiftlint >/dev/null || brew install swiftlint
+          swiftlint --strict --quiet
+
+      - name: Test with coverage gate
+        run: scripts/coverage.sh
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: coverage
+          path: coverage/sonar-coverage.xml
+
+      - name: Build the app bundle
+        run: scripts/build-app.sh
+
+      - name: Build the iPhone and iPad app
+        run: |
+          xcodebuild -project ios/CharacterKeeper.xcodeproj -scheme CharacterKeeper-iOS \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath ios/build \
+            CODE_SIGNING_ALLOWED=NO build | tail -n 3
+
+      - name: Run the iPad UI tests
+        run: scripts/run-uitests.sh iPad

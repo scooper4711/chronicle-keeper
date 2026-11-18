@@ -1,19 +1,27 @@
 #!/bin/sh
 # Builds "build/Character Keeper.app" from the Swift package, signed ad hoc.
 #
-# VERSION       version written to the bundle (default: 0.1.0)
-# BUILD_NUMBER  CFBundleVersion (default: 1)
+# VERSION       version written to the bundle (default: scripts/version.sh marketing)
+# BUILD_NUMBER  CFBundleVersion (default: scripts/version.sh build)
+# UNIVERSAL     set to 1 to build for both Apple silicon and Intel
+# SIGNING_IDENTITY  passed to scripts/sign-app.sh; "-" signs ad hoc
 set -eu
 
 cd "$(dirname "$0")/.."
 
-VERSION="${VERSION:-0.1.0}"
-BUILD_NUMBER="${BUILD_NUMBER:-1}"
+VERSION="${VERSION:-$(scripts/version.sh marketing)}"
+BUILD_NUMBER="${BUILD_NUMBER:-$(scripts/version.sh build)}"
 APP="build/Character Keeper.app"
 EXECUTABLE="CharacterKeeper"
 
-swift build -c release
-BINARY="$(swift build -c release --show-bin-path)/$EXECUTABLE"
+if [ "${UNIVERSAL:-0}" = "1" ]; then
+    swift build -c release --arch arm64 --arch x86_64
+    # Asked rather than assumed: newer SwiftPM moved universal builds out of .build/apple.
+    BINARY="$(swift build -c release --arch arm64 --arch x86_64 --show-bin-path)/$EXECUTABLE"
+else
+    swift build -c release
+    BINARY="$(swift build -c release --show-bin-path)/$EXECUTABLE"
+fi
 
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
@@ -64,5 +72,5 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-codesign --force --sign - --entitlements Resources/CharacterKeeper.entitlements --options runtime "$APP"
+scripts/sign-app.sh "$APP" Resources/CharacterKeeper.entitlements
 echo "Built $APP ($VERSION, build $BUILD_NUMBER)"
