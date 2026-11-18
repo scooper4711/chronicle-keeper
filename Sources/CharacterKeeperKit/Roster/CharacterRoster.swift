@@ -74,7 +74,8 @@ public struct CharacterRoster: Sendable {
     ) -> CharacterRecord {
         let calculator = ProgressCalculator(campaign: summary.campaign)
         let progress = calculator.history(of: sessions, settings: settings)
-        let xp = progress.reduce(0) { $0 + $1.xp }
+        // Lost XP (the Guide's "Applying Credit" level cap) never counts toward the total.
+        let xp = progress.reduce(0) { $0 + $1.xp - $1.xpLost }
         let level = calculator.level(forXP: xp, startingLevel: settings.startingLevel)
         return CharacterRecord(summary: summary, sessions: progress, level: level, settings: settings)
     }

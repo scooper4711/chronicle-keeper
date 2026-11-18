@@ -1,26 +1,54 @@
 import CharacterKeeperKit
 import SwiftUI
 
-/// Every session the character has, newest first, with the track each one counted on and the XP it gave.
+/// How the adventures table orders its rows.
+enum AdventureSort: String, CaseIterable, Identifiable {
+    /// The site's own order: newest first.
+    case date
+    /// Lowest level first, then oldest first within a level, so a run of sessions at one level reads in the
+    /// order they were played.
+    case level
+
+    var id: Self { self }
+    var displayName: String { self == .date ? "Date" : "Level" }
+}
+
+/// Every session the character has, with the track each one counted on and the XP it gave. Sortable by date
+/// (the site's own order, newest first) or by level (lowest first, ties broken by date).
 struct AdventuresTable: View {
     let record: CharacterRecord
     let store: CharacterStore
+    @State private var sort = AdventureSort.date
 
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
     #endif
 
+    private var sessions: [SessionProgress] {
+        guard sort == .level else { return record.sessions }
+        return record.sessions.sorted {
+            ($0.creditLevel, $0.session.date ?? .distantPast) < ($1.creditLevel, $1.session.date ?? .distantPast)
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Adventures (\(record.sessions.count))").font(.headline)
-            if record.sessions.isEmpty {
+            HStack {
+                Text("Adventures (\(record.sessions.count))").font(.headline)
+                Spacer()
+                Picker("Sort", selection: $sort) {
+                    ForEach(AdventureSort.allCases) { Text($0.displayName).tag($0) }
+                }
+                .pickerStyle(.segmented).labelsHidden().frame(width: 160)
+            }
+            if sessions.isEmpty {
                 Text("No sessions on paizo.com yet.").foregroundStyle(.secondary)
             } else if isCompact {
                 compactList
             } else {
                 Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 6) {
                     header
-                    ForEach(record.sessions) { progress in
+                    ForEach(sessions) { progress in
                         Divider()
                         AdventureRow(cells: AdventureCells(progress: progress, record: record, store: store))
                     }
@@ -40,7 +68,7 @@ struct AdventuresTable: View {
 
     private var compactList: some View {
         LazyVStack(alignment: .leading, spacing: 8) {
-            ForEach(record.sessions) { progress in
+            ForEach(sessions) { progress in
                 Divider()
                 CompactAdventureRow(cells: AdventureCells(progress: progress, record: record, store: store))
             }
@@ -119,8 +147,18 @@ struct AdventureCells {
     }
 
     var level: some View {
-        Text("\(progress.levelWhenPlayed)").monospacedDigit()
-            .accessibilityLabel("Level \(progress.levelWhenPlayed) when played")
+        Text(progress.isOutOfLevelRange ? "\(progress.creditLevel)*" : "\(progress.creditLevel)")
+            .monospacedDigit()
+            .help(progress.isOutOfLevelRange
+                ? "The character was level \(progress.levelWhenPlayed) when this was played, outside the "
+                    + "adventure's level range. The Guide to Organized Play holds a Chronicle like this until "
+                    + "the character reaches the pregen's level, so it's shown credited at \(progress.creditLevel), "
+                    + "the nearest level in range."
+                : "")
+            .accessibilityLabel(progress.isOutOfLevelRange
+                ? "Credited at level \(progress.creditLevel): played at level \(progress.levelWhenPlayed), "
+                    + "outside the adventure's level range"
+                : "Level \(progress.creditLevel) when played")
     }
 
     var title: some View {
@@ -136,9 +174,24 @@ struct AdventureCells {
         Text(session.reputation.map(XPText.of) ?? "—").monospacedDigit()
     }
 
+    @ViewBuilder
     var xp: some View {
-        Text(XPText.of(progress.xp)).monospacedDigit()
-            .help(progress.xpSource == .estimated ? "Estimated from the Achievement Points" : "")
+        let banked = progress.xp - progress.xpLost
+        HStack(spacing: 2) {
+            Text(XPText.of(banked)).monospacedDigit()
+            if progress.xpLost > 0 {
+                Text("(\(XPText.of(progress.xpLost)) lost)").font(.caption2).foregroundStyle(.secondary)
+            }
+        }
+        .help(xpHelp)
+    }
+
+    private var xpHelp: String {
+        if progress.xpLost > 0 {
+            return "\(XPText.of(progress.xpLost)) XP didn't count: the character's level can't pass this "
+                + "adventure's own highest level (see the Guide to Organized Play's \"Applying Credit\")."
+        }
+        return progress.xpSource == .estimated ? "Estimated from the Achievement Points" : ""
     }
 
     var trackMenu: some View {

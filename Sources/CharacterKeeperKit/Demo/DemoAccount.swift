@@ -62,7 +62,10 @@ public enum DemoAccount {
             DemoAdventure.quest("Pathfinder Quest (Series 2) #15: The Missing Bell"),
             DemoAdventure.scenario("#6-09: Tides of the Glass Sea", levels: "3rd- through 6th"),
             DemoAdventure.bounty("Pathfinder Bounty #21: The Clockwork Hound"),
-            DemoAdventure.scenario("#6-12: Beneath the Ninth Arch", levels: "3rd- through 6th")
+            DemoAdventure.scenario("#6-12: Beneath the Ninth Arch", levels: "3rd- through 6th"),
+            // A Chronicle Paizo's "Applying Credit" rules held until she reached the pregen's level: shown with
+            // an asterisk, since level 2 falls outside this adventure's 7th- through 10th-level range.
+            DemoAdventure.scenario("#6-20: The Severed Stars", levels: "7th- through 10th")
         ].enumerated().map { index, adventure in
             adventure.session(for: who, number: index + 1, daysAgo: 300 - index * 40, campaign: .pathfinder2)
         }

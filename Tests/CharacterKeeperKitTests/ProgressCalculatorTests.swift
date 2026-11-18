@@ -183,6 +183,76 @@ struct LevelWhenPlayedTests {
         #expect(history.map(\.levelWhenPlayed) == [1, 1, 1])
     }
 
+    @Test func creditAppliedAwayFromTheAdventuresLevelRangeIsFlagged() {
+        let inRange = scenarios(reputations: [4, 4, 4, 4])
+        let heldChronicle = SessionFactory.session(
+            title: "#6-04: A High-Level Scenario", summary: "A Pathfinder Society Scenario designed for "
+                + "7th- through 10th-level characters",
+            reputation: 4, date: Date(timeIntervalSince1970: 1_780_000_000 + 5 * 86_400), sessionNumber: 5)
+        let history = pathfinder.history(of: inRange + [heldChronicle], settings: CharacterSettings())
+        #expect(history.first?.session.sessionNumber == 5)
+        #expect(history.first?.isOutOfLevelRange == true)
+        // Below the range: credited at its lowest level, as if held until the character caught up to it.
+        #expect(history.first?.creditLevel == 7)
+        #expect(history.dropFirst().allSatisfy { !$0.isOutOfLevelRange })
+    }
+
+    /// Drul Goodboy GM'd (and played) "Symposium on a Fallen God" (3rd- through 6th-level) while level 1 or 2:
+    /// both show credited at level 3, the range's own lowest level.
+    @Test func creditBelowTwoDifferentAdventuresBothClampToTheirOwnLowestLevel() {
+        let lowScenario = SessionFactory.session(
+            title: "#5-12: Mischief in the Maze",
+            summary: "A Pathfinder Society Scenario designed for 1st- through 4th-level characters",
+            date: Date(timeIntervalSince1970: 1_780_000_000))
+        let highScenario = SessionFactory.session(
+            title: "#6-18: Symposium on a Fallen God",
+            summary: "A Pathfinder Society Scenario designed for 3rd- through 6th-level characters",
+            date: Date(timeIntervalSince1970: 1_780_000_000 + 86_400), sessionNumber: 2)
+        let history = pathfinder.history(of: [lowScenario, highScenario], settings: CharacterSettings())
+        #expect(history.map(\.levelWhenPlayed) == [1, 1])
+        #expect(history.map(\.creditLevel) == [3, 1])
+        #expect(history.map(\.isOutOfLevelRange) == [true, false])
+    }
+
+    /// Only a *held* Chronicle (played below the adventure's own range) can lose XP: a big enough award can carry
+    /// it past the adventure's own highest level in one step, and the Guide's "a character's level cannot exceed
+    /// the level of any Chronicle applied to them" means the rest is lost. A session played in or above its own
+    /// range is never capped: "Normally, Chronicles are applied as soon as they are issued", in full.
+    @Test func aHeldChronicleCanStillLoseXPThatWouldPassItsOwnHighestLevel() throws {
+        let held = SessionFactory.session(
+            title: "#6-04: A Mid-Tier Scenario",
+            summary: "A Pathfinder Society Scenario designed for 3rd- through 4th-level characters")
+        var settings = CharacterSettings()
+        settings.overrides[held.id] = SessionOverride(xp: 50)
+        let history = pathfinder.history(of: [held], settings: settings)
+        let progress = try #require(history.first)
+        #expect(progress.isOutOfLevelRange)
+        #expect(progress.creditLevel == 3)
+        #expect(progress.xp == 50)
+        #expect(progress.xpLost > 1.9 && progress.xpLost < 2.1)
+        // The level a second, ordinary session would see stops at the held Chronicle's own highest level (4).
+        let next = SessionFactory.session(
+            title: "#6-05: Another Scenario", date: Date(timeIntervalSince1970: 1_780_086_400))
+        let withNext = pathfinder.history(of: [held, next], settings: settings)
+        #expect(withNext.first?.levelWhenPlayed == 4)
+    }
+
+    /// Playing (or GMing) above an adventure's own range is ordinary, not a held Chronicle: no cap applies, so a
+    /// character well above an early scenario's range still banks its full XP, the way repeated low-tier play
+    /// (Starfinder Society's own scenarios, for instance) keeps leveling a character past that scenario's range.
+    @Test func playingAboveAnAdventuresRangeIsNeverCapped() throws {
+        let early = SessionFactory.session(
+            title: "#1-01: An Early Scenario",
+            summary: "A Pathfinder Society Scenario designed for 1st- through 2nd-level characters")
+        var settings = CharacterSettings()
+        settings.overrides[early.id] = SessionOverride(xp: 30)
+        let history = pathfinder.history(of: [early], settings: settings)
+        let progress = try #require(history.first)
+        #expect(!progress.isOutOfLevelRange)
+        #expect(progress.xpLost == 0)
+        #expect(progress.xp == 30)
+    }
+
     /// Scenarios a day apart, oldest first, numbered from 1; slow track allowed (Pathfinder).
     private func scenarios(reputations: [Double]) -> [PlayedSession] {
         reputations.enumerated().map { index, reputation in

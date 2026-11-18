@@ -27,14 +27,50 @@ public struct ProgressCalculator: Sendable {
             .sorted { ($0.element.date ?? .distantPast, -$0.offset) < ($1.element.date ?? .distantPast, -$1.offset) }
             .map { progress(of: $0.element, settings: settings) }
         var xpBefore = 0.0
-        let leveled = oldestFirst.map { session in
+        let leveled = oldestFirst.map { session -> SessionProgress in
             var session = session
             session.levelWhenPlayed = level(forXP: xpBefore, startingLevel: settings.startingLevel).level
-            xpBefore += session.xp
+            let range = AdventureClassifier.levelRange(of: session.session.adventure)
+            (session.creditLevel, session.isOutOfLevelRange) = creditLevel(session.levelWhenPlayed, in: range)
+            let applied = appliedXP(
+                of: session, xpBefore: xpBefore, startingLevel: settings.startingLevel,
+                levelWhenPlayed: session.levelWhenPlayed)
+            session.xpLost = session.xp - applied
+            xpBefore += applied
             return session
         }
         return leveled.reversed()
     }
+
+    /// The level a session's credit counts as applied at, and whether that took clamping: when the character's
+    /// level at the time falls outside the adventure's own range, a sign they played a pregen, or were GM, with
+    /// the Guide's "Applying Credit" rules crediting it away from that range (held for a later level, or a
+    /// pregen's level used instead), the nearest level inside the range stands in for the pregen's own level.
+    /// An adventure with no known range credits the level as played, never clamped.
+    private func creditLevel(_ levelWhenPlayed: Int, in range: LevelRange?) -> (level: Int, wasClamped: Bool) {
+        guard let range, !range.contains(levelWhenPlayed) else { return (levelWhenPlayed, false) }
+        return (min(max(levelWhenPlayed, range.lowest), range.highest), true)
+    }
+
+    /// The XP a session actually banks toward leveling. "Normally, Chronicles are applied as soon as they are
+    /// issued" in full; the Guide's cap only matters for a *held* Chronicle (the character was below the
+    /// adventure's own range when they played it, so it waited for them to catch up): "a character's level
+    /// cannot exceed the level of any Chronicle applied to them", so XP that would carry them past the
+    /// adventure's own highest level is lost. A session played in or above its range, or with no known range,
+    /// banks its XP in full; so does a held one not yet near that ceiling.
+    private func appliedXP(
+        of session: SessionProgress, xpBefore: Double, startingLevel: Int, levelWhenPlayed: Int
+    ) -> Double {
+        guard let range = AdventureClassifier.levelRange(of: session.session.adventure),
+              levelWhenPlayed < range.lowest else { return session.xp }
+        let start = rules.startingLevel(startingLevel)
+        let ceiling = Double(range.highest + 1 - start) * rules.xpPerLevel - Self.levelCapEpsilon
+        return max(0, min(session.xp, ceiling - xpBefore))
+    }
+
+    /// Comfortably smaller than the smallest XP award (a slow-track quest's half point), so the ceiling above
+    /// excludes the next level's first XP value without excluding any real award just below it.
+    private static let levelCapEpsilon = 0.000_001
 
     /// The level a character reaches with this much XP, counting up from the level they began play at.
     public func level(forXP xp: Double, startingLevel: Int = 1) -> CharacterLevel {

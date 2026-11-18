@@ -34,6 +34,15 @@ adventures played, faction reputation, XP and level.
 - **R2.4** Faction reputation, Fame and Total Reputation are shown as Paizo reports them. Starfinder Society second
   edition shows no factions.
 - **R2.5** Slow track in Starfinder Society (second edition) counts from 30 July 2026; earlier sessions are normal.
+- **R2.6** A session's credit level is shown as the level the character was at when they played it, unless that
+  falls outside the adventure's own level range, in which case the nearest level inside that range is shown
+  instead, marked, standing in for the level a held Chronicle is applied at (Guide to Organized Play, "Applying
+  Credit"). This never changes the character's level, only how one session's level is displayed.
+- **R2.7** Only a session played *below* its adventure's own level range (a held Chronicle) can lose XP: when
+  banking its XP would carry the character's level past that adventure's own highest level, the excess is lost,
+  per the Guide's "a character's level cannot exceed the level of any Chronicle applied to them". A session
+  played within or above its range always banks its XP in full ("Normally, Chronicles are applied as soon as
+  they are issued"), so ordinary low-tier replay (or GM credit at a higher level) is never capped.
 
 ## 3. Using the record
 
