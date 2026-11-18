@@ -32,7 +32,8 @@ public enum SignInFormParser {
     public static func form(in html: String) throws -> SignInForm {
         let operation = "Reading the sign-in page"
         let document = try parseDocument(html, operation: operation)
-        guard let form = try document.select("form").array().first(where: { try !$0.select("input[type=password]").isEmpty() }),
+        let forms = try document.select("form").array()
+        guard let form = try forms.first(where: { try !$0.select("input[type=password]").isEmpty() }),
               let password = try form.select("input[type=password]").first(),
               let email = try form.select("input[type=text], input[type=email]").first(),
               let button = try form.select("button").array().first(where: { try $0.text() == "Sign In" })
@@ -42,10 +43,13 @@ public enum SignInFormParser {
             throw ParsingError(operation: operation, reason: "the Sign In button has no Ajax target")
         }
         var hidden: [String: String] = [:]
-        for input in try form.select("input[type=hidden]").array() { hidden[try input.attr("name")] = try input.attr("value") }
+        for input in try form.select("input[type=hidden]").array() {
+            hidden[try input.attr("name")] = try input.attr("value")
+        }
         return SignInForm(
             action: try form.attr("action"), hiddenFields: hidden, emailField: try email.attr("name"),
-            passwordField: try password.attr("name"), buttonName: try button.attr("name"), containerID: String(container.1)
+            passwordField: try password.attr("name"), buttonName: try button.attr("name"),
+            containerID: String(container.1)
         )
     }
 }

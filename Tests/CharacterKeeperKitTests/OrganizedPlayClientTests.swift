@@ -68,7 +68,7 @@ struct OrganizedPlayClientTests {
         let post = try #require(stub.sentRequests.first { $0.httpMethod == "POST" })
         #expect(post.url?.path.contains("/Store.woa/1/ajax/SESSIONID") == true)
         #expect(post.url?.query?.hasPrefix("_u=SignInPageAjaxSignIn&") == true)
-        let body = String(decoding: post.httpBody ?? Data(), as: UTF8.self)
+        let body = try #require(String(bytes: post.httpBody ?? Data(), encoding: .utf8))
         #expect(body.contains("e=player%40example.com"))
         #expect(body.contains("zzz=s3cret+pass%26"))
         #expect(body.contains("path=organizedplay%2FmyAccount"))

@@ -105,6 +105,8 @@ public final class InMemoryCharacterRepository: CharacterRepository, @unchecked 
     public func loadSnapshot() throws -> AccountSnapshot? { lock.withLock { snapshot } }
     public func saveSnapshot(_ snapshot: AccountSnapshot) throws { lock.withLock { self.snapshot = snapshot } }
     public func loadSettings() throws -> [String: CharacterSettings] { lock.withLock { settings } }
-    public func saveSettings(_ settings: [String: CharacterSettings]) throws { lock.withLock { self.settings = settings } }
+    public func saveSettings(_ settings: [String: CharacterSettings]) throws {
+        lock.withLock { self.settings = settings }
+    }
     public func deleteSnapshot() throws { lock.withLock { snapshot = nil } }
 }

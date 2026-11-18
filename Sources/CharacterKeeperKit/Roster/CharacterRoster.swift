@@ -54,7 +54,8 @@ public struct CharacterRoster: Sendable {
             .sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }
             .map { calculator.progress(of: $0, settings: settings) }
         let xp = progress.reduce(settings.xpAdjustment) { $0 + $1.xp }
-        return CharacterRecord(summary: summary, sessions: progress, level: calculator.level(forXP: xp), settings: settings)
+        return CharacterRecord(
+            summary: summary, sessions: progress, level: calculator.level(forXP: xp), settings: settings)
     }
 }
 

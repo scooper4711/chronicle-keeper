@@ -11,6 +11,8 @@ public struct HTTPResponse: Sendable {
         self.finalURL = finalURL
     }
 
+    // Lossy fallback on purpose: invalid bytes get replaced rather than losing the whole page.
+    // swiftlint:disable:next optional_data_string_conversion
     public var text: String { String(bytes: data, encoding: .utf8) ?? String(decoding: data, as: UTF8.self) }
 
     /// Returns the response, or throws when the status is not a success.

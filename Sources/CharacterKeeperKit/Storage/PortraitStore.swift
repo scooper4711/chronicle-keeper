@@ -55,8 +55,10 @@ public struct PortraitStore: Sendable {
         } catch {
             throw PortraitError(operation: operation, failure: error.localizedDescription)
         }
-        guard let destination = CGImageDestinationCreateWithURL(file as CFURL, UTType.png.identifier as CFString, 1, nil)
-        else { throw PortraitError(operation: operation, failure: "can't write \(file.lastPathComponent)") }
+        let type = UTType.png.identifier as CFString
+        guard let destination = CGImageDestinationCreateWithURL(file as CFURL, type, 1, nil) else {
+            throw PortraitError(operation: operation, failure: "can't write \(file.lastPathComponent)")
+        }
         CGImageDestinationAddImage(destination, image, nil)
         guard CGImageDestinationFinalize(destination) else {
             throw PortraitError(operation: operation, failure: "can't write \(file.lastPathComponent)")

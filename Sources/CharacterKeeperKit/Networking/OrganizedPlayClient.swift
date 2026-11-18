@@ -52,7 +52,8 @@ public actor OrganizedPlayClient {
         var pagesRead = 1
         while let next = page.nextPage, page.range?.isLastPage == false, pagesRead < maximumPages {
             let url = endpoints.ajaxUpdate(path: next.path, containerID: next.containerID)
-            let response = try await get(url, operation: "Reading page \(pagesRead + 1) of the Sessions tab", ajax: true)
+            let operation = "Reading page \(pagesRead + 1) of the Sessions tab"
+            let response = try await get(url, operation: operation, ajax: true)
             page = try SessionsPageParser.page(from: response.text)
             sessions += page.sessions
             pagesRead += 1

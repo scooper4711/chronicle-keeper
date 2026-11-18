@@ -12,7 +12,8 @@ struct SummaryPageParserTests {
         let characters = try SummaryPageParser.characters(in: Fixture.text("summary"))
         let character = try #require(characters.first { $0.number == "123456-2002" })
         #expect(character.campaign == .pathfinder2)
-        #expect(character.factions.map(\.name) == ["Envoy's Alliance", "Horizon Hunters", "Verdant Wheel", "Vigilant Seal"])
+        #expect(character.factions.map(\.name)
+            == ["Envoy's Alliance", "Horizon Hunters", "Verdant Wheel", "Vigilant Seal"])
         #expect(character.factions[1].value == 68)
         #expect(character.standing == [NamedValue(name: "Fame", value: 89)])
     }

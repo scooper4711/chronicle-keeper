@@ -44,7 +44,8 @@ struct AdventureClassifierTests {
         ("A Pathfinder Bounty designed for 3rd-level characters", 3, 3)
     ])
     func levelRange(summary: String, lowest: Int, highest: Int) {
-        #expect(AdventureClassifier.levelRange(of: adventure("", summary)) == LevelRange(lowest: lowest, highest: highest))
+        let range = AdventureClassifier.levelRange(of: adventure("", summary))
+        #expect(range == LevelRange(lowest: lowest, highest: highest))
     }
 
     @Test func noLevelRangeWithoutADescription() {
