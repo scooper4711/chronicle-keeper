@@ -8,7 +8,7 @@ public enum FactionArt {
         "acquisitives", "darkarchive", "dataphiles", "envoysalliance", "exoguardians",
         "grandarchive", "grandlodge", "horizonhunters", "lanternlodge", "libertysedge",
         "radiantoath", "scarabsages", "sczarni", "secondseekers", "shadowlodge", "silvercrusade",
-        "sovereigncourt", "theexchange", "verdantwheel", "vigilantseal", "wayfinders"
+        "sovereigncourt", "theexchange", "totalreputation", "verdantwheel", "vigilantseal", "wayfinders"
     ]
 
     /// The name of the symbol for a faction as paizo.com writes it, or an empty string when there is none.

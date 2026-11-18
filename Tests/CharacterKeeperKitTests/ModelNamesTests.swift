@@ -51,6 +51,7 @@ struct FactionArtTests {
         #expect(FactionArt.symbolName(for: "Exo-Guardians") == "exoguardians")
         #expect(FactionArt.symbolName(for: "Horizon Hunters") == "horizonhunters")
         #expect(FactionArt.symbolName(for: "Envoy's Alliance") == "envoysalliance")
+        #expect(FactionArt.symbolName(for: "Total Reputation") == "totalreputation")
         #expect(FactionArt.symbolName(for: "Unknown Faction").isEmpty)
     }
 
