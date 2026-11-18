@@ -28,7 +28,7 @@ public struct ProgressCalculator: Sendable {
             .sorted { ($0.element.date ?? .distantPast, -$0.offset) < ($1.element.date ?? .distantPast, -$1.offset) }
             .map { progress(of: $0.element, settings: settings) }
         let applier = CreditApplier(rules: rules, startingLevel: settings.startingLevel) { xp in
-            self.level(forXP: xp, startingLevel: settings.startingLevel).level
+            self.level(forXP: xp, startingLevel: settings.startingLevel)
         }
         return applier.apply(to: oldestFirst).reversed()
     }

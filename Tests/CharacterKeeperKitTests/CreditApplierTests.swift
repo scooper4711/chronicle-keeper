@@ -105,6 +105,12 @@ struct LevelWhenPlayedTests {
         #expect(history.reversed().map(\.totalXP) == [4, 6, 10])
     }
 
+    /// Credit progress is how far into `creditLevel` the character was walking in, before this session's own XP.
+    @Test func creditProgressIsTheWalkInProgress() {
+        let history = pathfinder.history(of: scenarios(reputations: [4, 4, 4, 4]), settings: CharacterSettings())
+        #expect(history.reversed().map(\.creditProgress) == [0, 4, 8, 0])
+    }
+
     /// Only a *held* Chronicle (played below the adventure's own range) can lose XP: a big enough award can carry
     /// it past the adventure's own highest level in one step, and the Guide's "a character's level cannot exceed
     /// the level of any Chronicle applied to them" means the rest is lost. A session played in or above its own

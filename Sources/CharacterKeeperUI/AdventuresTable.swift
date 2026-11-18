@@ -147,8 +147,11 @@ struct AdventureCells {
             .monospacedDigit()
     }
 
+    /// The level the credit landed at, with how far into it: "3 · 10/12", matching the sidebar's "Lv 5 · 7/12 XP".
     var level: some View {
-        Text(progress.isOutOfLevelRange ? "\(progress.creditLevel)*" : "\(progress.creditLevel)")
+        let mark = progress.isOutOfLevelRange ? "*" : ""
+        let perLevel = XPText.of(record.level.xpPerLevel)
+        return Text("\(progress.creditLevel)\(mark) · \(XPText.of(progress.creditProgress))/\(perLevel)")
             .monospacedDigit()
             .help(progress.isOutOfLevelRange
                 ? "The character was level \(progress.levelWhenPlayed) when this was played, outside the "
@@ -157,9 +160,9 @@ struct AdventureCells {
                     + "the nearest level in range."
                 : "")
             .accessibilityLabel(progress.isOutOfLevelRange
-                ? "Credited at level \(progress.creditLevel): played at level \(progress.levelWhenPlayed), "
-                    + "outside the adventure's level range"
-                : "Level \(progress.creditLevel) when played")
+                ? "Credited at level \(progress.creditLevel), \(XPText.of(progress.creditProgress)) XP into it: "
+                    + "played at level \(progress.levelWhenPlayed), outside the adventure's level range"
+                : "Level \(progress.creditLevel) when played, \(XPText.of(progress.creditProgress)) XP into it")
     }
 
     var title: some View {

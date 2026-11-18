@@ -13,9 +13,9 @@ import Foundation
 struct CreditApplier {
     private let rules: CampaignRules
     private let startingLevel: Int
-    private let levelOf: (Double) -> Int
+    private let levelOf: (Double) -> CharacterLevel
 
-    init(rules: CampaignRules, startingLevel: Int, levelOf: @escaping (Double) -> Int) {
+    init(rules: CampaignRules, startingLevel: Int, levelOf: @escaping (Double) -> CharacterLevel) {
         self.rules = rules
         self.startingLevel = startingLevel
         self.levelOf = levelOf
@@ -31,14 +31,13 @@ struct CreditApplier {
         var order = 0
 
         for (index, session) in sessions.enumerated() {
-            let levelBefore = levelOf(bankedXP)
+            let before = levelOf(bankedXP)
             let range = AdventureClassifier.levelRange(of: session.session.adventure)
-            if let range, levelBefore < range.lowest {
-                held.append((index, holding(session, levelWhenPlayed: levelBefore)))
+            if let range, before.level < range.lowest {
+                held.append((index, holding(session, before: before)))
             } else {
                 order += 1
-                resolved[index] = applyImmediately(
-                    session, levelWhenPlayed: levelBefore, order: order, bankedXP: &bankedXP)
+                resolved[index] = applyImmediately(session, before: before, order: order, bankedXP: &bankedXP)
             }
             while let next = held.first, isEligible(next.session, bankedXP: bankedXP) {
                 held.removeFirst()
@@ -55,22 +54,22 @@ struct CreditApplier {
 
     private func isEligible(_ session: SessionProgress, bankedXP: Double) -> Bool {
         guard let range = AdventureClassifier.levelRange(of: session.session.adventure) else { return true }
-        return levelOf(bankedXP) >= range.lowest
+        return levelOf(bankedXP).level >= range.lowest
     }
 
-    private func holding(_ session: SessionProgress, levelWhenPlayed: Int) -> SessionProgress {
+    private func holding(_ session: SessionProgress, before: CharacterLevel) -> SessionProgress {
         var session = session
-        session.levelWhenPlayed = levelWhenPlayed
+        session.levelWhenPlayed = before.level
         session.isOutOfLevelRange = true
         return session
     }
 
     private func applyImmediately(
-        _ session: SessionProgress, levelWhenPlayed: Int, order: Int, bankedXP: inout Double
+        _ session: SessionProgress, before: CharacterLevel, order: Int, bankedXP: inout Double
     ) -> SessionProgress {
         var session = session
-        session.levelWhenPlayed = levelWhenPlayed
-        session.creditLevel = levelWhenPlayed
+        session.levelWhenPlayed = before.level
+        setCreditedAt(&session, before)
         bankedXP += session.xp
         session.totalXP = bankedXP
         session.applyOrder = order
@@ -78,11 +77,11 @@ struct CreditApplier {
     }
 
     /// Applies one held session now that the character has caught up to its range, capping it at the adventure's
-    /// own highest level: the excess, if any, is lost. `creditLevel` is the level the character was at when the
-    /// credit landed — walking in, before this session's own XP is added — not the level it leaves them at.
+    /// own highest level: the excess, if any, is lost. The credited level and progress are where the character
+    /// was walking in, before this session's own XP is added, not where it leaves them.
     private func applyHeld(_ session: SessionProgress, order: Int, bankedXP: inout Double) -> SessionProgress {
         var session = session
-        session.creditLevel = levelOf(bankedXP)
+        setCreditedAt(&session, levelOf(bankedXP))
         guard let range = AdventureClassifier.levelRange(of: session.session.adventure) else {
             bankedXP += session.xp
             session.totalXP = bankedXP
@@ -109,6 +108,11 @@ struct CreditApplier {
         session.totalXP = bankedXP
         session.applyOrder = order
         return session
+    }
+
+    private func setCreditedAt(_ session: inout SessionProgress, _ level: CharacterLevel) {
+        session.creditLevel = level.level
+        session.creditProgress = level.xpIntoLevel
     }
 
     /// Comfortably smaller than the smallest XP award (a slow-track quest's half point), so the ceiling above

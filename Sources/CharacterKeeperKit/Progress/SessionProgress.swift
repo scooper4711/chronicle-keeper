@@ -30,6 +30,9 @@ public struct SessionProgress: Hashable, Sendable, Identifiable {
     /// reaches the pregen's level (Applying Credit), and this is our best stand-in for that level without
     /// Paizo's own record of when each held Chronicle was actually applied.
     public internal(set) var creditLevel = 1
+    /// How far into `creditLevel` the character was when this session's credit landed, in XP (0 for a held
+    /// session that was never applied).
+    public internal(set) var creditProgress = 0.0
     /// XP this session would have given that didn't count, because the character's level was already at, or
     /// would have risen past, this adventure's own highest level: "a character's level cannot exceed the level
     /// of any Chronicle applied to them" (Applying Credit). 0 when nothing was lost.
