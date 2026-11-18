@@ -158,22 +158,13 @@ struct PortraitButton: View {
 /// Paizo's own reputation and Fame totals, as the Summary tab shows them.
 struct ReputationGrid: View {
     let summary: CharacterSummary
-    // A switch to compare the two layouts; one of them goes when we choose.
-    @AppStorage("reputationLayout") private var layout = ReputationLayout.beside
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Reputation").font(.headline)
-                Spacer()
-                Picker("Layout", selection: $layout) {
-                    ForEach(ReputationLayout.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
-                }
-                .pickerStyle(.segmented).labelsHidden().frame(width: 260)
-            }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: layout.tileWidth), alignment: .leading)], spacing: 12) {
+            Text("Reputation").font(.headline)
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), alignment: .leading)], spacing: 12) {
                 ForEach(summary.factions + summary.standing, id: \.name) { value in
-                    ReputationTile(value: value, layout: layout)
+                    ReputationTile(value: value)
                 }
             }
             if summary.factions.isEmpty && summary.standing.isEmpty {
@@ -183,67 +174,20 @@ struct ReputationGrid: View {
     }
 }
 
-enum ReputationLayout: String, CaseIterable {
-    var tileWidth: CGFloat { self == .centered ? 150 : 220 }
-
-    case beside
-    case behind
-    case centered
-}
-
+/// A narrow tile: the faction's symbol, faded, fills its middle, and the number and name sit centered over it.
 struct ReputationTile: View {
     let value: NamedValue
-    let layout: ReputationLayout
 
     var body: some View {
-        switch layout {
-        case .beside: beside
-        case .behind: behind
-        case .centered: centered
-        }
-    }
-
-    /// A narrow tile: the faded symbol fills its middle and the number and name are centered over it.
-    private var centered: some View {
-        centeredText
-            .frame(width: 140, height: 120)
-            .background { FactionSymbol(faction: value.name, size: 100).opacity(0.3) }
-            .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-    }
-
-    private var centeredText: some View {
         VStack {
             Text("\(value.value)").font(.largeTitle.bold()).monospacedDigit()
             Text(value.name).font(.callout).multilineTextAlignment(.center)
         }
         .padding(.horizontal, 6)
-    }
-
-    private var beside: some View {
-        HStack(spacing: 12) {
-            FactionSymbol(faction: value.name, size: 64)
-            text
-        }
-    }
-
-    /// A large, faded symbol fills the tile and the text sits on top of it.
-    private var behind: some View {
-        text
-            .frame(maxWidth: .infinity, minHeight: 88, alignment: .leading)
-            .padding(.horizontal, 12)
-            .background(alignment: .leading) {
-                FactionSymbol(faction: value.name, size: 96).opacity(0.3).padding(.leading, 4)
-            }
-            .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-    }
-
-    private var text: some View {
-        VStack(alignment: .leading) {
-            Text("\(value.value)").font(.title.bold()).monospacedDigit()
-            Text(value.name).font(.callout).foregroundStyle(.secondary)
-        }
+        .frame(width: 140, height: 120)
+        .background { FactionSymbol(faction: value.name, size: 100).opacity(0.3) }
+        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 
