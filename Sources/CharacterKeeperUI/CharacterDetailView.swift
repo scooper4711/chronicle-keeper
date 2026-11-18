@@ -169,9 +169,9 @@ struct ReputationGrid: View {
                 Picker("Layout", selection: $layout) {
                     ForEach(ReputationLayout.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
                 }
-                .pickerStyle(.segmented).labelsHidden().frame(width: 160)
+                .pickerStyle(.segmented).labelsHidden().frame(width: 260)
             }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), alignment: .leading)], spacing: 12) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: layout.tileWidth), alignment: .leading)], spacing: 12) {
                 ForEach(summary.factions + summary.standing, id: \.name) { value in
                     ReputationTile(value: value, layout: layout)
                 }
@@ -184,8 +184,11 @@ struct ReputationGrid: View {
 }
 
 enum ReputationLayout: String, CaseIterable {
+    var tileWidth: CGFloat { self == .centered ? 150 : 220 }
+
     case beside
     case behind
+    case centered
 }
 
 struct ReputationTile: View {
@@ -196,7 +199,25 @@ struct ReputationTile: View {
         switch layout {
         case .beside: beside
         case .behind: behind
+        case .centered: centered
         }
+    }
+
+    /// A narrow tile: the faded symbol fills its middle and the number and name are centered over it.
+    private var centered: some View {
+        centeredText
+            .frame(width: 140, height: 120)
+            .background { FactionSymbol(faction: value.name, size: 100).opacity(0.3) }
+            .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    private var centeredText: some View {
+        VStack {
+            Text("\(value.value)").font(.largeTitle.bold()).monospacedDigit()
+            Text(value.name).font(.callout).multilineTextAlignment(.center)
+        }
+        .padding(.horizontal, 6)
     }
 
     private var beside: some View {
