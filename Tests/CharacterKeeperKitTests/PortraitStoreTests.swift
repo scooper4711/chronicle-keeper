@@ -52,3 +52,27 @@ struct PortraitStoreTests {
         return data as Data
     }
 }
+
+struct PortraitAdoptionTests {
+    private let store = PortraitStore(
+        folder: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
+
+    @Test func adoptsAPortraitUnderItsNameOnce() throws {
+        defer { try? FileManager.default.removeItem(at: store.folder) }
+        let incoming = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try Data([1, 2, 3]).write(to: incoming)
+        defer { try? FileManager.default.removeItem(at: incoming) }
+        #expect(store.existingFile(named: "123456-2001-abc.png") == nil)
+        try store.adopt(file: incoming, as: "123456-2001-abc.png")
+        try store.adopt(file: incoming, as: "123456-2001-abc.png")
+        let kept = try #require(store.existingFile(named: "123456-2001-abc.png"))
+        #expect(try Data(contentsOf: kept) == Data([1, 2, 3]))
+        try store.adopt(file: incoming, as: "")
+    }
+
+    @Test func aMissingFileCantBeAdopted() {
+        #expect(throws: PortraitError.self) {
+            try store.adopt(file: URL(fileURLWithPath: "/no/such/file.png"), as: "x.png")
+        }
+    }
+}

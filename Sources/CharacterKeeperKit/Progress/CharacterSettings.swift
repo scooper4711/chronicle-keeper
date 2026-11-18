@@ -33,3 +33,22 @@ public struct CharacterSettings: Hashable, Codable, Sendable {
         return url
     }
 }
+
+extension CharacterSettings {
+    private enum CodingKeys: String, CodingKey {
+        case defaultTrack, xpAdjustment, overrides, notes, portraitFileName, characterSheetLink
+    }
+
+    /// Reads settings written by any version: a field an older version didn't have gets its default, so a record
+    /// synced from another device or a file from an earlier release still opens.
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            defaultTrack: try values.decodeIfPresent(Track.self, forKey: .defaultTrack) ?? .normal,
+            xpAdjustment: try values.decodeIfPresent(Double.self, forKey: .xpAdjustment) ?? 0,
+            overrides: try values.decodeIfPresent([String: SessionOverride].self, forKey: .overrides) ?? [:],
+            notes: try values.decodeIfPresent(String.self, forKey: .notes) ?? "")
+        portraitFileName = try values.decodeIfPresent(String.self, forKey: .portraitFileName) ?? ""
+        characterSheetLink = try values.decodeIfPresent(String.self, forKey: .characterSheetLink) ?? ""
+    }
+}

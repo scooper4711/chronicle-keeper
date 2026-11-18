@@ -17,6 +17,10 @@ public final class AccountSession {
     public private(set) var isSigningIn = false
 
     private let live: LiveAccount
+    /// The user's own account's store, kept for the whole run so syncing always has it, even during the demo.
+    public let liveStore: CharacterStore
+    /// Syncing of the user's data between their devices; nil when the build or iCloud doesn't allow it.
+    public private(set) var sync: SettingsSync?
 
     /// The parts that reach paizo.com and the user's files.
     public struct LiveAccount: Sendable {
@@ -34,11 +38,19 @@ public final class AccountSession {
     public init(live: LiveAccount) {
         self.live = live
         mode = live.credentials.load().map { .signedIn(email: $0.email) } ?? .signedOut
-        store = Self.liveStore(live)
+        let client = live.client
+        liveStore = CharacterStore(repository: live.repository) { try await client.fetchAccount() }
+        store = liveStore
         store.load()
     }
 
     public var isDemo: Bool { mode == .demo }
+
+    /// Starts syncing the user's data through iCloud, when the build and the device allow it.
+    public func startSync(portraits: PortraitStore) async {
+        guard sync == nil, let folder = live.repository.folder else { return }
+        sync = await SettingsSync.start(store: liveStore, portraits: portraits, folder: folder)
+    }
     public var canRefresh: Bool { mode != .signedOut && !store.isRefreshing }
 
     /// Signs in with new credentials, then reads the account.
@@ -48,7 +60,7 @@ public final class AccountSession {
         do {
             try await live.client.signIn(account)
             signInError = nil
-            show(.signedIn(email: account.email), store: Self.liveStore(live))
+            show(.signedIn(email: account.email), store: liveStore)
             await store.refresh()
         } catch {
             signInError = FailureMessage.text(for: error)
@@ -58,7 +70,8 @@ public final class AccountSession {
     /// Forgets the password and the site data. The user's own settings stay.
     public func signOut() {
         do { try live.credentials.delete() } catch { signInError = error.localizedDescription }
-        store.signOut()
+        liveStore.signOut()
+        store = liveStore
         mode = .signedOut
     }
 
@@ -73,17 +86,12 @@ public final class AccountSession {
     public func leaveDemo() {
         guard isDemo else { return }
         let email = live.credentials.load()?.email
-        show(email.map { .signedIn(email: $0) } ?? .signedOut, store: Self.liveStore(live))
+        show(email.map { .signedIn(email: $0) } ?? .signedOut, store: liveStore)
     }
 
     private func show(_ newMode: Mode, store newStore: CharacterStore) {
         mode = newMode
         store = newStore
         store.load()
-    }
-
-    private static func liveStore(_ live: LiveAccount) -> CharacterStore {
-        let client = live.client
-        return CharacterStore(repository: live.repository) { try await client.fetchAccount() }
     }
 }

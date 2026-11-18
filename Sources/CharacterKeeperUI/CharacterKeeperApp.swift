@@ -13,11 +13,14 @@ public struct CharacterKeeperApp: App {
         _session = State(initialValue: session)
     }
 
+    private let portraits = PortraitStore.forApp()
+
     public var body: some Scene {
         WindowGroup("Character Keeper") {
             MainWindow()
                 .environment(session)
-                .environment(\.portraits, PortraitStore.forApp())
+                .environment(\.portraits, portraits)
+                .task { await session.startSync(portraits: portraits) }
             #if os(macOS)
                 .frame(minWidth: 860, minHeight: 520)
             #endif

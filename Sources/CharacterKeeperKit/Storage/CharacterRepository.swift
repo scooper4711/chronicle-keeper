@@ -10,6 +10,8 @@ public protocol CharacterRepository: Sendable {
     func saveSettings(_ settings: [String: CharacterSettings]) throws
     /// Forgets the site data, as when signing out. The user's own data stays.
     func deleteSnapshot() throws
+    /// The folder the files are in; nil for a repository that keeps nothing on disk.
+    var folder: URL? { get }
 }
 
 /// What went wrong reading or writing the app's files.
@@ -23,10 +25,11 @@ public struct RepositoryError: Error, Equatable, LocalizedError {
 /// Keeps two JSON files in one folder: `account.json` (site data, replaced on every refresh) and
 /// `settings.json` (user data), so a refresh never touches the user's edits.
 public struct FileCharacterRepository: CharacterRepository {
-    private let folder: URL
+    public let directory: URL
+    public var folder: URL? { directory }
 
     public init(folder: URL) {
-        self.folder = folder
+        directory = folder
     }
 
     /// `Application Support/Character Keeper`, which is inside the app container on iPad.
@@ -53,7 +56,7 @@ public struct FileCharacterRepository: CharacterRepository {
     }
 
     public func deleteSnapshot() throws {
-        let file = folder.appendingPathComponent("account.json")
+        let file = directory.appendingPathComponent("account.json")
         guard FileManager.default.fileExists(atPath: file.path) else { return }
         do { try FileManager.default.removeItem(at: file) } catch {
             throw RepositoryError(operation: "Forgetting the account", failure: error.localizedDescription)
@@ -61,7 +64,7 @@ public struct FileCharacterRepository: CharacterRepository {
     }
 
     private func read<Value: Decodable>(_ type: Value.Type, from name: String, operation: String) throws -> Value? {
-        let file = folder.appendingPathComponent(name)
+        let file = directory.appendingPathComponent(name)
         guard FileManager.default.fileExists(atPath: file.path) else { return nil }
         do {
             return try Self.decoder.decode(type, from: Data(contentsOf: file))
@@ -72,8 +75,8 @@ public struct FileCharacterRepository: CharacterRepository {
 
     private func write<Value: Encodable>(_ value: Value, to name: String, operation: String) throws {
         do {
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            try Self.encoder.encode(value).write(to: folder.appendingPathComponent(name), options: .atomic)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try Self.encoder.encode(value).write(to: directory.appendingPathComponent(name), options: .atomic)
         } catch {
             throw RepositoryError(operation: operation, failure: error.localizedDescription)
         }
@@ -109,4 +112,5 @@ public final class InMemoryCharacterRepository: CharacterRepository, @unchecked 
         lock.withLock { self.settings = settings }
     }
     public func deleteSnapshot() throws { lock.withLock { snapshot = nil } }
+    public var folder: URL? { nil }
 }

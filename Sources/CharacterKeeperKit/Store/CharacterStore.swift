@@ -14,6 +14,8 @@ public final class CharacterStore {
     private let fetchAccount: @Sendable () async throws -> AccountSnapshot
     private var snapshot: AccountSnapshot?
     private var settings: [String: CharacterSettings] = [:]
+    /// Told the character number of each change the user makes, for syncing to send it.
+    public var onLocalChange: @MainActor (String) -> Void = { _ in }
 
     public init(repository: CharacterRepository, fetchAccount: @escaping @Sendable () async throws -> AccountSnapshot) {
         self.repository = repository
@@ -67,6 +69,21 @@ public final class CharacterStore {
         var changed = settings(for: number)
         change(&changed)
         settings[number] = changed
+        saveSettings()
+        onLocalChange(number)
+    }
+
+    /// Every character's settings, as syncing sends them.
+    public var allSettings: [String: CharacterSettings] { settings }
+
+    /// Takes settings merged from another device. Unlike `update`, this isn't reported as a local change.
+    public func applyRemote(_ changes: [String: CharacterSettings]) {
+        guard !changes.isEmpty else { return }
+        settings.merge(changes) { _, remote in remote }
+        saveSettings()
+    }
+
+    private func saveSettings() {
         do {
             try repository.saveSettings(settings)
             errorMessage = nil

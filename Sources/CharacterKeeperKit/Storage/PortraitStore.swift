@@ -43,6 +43,23 @@ public struct PortraitStore: Sendable {
         return name
     }
 
+    /// The portrait's file when this device has it.
+    public func existingFile(named name: String) -> URL? {
+        url(forFileName: name).flatMap { FileManager.default.fileExists(atPath: $0.path) ? $0 : nil }
+    }
+
+    /// Keeps a portrait that came from another device under the name it has there; already scaled, so it is copied.
+    public func adopt(file: URL, as name: String) throws {
+        guard let target = url(forFileName: name), existingFile(named: name) == nil else { return }
+        do {
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: file, to: target)
+        } catch {
+            throw PortraitError(
+                operation: "Keeping the portrait \(name) from iCloud", failure: error.localizedDescription)
+        }
+    }
+
     public func remove(fileName name: String) throws {
         guard let file = url(forFileName: name), FileManager.default.fileExists(atPath: file.path) else { return }
         do { try FileManager.default.removeItem(at: file) } catch {
