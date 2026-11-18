@@ -162,13 +162,13 @@ struct ReputationGrid: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Reputation").font(.headline)
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), alignment: .leading)], spacing: 8) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), alignment: .leading)], spacing: 12) {
                 ForEach(summary.factions + summary.standing, id: \.name) { value in
-                    HStack {
-                        FactionSymbol(faction: value.name)
+                    HStack(spacing: 12) {
+                        FactionSymbol(faction: value.name, size: 64)
                         VStack(alignment: .leading) {
-                            Text("\(value.value)").font(.title3.bold()).monospacedDigit()
-                            Text(value.name).font(.caption).foregroundStyle(.secondary)
+                            Text("\(value.value)").font(.title.bold()).monospacedDigit()
+                            Text(value.name).font(.callout).foregroundStyle(.secondary)
                         }
                     }
                 }
