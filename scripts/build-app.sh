@@ -1,5 +1,5 @@
 #!/bin/sh
-# Builds "build/Character Keeper.app" from the Swift package, signed ad hoc.
+# Builds "build/Chronicle Keeper.app" from the Swift package, signed ad hoc.
 #
 # VERSION       version written to the bundle (default: scripts/version.sh marketing)
 # BUILD_NUMBER  CFBundleVersion (default: scripts/version.sh build)
@@ -11,8 +11,8 @@ cd "$(dirname "$0")/.."
 
 VERSION="${VERSION:-$(scripts/version.sh marketing)}"
 BUILD_NUMBER="${BUILD_NUMBER:-$(scripts/version.sh build)}"
-APP="build/Character Keeper.app"
-EXECUTABLE="CharacterKeeper"
+APP="build/Chronicle Keeper.app"
+EXECUTABLE="ChronicleKeeper"
 
 if [ "${UNIVERSAL:-0}" = "1" ]; then
     swift build -c release --arch arm64 --arch x86_64
@@ -43,17 +43,17 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleDisplayName</key>
-    <string>Character Keeper</string>
+    <string>Chronicle Keeper</string>
     <key>CFBundleExecutable</key>
     <string>$EXECUTABLE</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundleIdentifier</key>
-    <string>io.github.scooper4711.CharacterKeeper</string>
+    <string>io.github.scooper4711.ChronicleKeeper</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>Character Keeper</string>
+    <string>Chronicle Keeper</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
@@ -74,5 +74,5 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-scripts/sign-app.sh "$APP" Resources/CharacterKeeper.entitlements
+scripts/sign-app.sh "$APP" Resources/ChronicleKeeper.entitlements
 echo "Built $APP ($VERSION, build $BUILD_NUMBER)"

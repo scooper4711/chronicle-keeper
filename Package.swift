@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "CharacterKeeper",
+    name: "ChronicleKeeper",
     platforms: [.macOS(.v14), .iOS(.v17)],
     products: [
-        .library(name: "CharacterKeeperKit", targets: ["CharacterKeeperKit"]),
-        .library(name: "CharacterKeeperUI", targets: ["CharacterKeeperUI"]),
-        .executable(name: "CharacterKeeper", targets: ["CharacterKeeper"])
+        .library(name: "ChronicleKeeperKit", targets: ["ChronicleKeeperKit"]),
+        .library(name: "ChronicleKeeperUI", targets: ["ChronicleKeeperUI"]),
+        .executable(name: "ChronicleKeeper", targets: ["ChronicleKeeper"])
     ],
     dependencies: [
         .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.14.4"),
@@ -15,19 +15,19 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "CharacterKeeperKit",
+            name: "ChronicleKeeperKit",
             dependencies: [.product(name: "SwiftSoup", package: "SwiftSoup")]
         ),
         .target(
-            name: "CharacterKeeperUI",
-            dependencies: ["CharacterKeeperKit", .product(name: "AppNotices", package: "tabletop-kit")],
+            name: "ChronicleKeeperUI",
+            dependencies: ["ChronicleKeeperKit", .product(name: "AppNotices", package: "tabletop-kit")],
             resources: [.copy("Resources/Factions")]
         ),
-        // The macOS entry point; the app itself lives in CharacterKeeperUI so the iPad app can share it.
-        .executableTarget(name: "CharacterKeeper", dependencies: ["CharacterKeeperUI"]),
+        // The macOS entry point; the app itself lives in ChronicleKeeperUI so the iPad app can share it.
+        .executableTarget(name: "ChronicleKeeper", dependencies: ["ChronicleKeeperUI"]),
         .testTarget(
-            name: "CharacterKeeperKitTests",
-            dependencies: ["CharacterKeeperKit"],
+            name: "ChronicleKeeperKitTests",
+            dependencies: ["ChronicleKeeperKit"],
             resources: [.copy("Fixtures")]
         )
     ]

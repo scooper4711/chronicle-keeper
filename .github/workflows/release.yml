@@ -51,14 +51,14 @@ jobs:
           NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
           NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
           NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
-        run: scripts/notarize.sh "build/CharacterKeeper-$VERSION.dmg"
+        run: scripts/notarize.sh "build/ChronicleKeeper-$VERSION.dmg"
 
       - name: Keep the disk image of a trial build
         if: env.RELEASING != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: disk-image
-          path: build/CharacterKeeper-*.dmg
+          path: build/ChronicleKeeper-*.dmg
 
       - name: Attach the disk image to the release
         if: env.RELEASING == 'true'
@@ -69,4 +69,4 @@ jobs:
             sleep 10
           done
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --draft --title "$TAG" --generate-notes
-          gh release upload "$TAG" "build/CharacterKeeper-$VERSION.dmg" --clobber
+          gh release upload "$TAG" "build/ChronicleKeeper-$VERSION.dmg" --clobber

@@ -7,11 +7,11 @@
 //
 // If Xcode reports that the bundle identifier is taken, set your own there as well:
 //
-//     PRODUCT_BUNDLE_IDENTIFIER = com.example.CharacterKeeper
+//     PRODUCT_BUNDLE_IDENTIFIER = com.example.ChronicleKeeper
 DEVELOPMENT_TEAM =
-PRODUCT_BUNDLE_IDENTIFIER = io.github.scooper4711.CharacterKeeper
+PRODUCT_BUNDLE_IDENTIFIER = io.github.scooper4711.ChronicleKeeper
 
-// The version and build number come from git (scripts/version.sh): the CharacterKeeper-iOS scheme's build
+// The version and build number come from git (scripts/version.sh): the ChronicleKeeper-iOS scheme's build
 // pre-action writes them to Version.xcconfig before every build, Product > Archive included. These are the
 // fallbacks for a build that skips the scheme.
 MARKETING_VERSION = 0.0.0

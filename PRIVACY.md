@@ -1,13 +1,13 @@
-# Character Keeper Privacy Policy
+# Chronicle Keeper Privacy Policy
 
-Effective November 18, 2026. This policy covers Character Keeper for Mac, iPad and iPhone.
+Effective November 18, 2026. This policy covers Chronicle Keeper for Mac, iPad and iPhone.
 
-**Character Keeper collects no data.** It has no account of its own, no analytics, no advertising, no tracking and
+**Chronicle Keeper collects no data.** It has no account of its own, no analytics, no advertising, no tracking and
 no third-party code that reports anything. Nothing you do in the app is sent to the developer.
 
 ## Your Paizo account
 
-Character Keeper signs in to paizo.com with the email address and password you give it, to read your characters,
+Chronicle Keeper signs in to paizo.com with the email address and password you give it, to read your characters,
 the adventures they have played and your boons. Your email address and password are kept in the Keychain on your
 device and go only to Paizo. The sign-in session is kept in memory and ends when the app closes. Paizo learns what
 any sign-in and page request tells it, under Paizo's own privacy policy; the developer sees none of it. Every
@@ -31,7 +31,7 @@ synced: each device reads paizo.com itself.
 
 ## Network
 
-Character Keeper contacts paizo.com (and the Paizo store, for adventure details) to sign in and read your account.
+Chronicle Keeper contacts paizo.com (and the Paizo store, for adventure details) to sign in and read your account.
 It contacts no one else. Links you click open in your browser, under the browser's and that website's own policies.
 
 ## Crash reports
@@ -41,9 +41,9 @@ developer. These are governed by Apple's privacy policy and contain no personal 
 
 ## Children
 
-Character Keeper collects no data from anyone, including children.
+Chronicle Keeper collects no data from anyone, including children.
 
 ## Changes and contact
 
 Changes to this policy will be posted here, with a new effective date. Questions go to the
-[issue tracker](https://github.com/scooper4711/character-keeper/issues).
+[issue tracker](https://github.com/scooper4711/chronicle-keeper/issues).

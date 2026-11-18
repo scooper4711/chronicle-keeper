@@ -19,7 +19,7 @@ LOG="$(mktemp)"
 trap 'rm -f "$LOG"' EXIT
 STATUS=0
 # xcodebuild hands TEST_RUNNER_-prefixed variables to the test runner without the prefix.
-TEST_RUNNER_SCREENSHOT_DIR="${SCREENSHOT_DIR:-}" xcodebuild test -project ios/CharacterKeeper.xcodeproj -scheme CharacterKeeper-iOS \
+TEST_RUNNER_SCREENSHOT_DIR="${SCREENSHOT_DIR:-}" xcodebuild test -project ios/ChronicleKeeper.xcodeproj -scheme ChronicleKeeper-iOS \
     -destination "platform=iOS Simulator,id=$DEVICE" -derivedDataPath ios/build > "$LOG" 2>&1 || STATUS=$?
 grep -E " error: |Test Case .*(passed|failed)|\*\* TEST" "$LOG" || tail -n 20 "$LOG"
 exit "$STATUS"

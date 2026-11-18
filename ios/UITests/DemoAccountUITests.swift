@@ -57,7 +57,7 @@ final class DemoAccountUITests: XCTestCase {
     func testTheAccountMenuOpensAbout() {
         app.buttons["Account"].firstMatch.tap()
         XCTAssertTrue(app.buttons["Leave the Demo"].waitForExistence(timeout: 5), app.debugDescription)
-        app.buttons["About Character Keeper"].tap()
+        app.buttons["About Chronicle Keeper"].tap()
         XCTAssertTrue(app.buttons["Done"].waitForExistence(timeout: 5), app.debugDescription)
         saveScreenshots("about")
     }

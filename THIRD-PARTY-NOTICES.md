@@ -1,6 +1,6 @@
 # Third-party notices
 
-Character Keeper includes the following software.
+Chronicle Keeper includes the following software.
 
 ## SwiftSoup
 

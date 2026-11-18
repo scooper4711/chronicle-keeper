@@ -10,4 +10,4 @@ ios/build/
 ios/Version.xcconfig
 
 # Rexard art, for testing only: it moves to the private toolkit-artwork submodule before this repo is published.
-Sources/CharacterKeeperUI/Resources/Factions/fame.png
+Sources/ChronicleKeeperUI/Resources/Factions/fame.png

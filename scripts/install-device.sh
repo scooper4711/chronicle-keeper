@@ -30,12 +30,12 @@ PYTHON
 )}"
 [ -n "$DEVICE" ] || { echo "Installing failed: no iPhone or iPad is connected." >&2; exit 1; }
 
-BUNDLE_ID="$(xcodebuild -project ios/CharacterKeeper.xcodeproj -scheme CharacterKeeper-iOS \
+BUNDLE_ID="$(xcodebuild -project ios/ChronicleKeeper.xcodeproj -scheme ChronicleKeeper-iOS \
     -showBuildSettings 2>/dev/null | sed -n 's/^ *PRODUCT_BUNDLE_IDENTIFIER = //p' | head -n 1)"
 
 echo "Building for ${DEVICE}..."
 # A failed build must stop here: the app left by an earlier build would install with its old signature.
-if ! xcodebuild -project ios/CharacterKeeper.xcodeproj -scheme CharacterKeeper-iOS \
+if ! xcodebuild -project ios/ChronicleKeeper.xcodeproj -scheme ChronicleKeeper-iOS \
     -destination 'generic/platform=iOS' -derivedDataPath ios/build -allowProvisioningUpdates build \
     >"$BUILD_LOG" 2>&1; then
     grep -E 'error:' "$BUILD_LOG" >&2 || tail -n 20 "$BUILD_LOG" >&2
@@ -44,7 +44,7 @@ if ! xcodebuild -project ios/CharacterKeeper.xcodeproj -scheme CharacterKeeper-i
 fi
 grep -E 'warning: .*[Pp]rovision|BUILD' "$BUILD_LOG" || true
 
-APP="ios/build/Build/Products/Debug-iphoneos/Character Keeper.app"
+APP="ios/build/Build/Products/Debug-iphoneos/Chronicle Keeper.app"
 [ -d "$APP" ] || { echo "Installing failed: the build did not produce the app." >&2; exit 1; }
 
 xcrun devicectl device install app --device "$DEVICE" "$APP" >/dev/null

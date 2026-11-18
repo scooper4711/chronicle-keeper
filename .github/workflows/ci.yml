@@ -45,7 +45,7 @@ jobs:
 
       - name: Build the iPhone and iPad app
         run: |
-          xcodebuild -project ios/CharacterKeeper.xcodeproj -scheme CharacterKeeper-iOS \
+          xcodebuild -project ios/ChronicleKeeper.xcodeproj -scheme ChronicleKeeper-iOS \
             -destination 'generic/platform=iOS Simulator' -derivedDataPath ios/build \
             CODE_SIGNING_ALLOWED=NO build | tail -n 3
 

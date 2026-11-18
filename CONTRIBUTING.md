@@ -1,6 +1,6 @@
-# Contributing to Character Keeper
+# Contributing to Chronicle Keeper
 
-Thank you for helping with Character Keeper. It keeps a record of every character on the user's Paizo Organized Play account (adventures played, reputation, XP and level), on the Mac, the iPad and the iPhone. It is part of the
+Thank you for helping with Chronicle Keeper. It keeps a record of every character on the user's Paizo Organized Play account (adventures played, reputation, XP and level), on the Mac, the iPad and the iPhone. It is part of the
 [Tableside Toolkit](https://github.com/scooper4711/scrollkeeper#tableside-toolkit), free tools for Pathfinder and
 Starfinder players and GMs, kept by one maintainer in spare time.
 
@@ -17,13 +17,13 @@ You need macOS 26 and Xcode 26 (Swift 6), as CI uses, and [SwiftLint](https://gi
 (`brew install swiftlint`).
 
 ```sh
-git clone https://github.com/scooper4711/character-keeper.git
-cd character-keeper
+git clone https://github.com/scooper4711/chronicle-keeper.git
+cd chronicle-keeper
 make build
 make test
 ```
 
-Launch with `-demo` (`open "build/Character Keeper.app" --args -demo`) to try the app with a made-up account, without a
+Launch with `-demo` (`open "build/Chronicle Keeper.app" --args -demo`) to try the app with a made-up account, without a
 Paizo sign-in. `make simulator` runs the iPad app and `make uitest` its interface tests.
 Never commit credentials, cookies, page captures or anything from a real account, in code, tests or screenshots:
 real captures stay in the gitignored `tmp/`, and the fixtures are sanitized by hand.
@@ -53,14 +53,14 @@ Match the code around your change, and:
 
 - New behavior gets tests; a bug fix gets a test that would have caught it.
 - Test code meets the same standard, apart from length. Use the shared helpers and fixtures.
-- `make coverage` fails below 80% of the lines or regions of `Character KeeperKit`. Code you add or change should be at
+- `make coverage` fails below 80% of the lines or regions of `Chronicle KeeperKit`. Code you add or change should be at
   80% or more too. SwiftUI views aren't measured, so keep logic in types that are.
 - **Never commit with a failing test.** A failing test is a signal that something another feature relies on has
   changed: find out why, rather than skipping or loosening it.
 
 ### Specs
 
-Features are described in `docs/specs/character-keeper/`: `requirements.md` (numbered, such as R4.3) and `design.md`.
+Features are described in `docs/specs/chronicle-keeper/`: `requirements.md` (numbered, such as R4.3) and `design.md`.
 Update both in the same pull request as the behavior.
 
 ### Paizo's and others' material
@@ -94,10 +94,10 @@ names, player number 123456) and a demo account.
 
 ## Issues
 
-[Open an issue](https://github.com/scooper4711/character-keeper/issues) for a bug or an idea. For a bug, give the app's
-version (About Character Keeper), the device and system version, and what you did, expected and got. Leave Paizo content
+[Open an issue](https://github.com/scooper4711/chronicle-keeper/issues) for a bug or an idea. For a bug, give the app's
+version (About Chronicle Keeper), the device and system version, and what you did, expected and got. Leave Paizo content
 out of screenshots.
 
 ## License
 
-Character Keeper is under the [MIT License](LICENSE); your contributions are too.
+Chronicle Keeper is under the [MIT License](LICENSE); your contributions are too.

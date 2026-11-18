@@ -1,14 +1,14 @@
-# Character Keeper
+# Chronicle Keeper
 
-[![CI](https://github.com/scooper4711/character-keeper/actions/workflows/ci.yml/badge.svg)](https://github.com/scooper4711/character-keeper/actions/workflows/ci.yml)
-[![GitHub Release](https://img.shields.io/github/v/release/scooper4711/character-keeper)](https://github.com/scooper4711/character-keeper/releases)
+[![CI](https://github.com/scooper4711/chronicle-keeper/actions/workflows/ci.yml/badge.svg)](https://github.com/scooper4711/chronicle-keeper/actions/workflows/ci.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/scooper4711/chronicle-keeper)](https://github.com/scooper4711/chronicle-keeper/releases)
 [![Platforms](https://img.shields.io/badge/platforms-macOS%2014%2B%20%7C%20iPadOS%2017%2B%20%7C%20iOS%2017%2B-informational)](#requirements)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 Paizo's My Organized Play page lists your characters, but it doesn't show their XP or level, hides each character's
 sessions behind "Show Sessions" links, and doesn't help with slow track.
 
-Character Keeper is an unofficial app for the Mac, the iPad and the iPhone that signs in to paizo.com, reads your
+Chronicle Keeper is an unofficial app for the Mac, the iPad and the iPhone that signs in to paizo.com, reads your
 Sessions and Summary tabs, and keeps a record of every character in every campaign: the adventures played, faction
 reputation and Fame, and XP and level. It is free and open source, and it reads only your own account.
 
@@ -33,8 +33,8 @@ macOS 14 or later, iPadOS 17 or later, or iOS 17 or later.
 
 ## Installing a release
 
-Download the disk image from the [releases page](https://github.com/scooper4711/character-keeper/releases), open it
-and drag Character Keeper to Applications.
+Download the disk image from the [releases page](https://github.com/scooper4711/chronicle-keeper/releases), open it
+and drag Chronicle Keeper to Applications.
 
 ## Building
 
@@ -43,32 +43,32 @@ You need Xcode 26 and [SwiftLint](https://github.com/realm/SwiftLint) (`brew ins
 ```sh
 make test       # swift test
 make lint       # swiftlint --strict
-make coverage   # fails below 80% of the lines or regions of CharacterKeeperKit
-make run        # builds "build/Character Keeper.app" (ad hoc signed) and opens it
+make coverage   # fails below 80% of the lines or regions of ChronicleKeeperKit
+make run        # builds "build/Chronicle Keeper.app" (ad hoc signed) and opens it
 make dmg        # packages the disk image
 make simulator  # the iPad app in a simulator
 make uitest     # the iPad UI tests, against the demo account
 ```
 
-Launch with `-demo` to open the demo account: `open "build/Character Keeper.app" --args -demo`.
+Launch with `-demo` to open the demo account: `open "build/Chronicle Keeper.app" --args -demo`.
 
 ## Documentation
 
 [CONTRIBUTING.md](CONTRIBUTING.md) explains how to contribute. [PRIVACY.md](PRIVACY.md) says what the app does with
 your data (it keeps your password in the Keychain, your data on your device, and contacts only paizo.com). The
-requirements and design are in [docs/specs/character-keeper/](docs/specs/character-keeper/).
+requirements and design are in [docs/specs/chronicle-keeper/](docs/specs/chronicle-keeper/).
 
 ## Licenses
 
-Character Keeper is under the [MIT License](LICENSE). Third-party software is listed in
+Chronicle Keeper is under the [MIT License](LICENSE). Third-party software is listed in
 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 ## Community Use Policy
 
-> Character Keeper uses trademarks and/or copyrights owned by Paizo Inc.,
+> Chronicle Keeper uses trademarks and/or copyrights owned by Paizo Inc.,
 > used under Paizo's Community Use Policy
 > ([paizo.com/licenses/communityuse](https://paizo.com/licenses/communityuse)).
 > We are expressly prohibited from charging you to use or access this content.
-> Character Keeper is not published, endorsed, or specifically approved by
+> Chronicle Keeper is not published, endorsed, or specifically approved by
 > Paizo. For more information about Paizo Inc. and Paizo products, visit
 > [paizo.com](https://paizo.com).

@@ -13,13 +13,13 @@ KIND="${1:-iPad}"
 DEVICE="$(scripts/simulator-id.sh "$KIND")"
 [ -n "$DEVICE" ] || { echo "Starting the simulator failed: no $KIND simulator is installed." >&2; exit 1; }
 
-xcodebuild -project ios/CharacterKeeper.xcodeproj -scheme CharacterKeeper-iOS \
+xcodebuild -project ios/ChronicleKeeper.xcodeproj -scheme ChronicleKeeper-iOS \
     -destination "platform=iOS Simulator,id=$DEVICE" -derivedDataPath ios/build \
     CODE_SIGNING_ALLOWED=NO build | tail -n 3
 
-APP="ios/build/Build/Products/Debug-iphonesimulator/Character Keeper.app"
+APP="ios/build/Build/Products/Debug-iphonesimulator/Chronicle Keeper.app"
 xcrun simctl boot "$DEVICE" 2>/dev/null || true
 # Xcode 27 shows simulators in Device Hub; earlier versions in the Simulator app.
 open -b com.apple.dt.Devices 2>/dev/null || open -a Simulator
 xcrun simctl install "$DEVICE" "$APP"
-xcrun simctl launch --terminate-running-process "$DEVICE" io.github.scooper4711.CharacterKeeper "$@"
+xcrun simctl launch --terminate-running-process "$DEVICE" io.github.scooper4711.ChronicleKeeper "$@"

@@ -16,12 +16,12 @@ app:
 	scripts/build-app.sh
 
 run: app
-	open "build/Character Keeper.app"
+	open "build/Chronicle Keeper.app"
 
 # Copies the built app into /Applications, replacing an earlier copy.
 install: app
-	rm -rf "/Applications/Character Keeper.app"
-	ditto "build/Character Keeper.app" "/Applications/Character Keeper.app"
+	rm -rf "/Applications/Chronicle Keeper.app"
+	ditto "build/Chronicle Keeper.app" "/Applications/Chronicle Keeper.app"
 
 dmg: app
 	scripts/make-dmg.sh

@@ -1,13 +1,13 @@
 #!/bin/sh
-# Packages the built app into build/CharacterKeeper-<VERSION>.dmg.
+# Packages the built app into build/ChronicleKeeper-<VERSION>.dmg.
 set -eu
 
 cd "$(dirname "$0")/.."
 
 VERSION="${VERSION:-0.0.0}"
-APP="build/Character Keeper.app"
+APP="build/Chronicle Keeper.app"
 STAGING="build/dmg"
-DMG="build/CharacterKeeper-$VERSION.dmg"
+DMG="build/ChronicleKeeper-$VERSION.dmg"
 
 [ -d "$APP" ] || { echo "Making the disk image failed: $APP has not been built." >&2; exit 1; }
 
@@ -15,6 +15,6 @@ rm -rf "$STAGING" "$DMG"
 mkdir -p "$STAGING"
 cp -R "$APP" "$STAGING/"
 ln -s /Applications "$STAGING/Applications"
-hdiutil create -volname "Character Keeper" -srcfolder "$STAGING" -ov -format UDZO "$DMG" >/dev/null
+hdiutil create -volname "Chronicle Keeper" -srcfolder "$STAGING" -ov -format UDZO "$DMG" >/dev/null
 rm -rf "$STAGING"
 echo "Built $DMG"
