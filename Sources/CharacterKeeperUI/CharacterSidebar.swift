@@ -15,16 +15,25 @@ struct CharacterSidebar: View {
                     }
                 }
             }
-            if !roster.unmatchedSessions.isEmpty {
+            if !roster.unmatchedSessions.isEmpty || !roster.unmatchedBoons.isEmpty {
                 Section("Not Matched") {
-                    Label("\(roster.unmatchedSessions.count) sessions belong to no character on your Summary tab",
-                          systemImage: "questionmark.circle")
-                        .foregroundStyle(.secondary)
-                        .font(.caption)
+                    if !roster.unmatchedSessions.isEmpty {
+                        unmatched("\(roster.unmatchedSessions.count) sessions belong to no character on your "
+                                  + "Summary tab")
+                    }
+                    ForEach(roster.unmatchedBoons) { boon in
+                        unmatched("Boon \(boon.name) for \(boon.characterName): no single character has that name")
+                    }
                 }
             }
         }
         .navigationTitle("Characters")
+    }
+
+    private func unmatched(_ text: String) -> some View {
+        Label(text, systemImage: "questionmark.circle")
+            .foregroundStyle(.secondary)
+            .font(.caption)
     }
 }
 
