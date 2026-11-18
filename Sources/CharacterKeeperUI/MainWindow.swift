@@ -26,10 +26,17 @@ struct CharacterBrowser: View {
         NavigationSplitView {
             CharacterSidebar(roster: store.roster, selection: $selection)
                 .navigationSplitViewColumnWidth(min: 240, ideal: 280)
+            #if os(iOS)
+                // On the iPhone only the sidebar's own toolbar shows while it is on screen.
+                .toolbar { toolbar }
+                .toolbar { ToolbarItem(placement: .topBarLeading) { AccountMenu() } }
+            #endif
         } detail: {
             detail
         }
+        #if os(macOS)
         .toolbar { toolbar }
+        #endif
         .sheet(isPresented: $showsFinder) {
             AdventureFinderView(roster: store.roster) { selection = $0 }
         }

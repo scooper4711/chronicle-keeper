@@ -1,0 +1,24 @@
+{
+  "originHash" : "d2e854b7cfcbb3ae998101eb6c90544e9c2afaab8fb7cb72ab80124d999f5544",
+  "pins" : [
+    {
+      "identity" : "swiftsoup",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/scinfu/SwiftSoup.git",
+      "state" : {
+        "revision" : "8397a860c6955924b584c50c5265c6aac0970015",
+        "version" : "2.14.4"
+      }
+    },
+    {
+      "identity" : "tabletop-kit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/scooper4711/tabletop-kit.git",
+      "state" : {
+        "revision" : "265101421e89c258684430f4693a349f659b37f5",
+        "version" : "1.11.1"
+      }
+    }
+  ],
+  "version" : 3
+}

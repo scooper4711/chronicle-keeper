@@ -6,3 +6,5 @@ ios/Local.xcconfig
 .DS_Store
 *.xcuserstate
 xcuserdata/
+ios/build/
+ios/Version.xcconfig

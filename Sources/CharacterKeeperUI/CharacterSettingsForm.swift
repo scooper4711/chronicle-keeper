@@ -10,10 +10,14 @@ struct CharacterSettingsForm: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Your Notes and Corrections").font(.headline)
-            Picker("Default track", selection: binding(\.defaultTrack)) {
-                ForEach(Track.allCases, id: \.self) { Text($0.displayName).tag($0) }
+            // Labeled outside the picker: a menu picker on iOS shows only its value.
+            LabeledContent("Default track") {
+                Picker("Default track", selection: binding(\.defaultTrack)) {
+                    ForEach(Track.allCases, id: \.self) { Text($0.displayName).tag($0) }
+                }
+                .labelsHidden()
+                .fixedSize()
             }
-            .fixedSize()
             .help("The track for sessions that don't show which track they were played on")
             LabeledContent("XP adjustment") {
                 TextField("0", value: binding(\.xpAdjustment), format: .number)

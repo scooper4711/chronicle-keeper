@@ -1,4 +1,5 @@
 import CharacterKeeperKit
+import PhotosUI
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -21,6 +22,10 @@ struct CharacterDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .navigationTitle(record.name)
+        #if os(iOS)
+        // The header already shows the name large.
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
     }
 }
 
@@ -31,10 +36,12 @@ struct CharacterHeader: View {
     @Environment(\.portraits) private var portraits
     @Environment(\.openURL) private var openURL
     @State private var choosesPortrait = false
+    @State private var choosesPhoto = false
+    @State private var photo: PhotosPickerItem?
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            PortraitButton(record: record, choose: { choosesPortrait = true }, drop: dropPortrait)
+            PortraitButton(record: record, choose: choosePortrait, drop: dropPortrait)
                 .contextMenu { portraitMenu }
             VStack(alignment: .leading, spacing: 6) {
                 Text(record.name).font(.title.bold())
@@ -49,10 +56,26 @@ struct CharacterHeader: View {
         .fileImporter(isPresented: $choosesPortrait, allowedContentTypes: [.image]) { result in
             if case .success(let url) = result { savePortrait(from: url) }
         }
+        .photosPicker(isPresented: $choosesPhoto, selection: $photo, matching: .images)
+        .onChange(of: photo) { _, item in Task { await savePortrait(from: item) } }
+    }
+
+    /// Photos on the iPhone and iPad, where most pictures are; a file on the Mac.
+    private func choosePortrait() {
+        #if os(iOS)
+        choosesPhoto = true
+        #else
+        choosesPortrait = true
+        #endif
     }
 
     @ViewBuilder private var portraitMenu: some View {
+        #if os(iOS)
+        Button("Choose from Photos…") { choosesPhoto = true }
+        Button("Choose from Files…") { choosesPortrait = true }
+        #else
         Button("Choose Portrait…") { choosesPortrait = true }
+        #endif
         if !record.settings.portraitFileName.isEmpty {
             Button("Remove Portrait", role: .destructive, action: removePortrait)
         }
@@ -65,6 +88,12 @@ struct CharacterHeader: View {
             Task { @MainActor in savePortrait(data) }
         }
         return true
+    }
+
+    private func savePortrait(from item: PhotosPickerItem?) async {
+        guard let item, let data = try? await item.loadTransferable(type: Data.self) else { return }
+        photo = nil
+        savePortrait(data)
     }
 
     private func savePortrait(from url: URL) {

@@ -28,7 +28,9 @@ struct AdventureFinderView: View {
             .navigationTitle(adventure?.title ?? "Who Can Play…?")
             .toolbar { toolbar }
         }
+        #if os(macOS)
         .frame(minWidth: 480, minHeight: 420)
+        #endif
     }
 
     private var adventureList: some View {
