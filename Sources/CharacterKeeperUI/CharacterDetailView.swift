@@ -34,11 +34,8 @@ struct CharacterHeader: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            PortraitView(record: record, side: 96)
-                .onDrop(of: [.image, .fileURL], isTargeted: nil, perform: dropPortrait)
+            PortraitButton(record: record, choose: { choosesPortrait = true }, drop: dropPortrait)
                 .contextMenu { portraitMenu }
-                .onTapGesture { choosesPortrait = true }
-                .help("Drop a picture here, or click to choose one")
             VStack(alignment: .leading, spacing: 6) {
                 Text(record.name).font(.title.bold())
                 Text("\(record.campaign.displayName) · \(record.id)")
@@ -90,6 +87,41 @@ struct CharacterHeader: View {
         let previous = record.settings.portraitFileName
         store.update(record.id) { $0.portraitFileName = "" }
         _ = store.attempt { try portraits.remove(fileName: previous) }
+    }
+}
+
+/// The portrait in the header, which says what clicking it does: on hover, or while a picture is dragged over it.
+struct PortraitButton: View {
+    let record: CharacterRecord
+    let choose: () -> Void
+    let drop: ([NSItemProvider]) -> Bool
+    @State private var isHovered = false
+    @State private var isDropTarget = false
+
+    var body: some View {
+        Button(action: choose) {
+            PortraitView(record: record, side: 96)
+                .overlay { if isHovered || isDropTarget { hint } }
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
+        .onDrop(of: [.image, .fileURL], isTargeted: $isDropTarget, perform: drop)
+        .animation(.easeOut(duration: 0.15), value: isHovered || isDropTarget)
+        .help("Choose a portrait, or drop a picture here")
+        .accessibilityLabel(record.settings.portraitFileName.isEmpty ? "Choose Portrait" : "Change Portrait")
+    }
+
+    private var hint: some View {
+        VStack(spacing: 4) {
+            Image(systemName: isDropTarget ? "square.and.arrow.down" : "camera.fill").font(.title2)
+            Text(isDropTarget ? "Drop Picture" : (record.settings.portraitFileName.isEmpty ? "Choose…" : "Change…"))
+                .font(.caption.weight(.semibold))
+        }
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.black.opacity(0.55))
+        .clipShape(RoundedRectangle(cornerRadius: 96 / 5))
+        .transition(.opacity)
     }
 }
 
