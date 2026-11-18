@@ -36,6 +36,10 @@ public struct SessionProgress: Hashable, Sendable, Identifiable {
     public internal(set) var xpLost = 0.0
     /// The character's total banked XP through and including this session (after any loss above is subtracted).
     public internal(set) var totalXP = 0.0
+    /// Where this session's credit falls in the order it was actually banked: sessions applied immediately keep
+    /// their played order, but a held Chronicle (see `isOutOfLevelRange`) moves later, to when it was finally
+    /// applied as part of a batch once the character caught up to it.
+    public internal(set) var applyOrder = 0
 
     public var id: String { session.id }
 }

@@ -34,15 +34,18 @@ adventures played, faction reputation, XP and level.
 - **R2.4** Faction reputation, Fame and Total Reputation are shown as Paizo reports them. Starfinder Society second
   edition shows no factions.
 - **R2.5** Slow track in Starfinder Society (second edition) counts from 30 July 2026; earlier sessions are normal.
-- **R2.6** A session's credit level is shown as the level the character was at when they played it, unless that
-  falls outside the adventure's own level range, in which case the nearest level inside that range is shown
-  instead, marked, standing in for the level a held Chronicle is applied at (Guide to Organized Play, "Applying
-  Credit"). This never changes the character's level, only how one session's level is displayed.
-- **R2.7** Only a session played *below* its adventure's own level range (a held Chronicle) can lose XP: when
-  banking its XP would carry the character's level past that adventure's own highest level, the excess is lost,
-  per the Guide's "a character's level cannot exceed the level of any Chronicle applied to them". A session
-  played within or above its range always banks its XP in full ("Normally, Chronicles are applied as soon as
-  they are issued"), so ordinary low-tier replay (or GM credit at a higher level) is never capped.
+- **R2.6** A session played *below* its adventure's own level range is a held Chronicle: it doesn't bank its XP
+  where it was played. Instead it is queued, in the order played, until the character's level reaches that
+  range, then applied as a batch, in the order the held sessions were earned (Guide to Organized Play, "Applying
+  Credit": "Normally, Chronicles are applied as soon as they are issued" — held ones are the exception). A
+  session played within or above its range is never held: it applies immediately, in full, in play order.
+- **R2.7** A held session, once applied, is capped so it can't carry the character's level past that specific
+  adventure's own highest level: "a character's level cannot exceed the level of any Chronicle applied to them,
+  [so] any out-of-level Chronicles applied are lost." The lost portion, if any, is shown. A held session the
+  character never catches up to (nothing afterward reaches its range) is never applied at all.
+- **R2.8** Each session shows the level the character reaches once its own credit lands (not the level they were
+  at beforehand), marked when that session was held (R2.6), and sorts by when its credit was actually banked
+  (`applyOrder`), not necessarily by when it was played.
 
 ## 3. Using the record
 

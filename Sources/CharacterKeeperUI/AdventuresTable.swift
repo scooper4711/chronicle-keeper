@@ -5,8 +5,8 @@ import SwiftUI
 enum AdventureSort: String, CaseIterable, Identifiable {
     /// The site's own order: newest first.
     case date
-    /// Lowest level first, then oldest first within a level, so a run of sessions at one level reads in the
-    /// order they were played.
+    /// The order credit was actually banked (`SessionProgress.applyOrder`): a held Chronicle sorts with the
+    /// sessions that finally caught the character up to it, not where it was originally played.
     case level
 
     var id: Self { self }
@@ -14,7 +14,7 @@ enum AdventureSort: String, CaseIterable, Identifiable {
 }
 
 /// Every session the character has, with the track each one counted on and the XP it gave. Sortable by date
-/// (the site's own order, newest first) or by level (lowest first, ties broken by date).
+/// (the site's own order, newest first) or by the order credit was actually banked (see `AdventureSort`).
 struct AdventuresTable: View {
     let record: CharacterRecord
     let store: CharacterStore
@@ -26,12 +26,7 @@ struct AdventuresTable: View {
 
     private var sessions: [SessionProgress] {
         guard sort == .level else { return record.sessions }
-        // The level actually played at, not the displayed credit level: a held Chronicle's "3*" still belongs
-        // with the sessions played at its true level, so the groups show when the character really leveled up.
-        return record.sessions.sorted {
-            ($0.levelWhenPlayed, $0.session.date ?? .distantPast)
-                < ($1.levelWhenPlayed, $1.session.date ?? .distantPast)
-        }
+        return record.sessions.sorted { $0.applyOrder < $1.applyOrder }
     }
 
     var body: some View {

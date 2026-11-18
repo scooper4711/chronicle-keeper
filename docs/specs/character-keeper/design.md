@@ -29,8 +29,10 @@ paizo.com is an old WebObjects site.
 - `Rules/CampaignRules`: XP and reputation per kind and edition, XP per level (second edition 12, first edition 3),
   starting levels, factions, the SFS2 slow-track date. Values come from the Guide to Organized Play on
   lorespire.paizo.com and are noted next to the code.
-- `Progress/`: `ProgressCalculator` (track inference, XP, level, and the held-Chronicle credit level and cap
-  from R2.6/R2.7), `CharacterSettings` (the user's own data).
+- `Progress/`: `ProgressCalculator` (track inference, XP, level), `CreditApplier` (the held-Chronicle queue,
+  batch-flush and cap from R2.6-R2.8: sessions played below their adventure's own range are queued, in the order
+  played, and applied as a batch once the character's level reaches it, each capped at that adventure's own
+  highest level), `CharacterSettings` (the user's own data).
 - `Roster/`: `CharacterRoster`, `CharacterMatcher`. `Catalog/`: `AdventureCatalog`, `AdventureFinder`.
 - `Storage/`, `Store/`: `CharacterRepository` keeps site data apart from the user's data, keyed by character number
   and a stable session key, so a refresh keeps edits. `CharacterStore` is the `@Observable` model;
