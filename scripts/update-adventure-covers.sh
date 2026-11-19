@@ -27,12 +27,21 @@ QUERY='query Covers($query: String, $after: String) {
   }
 }'
 
-# The adventures with a cover that the four campaigns publish, without the ones the app looks up by number:
-# season scenarios (but not their intros, which the Sessions tab doesn't number), numbered quests and bounties.
+# The servers a cover may be on, as CoverHost.isAllowed says: Paizo, the folder of Paizo's store on BigCommerce, and
+# Warhorn (imgix and its S3 buckets).
+PAIZO='([a-z0-9-]+\.)?paizo\.com'
+PAIZO_STORE='cdn11\.bigcommerce\.com/s-e0sdfpgiwh'
+WARHORN='warhorn\.imgix\.net|warhorn[a-z0-9.-]*\.s3[a-z0-9.-]*\.amazonaws\.com'
+HOSTS="^https://($PAIZO|$PAIZO_STORE|$WARHORN)/"
+
+# The adventures with a cover on those servers that the four campaigns publish, without the ones the app looks up
+# by number: season scenarios (but not their intros, which the Sessions tab doesn't number), numbered quests and
+# bounties.
+# shellcheck disable=SC2016 # $hosts is a jq variable, not the shell's.
 ROWS='
   select(.isCustom | not)
   | select(.campaign.code // "" | test("^[PS]FS[12]$"))
-  | select((.coverArtUrl // "") != "")
+  | select((.coverArtUrl // "") | test($hosts))
   | select(.name | test("Scenario Pending|Infinite Scenario") | not)
   | select(.name | (test("^[PS]FS[12] [0-9]+-[0-9]+") and (test(": Intro:") | not)) | not)
   | select(.name | test("Quest[^#]*#[0-9]+|Bounty [0-9]+") | not)
@@ -80,7 +89,7 @@ mkdir -p "$(dirname "$OUT")"
 # One row to a line, in a fixed order, so that a change shows up as the rows that changed.
 {
     echo "["
-    jq -c "$ROWS" "$nodes" | jq -s -r 'unique_by([.campaign, .name]) | map(tojson) | join(",\n")'
+    jq -c --arg hosts "$HOSTS" "$ROWS" "$nodes" | jq -s -r 'unique_by([.campaign, .name]) | map(tojson) | join(",\n")'
     echo "]"
 } > "$OUT"
 

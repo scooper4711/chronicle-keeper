@@ -69,7 +69,7 @@ struct WarhornScenarioTests {
     @Test func aScenarioBecomesAnAdventure() throws {
         let listed = Listed(
             name: "PFS2 6-04: An Enkindled Carnival", levels: [3, 6], tags: ["Metaplot"],
-            cover: "https://example.com/cover.jpg")
+            cover: "https://cdn.paizo.com/cover.jpg")
         let entry = AdventureEntry(published: try #require(try listed.scenario().adventure))
         #expect(entry.title == "#6-04: An Enkindled Carnival")
         #expect(entry.code == "6-04")
@@ -77,7 +77,13 @@ struct WarhornScenarioTests {
         #expect(entry.kind == .scenario)
         #expect(entry.levelRange == LevelRange(lowest: 3, highest: 6))
         #expect(!entry.isRepeatable)
-        #expect(entry.coverArt == URL(string: "https://example.com/cover.jpg"))
+        #expect(entry.coverArt == URL(string: "https://cdn.paizo.com/cover.jpg"))
+    }
+
+    @Test func aCoverKeptOutsidePaizoAndWarhornIsLeftOut() throws {
+        let listed = Listed(name: "PFS2 6-04: An Enkindled Carnival", cover: "https://i.imgur.com/cover.png")
+        let adventure = try #require(try listed.scenario().adventure)
+        #expect(adventure.coverArt == nil)
     }
 
     @Test(arguments: [

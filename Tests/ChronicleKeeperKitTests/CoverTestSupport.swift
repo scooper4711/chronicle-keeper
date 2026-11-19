@@ -67,7 +67,7 @@ enum Covers {
     static let skinsawMurders = url("skinsaw-murders")
 
     static func url(_ name: String) -> URL {
-        URL(string: "https://example.com/\(name).jpg") ?? URL(fileURLWithPath: "/")
+        URL(string: "https://cdn.paizo.com/image/\(name).jpg") ?? URL(fileURLWithPath: "/")
     }
 
     static func row(_ name: String, campaign: String = "PFS2", cover: URL) -> CoverTable.Row {

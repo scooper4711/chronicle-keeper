@@ -114,3 +114,34 @@ struct CoverTableTests {
         #expect(CoverTable.bundled.cover(of: Covers.played(title, in: campaign)) != nil)
     }
 }
+
+struct CoverHostTests {
+    @Test(arguments: [
+        "https://paizo.com/image/product/catalog/PZO/PZO9001_500.jpeg",
+        "https://cdn.paizo.com/image/product/catalog/PZO/PZO9555.jpeg",
+        "https://cdn11.bigcommerce.com/s-e0sdfpgiwh/images/stencil/1280x1280/products/4207/512/PZO2106.png?c=1",
+        "https://warhorn.imgix.net/hbakh3737epwwit5x6khbbxudris",
+        "https://warhorn-production-storage.s3.amazonaws.com/covers/6-04.jpg"
+    ])
+    func paizosAndWarhornsServersAreAllowed(address: String) throws {
+        #expect(CoverHost.isAllowed(try #require(URL(string: address))))
+    }
+
+    @Test(arguments: [
+        "https://i.imgur.com/nAja3gF.png",
+        "https://help.pathfinderinfinite.com/hc/cover.png",
+        "https://cdn11.bigcommerce.com/s-anotherstore/images/cover.png",
+        "https://paizo.com.example.net/cover.png",
+        "https://notwarhorn.s3.amazonaws.com/cover.png",
+        "http://paizo.com/image/cover.jpeg"
+    ])
+    func anyOtherServerIsLeftOut(address: String) throws {
+        #expect(!CoverHost.isAllowed(try #require(URL(string: address))))
+    }
+
+    @Test func theTableLeavesOutACoverKeptElsewhere() throws {
+        let elsewhere = try #require(URL(string: "https://i.imgur.com/nAja3gF.png"))
+        let table = CoverTable(rows: [Covers.row("PF2 Adventure: March of the Dead", cover: elsewhere)])
+        #expect(table.isEmpty)
+    }
+}

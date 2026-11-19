@@ -127,6 +127,12 @@ A numbered adventure is one search of the catalog by its number (`CoverFinder.se
 "Quest (Series 2) #14"), taking the cover of the result that `isSameAdventure`. Warhorn has a cover for every
 numbered adventure it lists, so only one newer than its catalog comes back without.
 
+Warhorn stores a cover's address as whoever entered it typed it, so `CoverHost.isAllowed` keeps only covers on
+Paizo's servers (paizo.com and its subdomains, and the folder of Paizo's store on `cdn11.bigcommerce.com`) or
+Warhorn's (`warhorn.imgix.net` and its S3 buckets), as PRIVACY.md promises. `WarhornScenario` drops any other
+cover, `CoverTable` any other row, and the update script applies the same list. In November 2026 that left out
+one cover, on imgur.
+
 An adventure without a number is never asked for: paizo.com and Warhorn name these too differently to search
 for one by the other ("Pathfinder Beginner Box: Menace Under Otari - Lower Dungeon" is Warhorn's "Menace Under
 Otari, Part 2: Lower Level (from PF2 Beginner Box)"), and a title can carry the event the session was played at

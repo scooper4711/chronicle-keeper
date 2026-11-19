@@ -31,7 +31,7 @@ struct WarhornScenario: Decodable, Sendable {
         var adventure = PublishedAdventure(campaign: campaign, title: Self.title(from: name))
         adventure.levelRange = levelRange
         adventure.isRepeatable = tags.contains { $0.name.caseInsensitiveCompare("Repeatable") == .orderedSame }
-        adventure.coverArt = coverArtUrl.flatMap(URL.init(string:))
+        adventure.coverArt = coverArtUrl.flatMap(URL.init(string:)).flatMap { CoverHost.isAllowed($0) ? $0 : nil }
         return adventure
     }
 

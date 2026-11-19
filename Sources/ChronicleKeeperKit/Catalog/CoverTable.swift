@@ -57,7 +57,9 @@ private struct Entry: Sendable {
     private let partKeys: [String]
 
     init?(row: CoverTable.Row) {
-        guard let campaign = WarhornScenario.campaigns[row.campaign] else { return nil }
+        guard let campaign = WarhornScenario.campaigns[row.campaign], CoverHost.isAllowed(row.cover) else {
+            return nil
+        }
         let title = WarhornScenario.title(from: row.name)
         self.campaign = campaign
         cover = row.cover
