@@ -46,6 +46,15 @@ struct AdventureClassifierTests {
         #expect(AdventureClassifier.kind(of: scenario) == .scenario)
     }
 
+    @Test func aScenarioNamedForAQuestAndPlayedAtAConventionIsStillAScenario() {
+        let scenario = adventure(
+            "#3-09: The Quest for Perfection—Part I - [Some Con] PFS #3-09: The Quest for Perfection—Part I",
+            "A Pathfinder Society Scenario designed for Levels 1–5.")
+        #expect(AdventureClassifier.kind(of: scenario) == .scenario)
+        #expect(AdventureClassifier.code(of: scenario) == "3-09")
+        #expect(AdventureClassifier.kind(ofPublished: "#3-09: The Quest for Perfection—Part I") == .scenario)
+    }
+
     @Test(arguments: [
         ("designed for 1st- through 4th-level characters", 1, 4),
         ("designed for 7th- through 10th-level characters", 7, 10),

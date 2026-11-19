@@ -26,12 +26,11 @@ public struct CoverFinder: Sendable {
         if adventure.code.firstMatch(of: seasonCodePattern) != nil || adventure.code.hasPrefix("Bounty") {
             return adventure.code
         }
-        let quest = AdventureTitle.withoutEvent(adventure.title).firstMatch(of: questPattern)
+        let quest = AdventureTitle.withoutEvent(adventure.title).firstMatch(of: AdventureClassifier.questPattern)
         return quest.map { String($0.0) } ?? ""
     }
 
-    // Regex is not Sendable, but these literals are never mutated, so sharing them is safe.
+    // Regex is not Sendable, but this literal is never mutated, so sharing it is safe.
 
     nonisolated(unsafe) private static let seasonCodePattern = /^\d+-\d+$/
-    nonisolated(unsafe) private static let questPattern = /Quest[^#]*#\d+/
 }

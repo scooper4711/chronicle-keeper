@@ -90,7 +90,9 @@ public enum AdventureClassifier {
     /// "designed for level 1".
     nonisolated(unsafe) private static let singleLevelPattern = /for level (\d+)/
     nonisolated(unsafe) private static let seasonPattern = /#(\d+)-(\d+)/
-    nonisolated(unsafe) private static let questPattern = /Quest[^#]*#(\d+)/
+    /// "Quest #3" or "Quest (Series 2) #14", and not a scenario with "Quest" in its name, such as "#3-09: The Quest
+    /// for Perfection—Part I - [Some Con] PFS #3-09: …", whose later "#3" would otherwise read as the quest's number.
+    nonisolated(unsafe) static let questPattern = /Quest(?: \(Series \d+\))? #(\d+)/
     nonisolated(unsafe) private static let bountyPattern = /Bounty #(\d+)/
     /// How Warhorn starts the name of a standalone adventure, an Adventure Path volume and a first edition module.
     nonisolated(unsafe) private static let longAdventurePattern = /^(?:Adventure|AP|Mod)\b/
