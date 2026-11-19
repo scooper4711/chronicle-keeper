@@ -15,10 +15,13 @@ concurrency:
 jobs:
   test:
     name: Lint, test and coverage
-    # Pull requests from forks never reach the self-hosted Mac mini.
+    # Pull requests from forks never reach the self-hosted Mac mini, because the repo is public.
     runs-on: ${{ github.event.pull_request.head.repo.fork && 'macos-26' || 'mac-mini' }}
+    # The job runs the iPad UI tests in the Simulator. A hung job would otherwise hold one of the mini's two CI slots
+    # for six hours.
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # scripts/version.sh counts every commit for the build number.
           fetch-depth: 0
@@ -35,7 +38,7 @@ jobs:
         run: scripts/coverage.sh
 
       - name: Upload coverage
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage
           path: coverage/sonar-coverage.xml
