@@ -23,7 +23,8 @@ public final class CharacterStore {
 
     /// Looks covers up; nil for an account that has none to find, such as the demo.
     private var coverFinder: CoverFinder?
-    private var isFindingCovers = false
+    /// The cover pass under way, which signing out stops.
+    private(set) var coverPass: Task<Void, Never>?
 
     private let repository: CharacterRepository
     private let fetchAccount: @Sendable () async throws -> AccountSnapshot
@@ -52,11 +53,12 @@ public final class CharacterStore {
         locateChronicleFiles()
     }
 
-    /// Reads the account again, then looks up the covers of any adventures that are new. The saved data stays as
+    /// Reads the account again, then starts looking up the covers of any adventures that are new, without waiting
+    /// for them: a first pass over a long history takes a while, and signing in shouldn't. The saved data stays as
     /// it was when reading fails.
     public func refresh() async {
         await readAccount()
-        await findMissingCovers()
+        startCoverPass()
     }
 
     private func readAccount() async {
@@ -79,10 +81,17 @@ public final class CharacterStore {
         await downloadMissingBoons()
     }
 
-    /// Starts looking covers up, beginning with the adventures of the account that is already saved.
+    /// Starts looking covers up, beginning with the adventures of the account that is already saved, and waits for
+    /// that pass.
     public func useCoverFinder(_ finder: CoverFinder) async {
         coverFinder = finder
-        await findMissingCovers()
+        startCoverPass()
+        await waitForCovers()
+    }
+
+    /// Waits for the cover pass under way, if there is one.
+    func waitForCovers() async {
+        await coverPass?.value
     }
 
     /// Where the cover of a session's adventure is, once it has been looked up.
@@ -94,24 +103,26 @@ public final class CharacterStore {
     public var covers: [String: URL] { snapshot?.covers ?? [:] }
 
     /// Looks up the cover of each adventure in the sessions that has none yet and saves them with the account, so
-    /// that showing one later asks nobody. An adventure the catalog doesn't have is asked for again next time.
-    public func findMissingCovers() async {
-        guard let finder = coverFinder, !isFindingCovers else { return }
-        isFindingCovers = true
-        defer { isFindingCovers = false }
-        var found = 0
-        do {
-            for adventure in adventuresWithoutCover().prefix(Self.coversPerPass) {
-                guard let cover = try await finder.cover(of: adventure) else { continue }
-                snapshot?.covers[adventure.id] = cover
-                found += 1
-            }
-        } catch {
-            // A cover is decoration: when the catalog can't be reached the rest wait for the next refresh, and
-            // the status bar keeps what it says about the account.
+    /// that showing one later asks nobody. A numbered adventure the catalog doesn't have is asked for again next time.
+    /// One pass runs at a time; adventures that are new while it runs wait for the next refresh.
+    private func startCoverPass() {
+        guard let finder = coverFinder, coverPass == nil else { return }
+        let adventures = Array(adventuresWithoutCover().prefix(Self.coversPerPass))
+        guard !adventures.isEmpty else { return }
+        coverPass = Task {
+            keep(await finder.covers(of: adventures))
         }
-        guard found > 0, let snapshot else { return }
-        attempt { try repository.saveSnapshot(snapshot) }
+    }
+
+    /// Adds the covers a pass found to the account as it is now, which loading it again during the pass may have
+    /// replaced, and saves them. A pass that signing out canceled keeps nothing.
+    private func keep(_ found: [String: URL]) {
+        guard !Task.isCancelled else { return }
+        coverPass = nil
+        guard !found.isEmpty, var current = snapshot else { return }
+        current.covers.merge(found) { _, new in new }
+        snapshot = current
+        attempt { try repository.saveSnapshot(current) }
     }
 
     /// The adventures one pass asks for at most, so that a long history doesn't use up the requests the catalog
@@ -209,6 +220,8 @@ public final class CharacterStore {
 
     /// Forgets the site data (the user's settings stay).
     public func signOut() {
+        coverPass?.cancel()
+        coverPass = nil
         do { try repository.deleteSnapshot() } catch { errorMessage = error.localizedDescription }
         snapshot = nil
         lastRefresh = nil

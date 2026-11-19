@@ -120,7 +120,8 @@ without the network.
 
 `AccountSnapshot.covers` holds the cover of each adventure in the sessions, by `AdventureEntry.id`, in
 `account.json` with the rest of what a refresh reads (R3.8). `CharacterStore.refresh` reads the account, carrying
-the covers over, and then `findMissingCovers` asks `CoverFinder` for each adventure that has none.
+the covers over, and then starts a cover pass (`CharacterStore.coverPass`), in which `CoverFinder.covers(of:)`
+looks up each adventure that has none.
 
 A numbered adventure is one search of the catalog by its number (`CoverFinder.searchText`: "6-04", "Bounty 14",
 "Quest (Series 2) #14"), taking the cover of the result that `isSameAdventure`. Warhorn has a cover for every
@@ -141,12 +142,15 @@ Paizo sanctions another such adventure, and for each season's intro. Warhorn's `
 by campaign and returns the entries events make for themselves too (over 15,000), so the script searches for
 each prefix Warhorn starts a name with instead, and the app doesn't list the catalog itself.
 
-The pass runs after the refresh has finished, so the refresh button doesn't wait for it: a first pass over some
-sixty adventures takes about a quarter of a minute, later ones a request or two. The covers are saved once at
-the end. A pass asks for at most `coversPerPass` adventures, to stay well inside the requests Warhorn allows;
-the rest follow on later refreshes. A numbered adventure the catalog doesn't list is asked for again on the next
-refresh; an error stops the pass quietly. `AccountSession.startCovers` gives the user's own store its finder at
-launch, which also covers an account saved by an earlier version. Covers are not synced: like the account, each device looks them
+The pass is a task of its own: the refresh, and so signing in, doesn't wait for it. A first pass over some sixty
+adventures takes about a quarter of a minute, later ones a request or two. One pass runs at a time, and an
+adventure that is new while it runs waits for the next refresh. The covers are added to the account as it is
+when the pass ends, which loading it again meanwhile may have replaced, and saved then. Signing out cancels the
+pass, which then keeps nothing. A pass asks for at most `coversPerPass` adventures, to stay well inside the
+requests Warhorn allows; the rest follow on later refreshes. A numbered adventure the catalog doesn't list is
+asked for again on the next refresh; an error stops the pass quietly. `AccountSession.startCovers` gives the
+user's own store its finder at launch, and waits for that first pass, which also covers an account saved by an
+earlier version. Covers are not synced: like the account, each device looks them
 up itself. `SessionHeader` and the finder's list of the player's own adventures read them from the store.
 
 Paizo has worded an adventure's levels many ways ("1st- through 4th-level", "levels 1–4", "5th to 9th level

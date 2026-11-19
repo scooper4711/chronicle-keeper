@@ -20,6 +20,20 @@ public struct CoverFinder: Sendable {
         return found.adventures.first(where: adventure.isSameAdventure)?.coverArt
     }
 
+    /// The covers of these adventures by ID, looked up one after another until the task is canceled or the catalog
+    /// can't be reached. A cover is decoration: the ones not found wait for another time, and nobody is told.
+    public func covers(of adventures: [AdventureEntry]) async -> [String: URL] {
+        var found: [String: URL] = [:]
+        for adventure in adventures where !Task.isCancelled {
+            do {
+                if let cover = try await cover(of: adventure) { found[adventure.id] = cover }
+            } catch {
+                break
+            }
+        }
+        return found
+    }
+
     /// The number that finds the adventure in the catalog ("6-04", "Bounty 14", "Quest (Series 2) #14"), or
     /// nothing for an adventure without one. The event a session was played at is no part of it.
     static func searchText(for adventure: AdventureEntry) -> String {
