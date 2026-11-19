@@ -60,9 +60,11 @@ enum SessionFactText {
         return "\(earned) · \(XPText.of(points.gmCredits)) GM credit" + (points.gmCredits == 1 ? "" : "s")
     }
 
-    /// "Lantern Fair 2026 · Event 1234, session 3".
+    /// "Lantern Fair 2026 · Event 1234, session 3", without the numbers for a session that has no event code, and
+    /// "None" for one that has neither.
     static func event(_ session: PlayedSession) -> String {
-        let numbers = "Event \(session.eventCode), session \(session.sessionNumber)"
-        return session.eventName.isEmpty ? numbers : "\(session.eventName) · \(numbers)"
+        let numbers = session.eventCode.isEmpty ? "" : "Event \(session.eventCode), session \(session.sessionNumber)"
+        let parts = [session.eventName, numbers].filter { !$0.isEmpty }
+        return parts.isEmpty ? "None" : parts.joined(separator: " · ")
     }
 }
