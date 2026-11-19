@@ -27,15 +27,18 @@ public struct AdventureEntry: Hashable, Sendable, Identifiable {
     public var isRepeatable: Bool
     /// Where the cover is, for an adventure a catalog knows or whose cover was looked up.
     public var coverArt: URL?
+    /// The title's `AdventureTitle.nameKey`, worked out once: comparing entries is most of what a search does.
+    let nameKey: String
 
     /// The adventure's campaign with its code, or with its name when it has none.
-    public var id: String { "\(campaign.shortName)|\(code.isEmpty ? AdventureTitle.nameKey(title) : code)" }
+    public var id: String { "\(campaign.shortName)|\(code.isEmpty ? nameKey : code)" }
 
     public init(reference: AdventureReference, campaign: Campaign) {
         self.campaign = campaign
         productID = reference.productID
         code = AdventureClassifier.code(of: reference) ?? ""
         title = reference.title
+        nameKey = AdventureTitle.nameKey(reference.title)
         kind = AdventureClassifier.kind(of: reference)
         levelRange = AdventureClassifier.levelRange(of: reference)
         isRepeatable = kind.isRepeatable
@@ -48,6 +51,7 @@ public struct AdventureEntry: Hashable, Sendable, Identifiable {
         productID = ""
         code = AdventureClassifier.code(of: reference) ?? ""
         title = adventure.title
+        nameKey = AdventureTitle.nameKey(adventure.title)
         kind = AdventureClassifier.kind(ofPublished: adventure.title)
         levelRange = adventure.levelRange
         isRepeatable = adventure.isRepeatable || kind.isRepeatable
@@ -65,7 +69,7 @@ public struct AdventureEntry: Hashable, Sendable, Identifiable {
         guard campaign == other.campaign else { return false }
         if !productID.isEmpty, productID == other.productID { return true }
         if !code.isEmpty, !other.code.isEmpty { return code == other.code }
-        return AdventureTitle.isSameName(title, other.title)
+        return AdventureTitle.isSameKey(nameKey, other.nameKey)
     }
 }
 

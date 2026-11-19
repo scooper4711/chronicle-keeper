@@ -93,8 +93,13 @@ or SFS2, and drops the stand-ins ("Scenario Pending", "Infinite Scenario"). The 
   results say so (`isComplete`) and the finder asks for more of the title. Warhorn allows an address 300 requests
   in five minutes, which bounds this; a refusal (HTTP 429) is reported as such.
 
-The finder waits 350 ms after the last keystroke, and a newer question cancels the search under way. A failure
-leaves the player's own adventures listed, with the reason (`AdventureSearchFailure`).
+The finder waits 350 ms after the last keystroke, and a newer question cancels the search under way. Warhorn's
+answer is kept with the question it answers, and merged into the list only while that is the question in the
+field: until the new answer comes, the list holds just the player's own matches, never the last question's
+published ones. An answer that comes in as its search is canceled is dropped. A failure leaves the player's own
+adventures listed, with the reason (`AdventureSearchFailure`). The finder builds its `AdventureCatalog` when it
+opens and again after a refresh or a new cover, and works the list out when the question, the answer or the
+catalog changes, not on every redraw; each `AdventureEntry` works its name key out once.
 
 `WarhornScenario.title` spells a name the way the Sessions tab does ("#6-04: An Enkindled Carnival", "Bounty #10:
 Hillcross Roundup"), so `AdventureClassifier.code` reads the same code from both. Levels come from `minLevel` and
@@ -153,8 +158,8 @@ for every session.
 A `NavigationSplitView`: campaigns, then characters (portrait, level, XP bar), then a detail view (header,
 reputation grid, adventures table with a track override menu, boons, settings). "Who Can Play..." is a sheet: a
 search field, a campaign picker when the roster has more than one, a line saying what the list holds when that
-isn't every match, and the adventures with their covers (`CoverArt`, an `AsyncImage`). A session's details show the cover beside the
-title once it is known.
+isn't every match, and the adventures with their covers (`CoverArt`, an `AsyncImage`). A session's details show
+the cover beside the title once it is known.
 
 The detail column is a `NavigationStack`: an adventure's title in the table pushes `SessionDetailView` (R3.6),
 which looks its session up in the store by ID on every update, so a changed track or a refresh shows there too. It

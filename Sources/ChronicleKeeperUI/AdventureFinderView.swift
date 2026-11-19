@@ -10,10 +10,12 @@ struct AdventureFinderView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var question = Question()
     @State private var adventure: AdventureEntry?
-    @State private var catalog: AdventureCatalog
-    @State private var found = AdventureSearchResults.none
+    /// The player's own adventures, built when the finder opens and again when a refresh or a cover changes them.
+    @State private var catalog = AdventureCatalog(sessions: [])
+    @State private var answer = Answer()
+    /// What the list shows, worked out when the question, the answer or the catalog changes, not on every redraw.
+    @State private var matches: [AdventureEntry] = []
     @State private var isSearching = false
-    @State private var failure = ""
 
     /// What the player is asking for; a change starts a new search.
     private struct Question: Hashable {
@@ -21,15 +23,17 @@ struct AdventureFinderView: View {
         var campaign: Campaign?
     }
 
-    private var roster: CharacterRoster { store.roster }
-
-    // The account, where to search and what to do with the answer: three things the finder can't do without.
-    init(store: CharacterStore, search: any AdventureSearching, select: @escaping (CharacterRecord.ID) -> Void) {
-        self.store = store
-        self.search = search
-        self.select = select
-        _catalog = State(initialValue: AdventureCatalog(roster: store.roster, covers: store.covers))
+    /// Warhorn's answer, with the question it answers, so that an answer to an earlier question is never shown.
+    private struct Answer: Hashable {
+        var question = Question()
+        var results = AdventureSearchResults.none
+        var failure = ""
     }
+
+    /// The answer, when it is to the question in the field.
+    private var currentAnswer: Answer { answer.question == question ? answer : Answer(question: question) }
+
+    private var roster: CharacterRoster { store.roster }
 
     var body: some View {
         NavigationStack {
@@ -47,14 +51,18 @@ struct AdventureFinderView: View {
             .toolbar { toolbar }
         }
         .task(id: question) { await lookUp() }
+        .onAppear(perform: rebuildCatalog)
+        .onChange(of: store.lastRefresh) { rebuildCatalog() }
+        .onChange(of: store.covers) { rebuildCatalog() }
+        .onChange(of: question) { updateMatches() }
+        .onChange(of: answer) { updateMatches() }
         #if os(macOS)
         .frame(minWidth: 480, minHeight: 420)
         #endif
     }
 
     private var adventureList: some View {
-        let matches = matches
-        return VStack(spacing: 0) {
+        VStack(spacing: 0) {
             filters
             List(matches) { entry in
                 Button { adventure = entry } label: { AdventureEntryRow(entry: entry) }
@@ -70,11 +78,17 @@ struct AdventureFinderView: View {
         }
     }
 
-    /// The player's own adventures that match, with the published ones the search found.
-    private var matches: [AdventureEntry] {
-        let published = found.adventures.filter { question.campaign == nil || $0.campaign == question.campaign }
-        return AdventureCatalog.merged(
-            published: published, own: catalog.search(question.text, campaign: question.campaign))
+    private func rebuildCatalog() {
+        catalog = AdventureCatalog(roster: store.roster, covers: store.covers)
+        updateMatches()
+    }
+
+    /// The player's own adventures that match, with the published ones Warhorn found for this same question; until
+    /// it answers, only the player's own.
+    private func updateMatches() {
+        matches = AdventureCatalog.merged(
+            published: currentAnswer.results.adventures,
+            own: catalog.search(question.text, campaign: question.campaign))
     }
 
     /// The search field, and the campaigns to narrow the list to when the player has characters in several.
@@ -104,8 +118,9 @@ struct AdventureFinderView: View {
 
     /// What the list holds, when that isn't simply every match.
     private var note: String {
-        if !failure.isEmpty { return failure }
-        if !found.isComplete {
+        let answer = currentAnswer
+        if !answer.failure.isEmpty { return answer.failure }
+        if !answer.results.isComplete {
             return "Warhorn has more matches than these. Type more of the code or title to narrow them down."
         }
         if question.text.trimmingCharacters(in: .whitespaces).isEmpty {
@@ -117,16 +132,18 @@ struct AdventureFinderView: View {
 
     /// Waits for a pause in the typing, then asks for the published adventures. A newer question cancels this one.
     private func lookUp() async {
-        let campaigns = question.campaign.map { [$0] } ?? roster.campaigns
+        let asked = question
+        let campaigns = asked.campaign.map { [$0] } ?? roster.campaigns
         do {
             try await Task.sleep(for: .milliseconds(350))
             isSearching = true
-            let results = try await search.adventures(matching: question.text, in: campaigns)
-            (found, failure) = (results, "")
+            let results = try await search.adventures(matching: asked.text, in: campaigns)
+            // An answer that comes in just as a newer question cancels this one is left to that one.
+            try Task.checkCancellation()
+            answer = Answer(question: asked, results: results)
         } catch {
-            // A canceled search leaves the answer to the one that replaced it.
             if Task.isCancelled { return }
-            (found, failure) = (.none, AdventureSearchFailure.text(for: error))
+            answer = Answer(question: asked, failure: AdventureSearchFailure.text(for: error))
         }
         isSearching = false
     }
