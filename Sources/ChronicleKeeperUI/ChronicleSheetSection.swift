@@ -26,7 +26,7 @@ struct ChronicleSheetSection: View {
             }
             if let file {
                 // A sheet attached in place of another gets its own pages.
-                ChroniclePages(file: file) { preview = file }.id(file)
+                ChroniclePages(file: file, library: store.chronicleLibrary) { preview = file }.id(file)
             } else {
                 Text(Self.invitation).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
@@ -43,20 +43,31 @@ struct ChronicleSheetSection: View {
     }
 }
 
-/// The sheet's pages, drawn full width; a tap opens the sheet itself, to zoom, mark up or print.
+/// The sheet's pages, drawn full width; a tap opens the sheet itself, to zoom, mark up or print. A sheet attached
+/// on another device is brought down from iCloud first.
 struct ChroniclePages: View {
     let file: URL
+    let library: ChronicleLibrary?
     let open: () -> Void
     @State private var sheet = ChroniclePageImages.Sheet.loading
+    /// Counts the user's "Try Again"s, each of which starts the download and the drawing over.
+    @State private var attempt = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             switch sheet {
             case .loading:
                 ProgressView().frame(maxWidth: .infinity, minHeight: 120)
+            case .downloading:
+                ProgressView { Text("Downloading the sheet from iCloud…").foregroundStyle(.secondary) }
+                    .frame(maxWidth: .infinity, minHeight: 120)
+            case .notOnDevice:
+                Text("The sheet hasn't arrived from iCloud yet. Check that this device is online and signed in to "
+                    + "iCloud.")
+                    .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                Button("Try Again") { attempt += 1 }
             case .unreadable:
-                Text("The sheet can't be shown here. It may still be on its way from iCloud.")
-                    .foregroundStyle(.secondary)
+                Text("The sheet can't be shown here.").foregroundStyle(.secondary)
                 Button("Open the Sheet", action: open)
             case .pages(let pages, let pageCount):
                 Button(action: open) { stack(of: pages) }
@@ -70,7 +81,19 @@ struct ChroniclePages: View {
                 }
             }
         }
-        .task { sheet = await ChroniclePageImages.sheet(at: file) }
+        .task(id: attempt) { await show() }
+    }
+
+    private func show() async {
+        sheet = .loading
+        if let library, !library.isOnDevice(file) {
+            sheet = .downloading
+            guard await library.waitUntilOnDevice(file) else {
+                if !Task.isCancelled { sheet = .notOnDevice }
+                return
+            }
+        }
+        sheet = await ChroniclePageImages.sheet(at: file)
     }
 
     private func stack(of pages: [CGImage]) -> some View {
@@ -89,7 +112,11 @@ struct ChroniclePages: View {
 enum ChroniclePageImages {
     enum Sheet: Sendable {
         case loading
-        /// Not a PDF, or not on this device yet.
+        /// iCloud is bringing the sheet down to this device.
+        case downloading
+        /// iCloud didn't bring the sheet down in time.
+        case notOnDevice
+        /// On this device, but not a PDF that can be drawn.
         case unreadable
         case pages([CGImage], pageCount: Int)
     }

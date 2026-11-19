@@ -5,7 +5,7 @@ import Foundation
 /// In a build with iCloud Documents it is `Chronicle Keeper/Boons` in the user's iCloud Drive, so iCloud keeps it
 /// in step on every device and the user can open, print and share the PDFs from Finder and the Files app. Otherwise
 /// it is a `Boons` folder beside the app's other files, on this device only.
-public struct BoonLibrary: Sendable {
+public struct BoonLibrary: ICloudDocumentLibrary {
     public let folder: URL
     public let isInICloud: Bool
 
@@ -40,13 +40,6 @@ public struct BoonLibrary: Sendable {
         return urls
     }
 
-    /// Whether the PDF is there, including one iCloud knows about but hasn't downloaded to this device yet.
-    public func hasFile(at url: URL) -> Bool {
-        let placeholder = url.deletingLastPathComponent().appendingPathComponent(".\(url.lastPathComponent).icloud")
-        let files = FileManager.default
-        return files.fileExists(atPath: url.path) || files.fileExists(atPath: placeholder.path)
-    }
-
     /// Writes a PDF, coordinated so iCloud sees a whole file.
     public func save(_ data: Data, to url: URL) throws {
         let operation = "Saving the boon \(url.deletingPathExtension().lastPathComponent)"
@@ -59,22 +52,6 @@ public struct BoonLibrary: Sendable {
         } catch {
             throw RepositoryError(operation: operation, failure: error.localizedDescription)
         }
-    }
-
-    /// Asks iCloud to bring a PDF that is only in the cloud down to this device, for opening it.
-    public func download(_ url: URL) {
-        guard isInICloud else { return }
-        try? FileManager.default.startDownloadingUbiquitousItem(at: url)
-    }
-
-    private func coordinatedWrite(_ data: Data, to url: URL) throws {
-        var coordinationError: NSError?
-        var writeError: Error?
-        let coordinator = NSFileCoordinator()
-        coordinator.coordinate(writingItemAt: url, options: .forReplacing, error: &coordinationError) { target in
-            do { try data.write(to: target, options: .atomic) } catch { writeError = error }
-        }
-        if let failure = coordinationError ?? writeError { throw failure }
     }
 
     /// A name that is safe as a file or folder name on the Mac, iPad and iPhone.

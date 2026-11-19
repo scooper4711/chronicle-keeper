@@ -37,7 +37,7 @@ struct ChronicleMenu<MenuLabel: View>: View {
     var body: some View {
         Menu {
             if let file {
-                Button { preview = file } label: { Label("Open", systemImage: "doc.text.magnifyingglass") }
+                Button { open(file) } label: { Label("Open", systemImage: "doc.text.magnifyingglass") }
                 ShareLink(item: file) { Label("Share", systemImage: "square.and.arrow.up") }
                 Button(role: .destructive) {
                     store.removeChronicle(from: session.id, characterName: characterName)
@@ -62,6 +62,14 @@ struct ChronicleMenu<MenuLabel: View>: View {
             CameraCapture { image in attach(image) }
         }
         #endif
+    }
+
+    /// Shows the sheet once it is on this device, bringing it down from iCloud first when it was attached elsewhere.
+    private func open(_ file: URL) {
+        Task {
+            guard await store.chronicleLibrary?.waitUntilOnDevice(file) ?? true else { return }
+            preview = file
+        }
     }
 
     private func attach(contentsOf url: URL) {

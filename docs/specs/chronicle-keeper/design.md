@@ -162,8 +162,15 @@ reads like a message: `SessionHeader` (the adventure as the subject, the Game Ma
 `SessionFacts` (each value the row abbreviates, with the sentence that explains it, from `SessionFactText` and
 `SessionExplanation`, which the table's help tags share) and `ChronicleSheetSection`. That draws the sheet's first
 pages full width (`ChroniclePageImages`, PDFKit thumbnails made off the main actor) and opens Quick Look on a tap;
-its menu is the table's `ChronicleMenu` with a different label. The demo account attaches a made-up sheet to its
-newest session (`DemoChronicles`), so the demo and the UI tests show one.
+its menu is the table's `ChronicleMenu` with a different label. `chronicleFiles` counts a sheet iCloud has not
+brought to this device yet as attached (`hasFile` sees its placeholder), so before drawing, and before the menu's
+Open, `waitUntilOnDevice` starts the download and checks every quarter second until `isOnDevice` (the file is
+there and its `ubiquitousItemDownloadingStatus` isn't `.notDownloaded`). The section says it is downloading
+meanwhile, and after `ICloudDownload.longest` (a minute) offers to try again. Boons work the same way:
+`BoonFileButtons` shows a spinner while it brings a PDF down for Open or Print, and a crossed-out cloud if it
+doesn't arrive. Both libraries get this, and `hasFile` and the coordinated write, from `ICloudDocumentLibrary`.
+Share hands over the file as it is, since `ShareLink` gives nothing to wait in. The demo account attaches a
+made-up sheet to its newest session (`DemoChronicles`), so the demo and the UI tests show one.
 
 ## Artwork
 

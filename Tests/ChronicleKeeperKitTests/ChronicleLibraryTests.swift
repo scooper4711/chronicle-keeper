@@ -27,9 +27,60 @@ struct ChronicleLibraryTests {
     @Test func anICloudPlaceholderCountsAsThere() throws {
         let library = ChronicleLibrary(folder: temporaryChronicleFolder(), isInICloud: true)
         let url = library.fileURL(characterName: "Pip", sessionID: "1#1#Pip")
-        let placeholder = url.deletingLastPathComponent().appendingPathComponent(".\(url.lastPathComponent).icloud")
-        try library.save(Data(), to: placeholder)
+        try library.save(Data(), to: ChronicleLibrary.placeholder(of: url))
         #expect(library.hasFile(at: url))
+    }
+
+    @Test func onlyAFileWithItsPagesIsOnTheDevice() throws {
+        let library = ChronicleLibrary(folder: temporaryChronicleFolder(), isInICloud: true)
+        let url = library.fileURL(characterName: "Pip", sessionID: "1#1#Pip")
+        try library.save(Data(), to: ChronicleLibrary.placeholder(of: url))
+        #expect(!library.isOnDevice(url))
+        try library.save(chronicleBytes, to: url)
+        #expect(library.isOnDevice(url))
+    }
+
+    @Test func waitingForASheetOnTheDeviceReturnsAtOnce() async throws {
+        let library = ChronicleLibrary(folder: temporaryChronicleFolder())
+        let url = library.fileURL(characterName: "Pip", sessionID: "1#1#Pip")
+        try library.save(chronicleBytes, to: url)
+        #expect(await library.waitUntilOnDevice(url, timeout: .zero))
+    }
+
+    @Test func waitingForASheetEndsWhenItArrives() async throws {
+        let library = ChronicleLibrary(folder: temporaryChronicleFolder(), isInICloud: true)
+        let url = library.fileURL(characterName: "Pip", sessionID: "1#1#Pip")
+        let arrival = Task {
+            try await Task.sleep(for: .milliseconds(100))
+            try library.save(chronicleBytes, to: url)
+        }
+        #expect(await library.waitUntilOnDevice(url, timeout: .seconds(10)))
+        try await arrival.value
+    }
+
+    @Test func waitingForASheetThatNeverArrivesGivesUp() async {
+        let library = ChronicleLibrary(folder: temporaryChronicleFolder(), isInICloud: true)
+        let url = library.fileURL(characterName: "Pip", sessionID: "1#1#Pip")
+        #expect(!(await library.waitUntilOnDevice(url, timeout: .milliseconds(300))))
+    }
+
+    @Test func aCanceledWaitGivesUp() async {
+        let library = ChronicleLibrary(folder: temporaryChronicleFolder(), isInICloud: true)
+        let url = library.fileURL(characterName: "Pip", sessionID: "1#1#Pip")
+        let wait = Task { await library.waitUntilOnDevice(url, timeout: .seconds(30)) }
+        wait.cancel()
+        #expect(!(await wait.value))
+    }
+
+    @Test func aBoonLibraryBringsItsPDFsDownTheSameWay() async throws {
+        let library = BoonLibrary(folder: temporaryChronicleFolder(), isInICloud: true)
+        let url = library.folder.appendingPathComponent("Pip/Boon.pdf")
+        try library.save(Data(), to: BoonLibrary.placeholder(of: url))
+        #expect(library.hasFile(at: url))
+        #expect(!library.isOnDevice(url))
+        #expect(!(await library.waitUntilOnDevice(url, timeout: .milliseconds(300))))
+        try library.save(chronicleBytes, to: url)
+        #expect(await library.waitUntilOnDevice(url, timeout: .zero))
     }
 
     @Test func removingAMissingFileDoesNothing() throws {

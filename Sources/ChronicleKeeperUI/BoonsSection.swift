@@ -17,7 +17,8 @@ struct BoonsSection: View {
             }
             ForEach(boons) { boon in
                 Divider()
-                BoonRow(boon: boon, file: store.boonFiles[boon.id], state: state(of: boon)) { preview = $0 }
+                BoonRow(boon: boon, file: store.boonFiles[boon.id], library: store.boonDownloads?.library,
+                        state: state(of: boon)) { preview = $0 }
             }
             if let library = store.boonDownloads?.library, !boons.isEmpty {
                 Text(library.isInICloud
@@ -42,6 +43,7 @@ struct BoonRow: View {
 
     let boon: Boon
     let file: URL?
+    let library: BoonLibrary?
     let state: State
     let open: (URL) -> Void
 
@@ -68,7 +70,7 @@ struct BoonRow: View {
     @ViewBuilder private var actions: some View {
         switch state {
         case .saved:
-            if let file { BoonFileButtons(file: file, open: open) }
+            if let file { BoonFileButtons(file: file, library: library, open: open) }
         case .downloading:
             ProgressView().controlSize(.small)
         case .notDownloaded:
@@ -80,22 +82,49 @@ struct BoonRow: View {
     }
 }
 
-/// Open, Share and Print for a saved boon PDF.
+/// Open, Share and Print for a saved boon PDF. A PDF saved on another device is brought down from iCloud first,
+/// with a spinner in place of the buttons meanwhile.
 struct BoonFileButtons: View {
     let file: URL
+    let library: BoonLibrary?
     let open: (URL) -> Void
+    @State private var isDownloading = false
+    @State private var hasNotArrived = false
 
     var body: some View {
         HStack(spacing: 4) {
-            Button { open(file) } label: { Label("Open", systemImage: "doc.text.magnifyingglass") }
+            if isDownloading {
+                ProgressView().controlSize(.small).help("Downloading the boon's PDF from iCloud")
+            } else {
+                if hasNotArrived {
+                    Image(systemName: "icloud.slash").foregroundStyle(.secondary)
+                        .help("The PDF hasn't arrived from iCloud yet. Check that this device is online and signed "
+                            + "in to iCloud, then try again.")
+                }
+                Button { whenOnDevice { open(file) } } label: {
+                    Label("Open", systemImage: "doc.text.magnifyingglass")
+                }
                 .help("Open the boon's PDF")
-            ShareLink(item: file) { Label("Share", systemImage: "square.and.arrow.up") }
-                .help("Send the boon's PDF, for example to your GM")
-            Button { BoonPrinter.print(file) } label: { Label("Print", systemImage: "printer") }
-                .help("Print the boon")
+                ShareLink(item: file) { Label("Share", systemImage: "square.and.arrow.up") }
+                    .help("Send the boon's PDF, for example to your GM")
+                Button { whenOnDevice { BoonPrinter.print(file) } } label: { Label("Print", systemImage: "printer") }
+                    .help("Print the boon")
+            }
         }
         .labelStyle(.iconOnly)
         .buttonStyle(.borderless)
+    }
+
+    /// Runs the action once the PDF is on this device; tells the user when iCloud doesn't bring it in time.
+    private func whenOnDevice(_ action: @escaping @MainActor () -> Void) {
+        guard let library, !library.isOnDevice(file) else { return action() }
+        isDownloading = true
+        Task {
+            let hasArrived = await library.waitUntilOnDevice(file)
+            isDownloading = false
+            hasNotArrived = !hasArrived
+            if hasArrived { action() }
+        }
     }
 }
 
