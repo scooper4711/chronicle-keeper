@@ -143,8 +143,7 @@ struct AdventureCells {
     private var session: PlayedSession { progress.session }
 
     var date: some View {
-        Text(session.date.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? "—")
-            .monospacedDigit()
+        SessionDateCell(date: progress.date, eventName: session.eventName)
     }
 
     /// The level the credit landed at: "3", or "3*" when it was a held Chronicle (see `progressCell` for how far
@@ -152,12 +151,7 @@ struct AdventureCells {
     var level: some View {
         Text(progress.isOutOfLevelRange ? "\(progress.creditLevel)*" : "\(progress.creditLevel)")
             .monospacedDigit()
-            .help(progress.isOutOfLevelRange
-                ? "The character was level \(progress.levelWhenPlayed) when this was played, outside the "
-                    + "adventure's level range. The Guide to Organized Play holds a Chronicle like this until "
-                    + "the character reaches the pregen's level, so it's shown credited at \(progress.creditLevel), "
-                    + "the nearest level in range."
-                : "")
+            .help(progress.isOutOfLevelRange ? SessionExplanation.heldChronicle(progress) : "")
             .accessibilityLabel(progress.isOutOfLevelRange
                 ? "Credited at level \(progress.creditLevel): played at level \(progress.levelWhenPlayed), "
                     + "outside the adventure's level range"
@@ -177,14 +171,22 @@ struct AdventureCells {
         .accessibilityLabel("\(XPText.of(progress.creditProgress)) of \(XPText.of(perLevel)) XP into the level")
     }
 
+    /// The adventure's title, which opens the session's details (`SessionDetailView`), and its chronicle sheet.
     var title: some View {
         HStack(alignment: .top, spacing: 4) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(session.adventure.titleWithLevels).lineLimit(2)
-                if session.isGameMaster {
-                    Text("GM credit").font(.caption).foregroundStyle(.secondary)
+            NavigationLink(value: SessionRoute(sessionID: progress.id)) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(session.adventure.titleWithLevels)
+                        .lineLimit(2).multilineTextAlignment(.leading).foregroundStyle(.tint)
+                    if session.isGameMaster {
+                        Text("GM credit").font(.caption).foregroundStyle(.secondary)
+                    }
                 }
             }
+            .buttonStyle(.plain)
+            .help("Show everything about this session")
+            .accessibilityHint("Shows the session's details")
+            .accessibilityIdentifier("session-details")
             ChronicleButton(session: session, characterName: record.name, store: store)
         }
     }
@@ -203,15 +205,7 @@ struct AdventureCells {
                 Text("(\(XPText.of(progress.xpLost)) lost)").font(.caption2).foregroundStyle(.secondary)
             }
         }
-        .help(xpHelp)
-    }
-
-    private var xpHelp: String {
-        if progress.xpLost > 0 {
-            return "\(XPText.of(progress.xpLost)) XP didn't count: the character's level can't pass this "
-                + "adventure's own highest level (see the Guide to Organized Play's \"Applying Credit\")."
-        }
-        return progress.xpSource == .estimated ? "Estimated from the Achievement Points" : ""
+        .help(SessionExplanation.xp(progress))
     }
 
     var trackMenu: some View {

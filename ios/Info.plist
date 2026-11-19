@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Keys Xcode can't generate, merged into the Info.plist it writes (GENERATE_INFOPLIST_FILE). -->
+<plist version="1.0">
+<dict>
+    <!-- The iCloud container settings sync through; the app syncs only when this is present (SettingsSync). -->
+    <key>ChronicleKeeperContainer</key>
+    <string>$(ICLOUD_CONTAINER)</string>
+    <!-- Shows the container's Documents folder in iCloud Drive and the Files app, as "Chronicle Keeper", with the
+         Boons and Chronicles folders in it. iCloud Drive reads this again only when CFBundleVersion grows. Xcode
+         expands build settings in values but not in keys, so the container is named outright: with a container of
+         your own (Signing.xcconfig), name it here too to see the folder. -->
+    <key>NSUbiquitousContainers</key>
+    <dict>
+        <key>iCloud.io.github.scooper4711.ChronicleKeeper</key>
+        <dict>
+            <key>NSUbiquitousContainerIsDocumentScopePublic</key>
+            <true/>
+            <key>NSUbiquitousContainerName</key>
+            <string>Chronicle Keeper</string>
+            <key>NSUbiquitousContainerSupportedFolderLevels</key>
+            <string>Any</string>
+        </dict>
+    </dict>
+    <!-- CKSyncEngine's silent pushes, so settings from another device arrive while the app is in the background. -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>remote-notification</string>
+    </array>
+</dict>
+</plist>

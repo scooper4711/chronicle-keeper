@@ -22,7 +22,10 @@ reputation and Fame, and XP and level. It is free and open source, and it reads 
   link to the character sheet.
 - Faction reputation and Fame as Paizo reports them (not shown for Starfinder Society second edition, which has no
   factions).
-- "Who can play...?": pick an adventure and see which characters haven't played it and are in its level range.
+- Every session in full: tap an adventure for its details spelled out, with its cover and your chronicle sheet
+  attached below.
+- "Who can play...?": search every Organized Play adventure Paizo has published, by code or title, in
+  [Warhorn](https://warhorn.net)'s catalog, and see which characters haven't played it and are in its level range.
 - Boons: downloads the PDFs from the Boons tab for each character.
 - Your own data syncs between your devices through iCloud (in builds that turn it on).
 - A demo account with fictional characters, for trying the app without signing in.
@@ -44,7 +47,7 @@ You need Xcode 26 and [SwiftLint](https://github.com/realm/SwiftLint) (`brew ins
 make test       # swift test
 make lint       # swiftlint --strict
 make coverage   # fails below 80% of the lines or regions of ChronicleKeeperKit
-make run        # builds "build/Chronicle Keeper.app" (ad hoc signed) and opens it
+make run        # builds "build/Chronicle Keeper.app" (signed ad hoc without a Developer ID) and opens it
 make dmg        # packages the disk image
 make simulator  # the iPad app in a simulator
 make uitest     # the iPad UI tests, against the demo account
@@ -55,7 +58,7 @@ Launch with `-demo` to open the demo account: `open "build/Chronicle Keeper.app"
 ## Documentation
 
 [CONTRIBUTING.md](CONTRIBUTING.md) explains how to contribute. [PRIVACY.md](PRIVACY.md) says what the app does with
-your data (it keeps your password in the Keychain, your data on your device, and contacts only paizo.com). The
+your data (it keeps your password in the Keychain, your data on your device, and sends only the names of adventures anywhere but paizo.com). The
 requirements and design are in [docs/specs/chronicle-keeper/](docs/specs/chronicle-keeper/).
 
 ## Licenses

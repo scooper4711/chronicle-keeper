@@ -36,12 +36,29 @@ struct AdventureClassifierTests {
         #expect(AdventureClassifier.kind(of: quest) == .questSeries2)
     }
 
+    @Test func aNumberedQuestIsAQuestWhateverItsDescriptionCallsIt() {
+        let quest = adventure(
+            "Pathfinder Quest (Series 2) #26: Dragon's Plea",
+            "A Pathfinder Society Scenario designed for 1st- through 4th-level characters, playable in 2-3 hours.")
+        #expect(AdventureClassifier.kind(of: quest) == .questSeries2)
+        let scenario = adventure(
+            "#3-09: The Quest for Perfection—Part I", "A Pathfinder Society Scenario designed for Levels 1–5.")
+        #expect(AdventureClassifier.kind(of: scenario) == .scenario)
+    }
+
     @Test(arguments: [
         ("designed for 1st- through 4th-level characters", 1, 4),
         ("designed for 7th- through 10th-level characters", 7, 10),
         ("designed for levels 1–8 (subtiers 1-2, 3-6, 7-8)", 1, 8),
         ("designed for levels 3–6 (subtiers 3–4 and 5–6)", 3, 6),
-        ("A Pathfinder Bounty designed for 3rd-level characters", 3, 3)
+        ("A Pathfinder Bounty designed for 3rd-level characters", 3, 3),
+        ("A Pathfinder Society adventure for 5th-6th level characters, playable in 2-3 hours.", 5, 6),
+        ("designed for 5th to 9th level characters (Tiers: 5–6 and 8–9).", 5, 9),
+        ("A Pathfinder Society Scenario for characters of 3rd to 7th level (Tier 3–7).", 3, 7),
+        ("designed for 12th level characters (Tier: 12).", 12, 12),
+        ("A Pathfinder Society Scenario designed for Levels 7–11.", 7, 11),
+        ("A Pathfinder Society Scenario designed for level 1-2.", 1, 2),
+        ("A Pathfinder Society Scenario designed for level 5 pregenerated characters.", 5, 5)
     ])
     func levelRange(summary: String, lowest: Int, highest: Int) {
         let range = AdventureClassifier.levelRange(of: adventure("", summary))
@@ -66,6 +83,7 @@ struct AdventureClassifierTests {
     @Test(arguments: [
         ("PFS(2ed) #7-16: A Star's Journey", "7-16"),
         ("Starfinder Society Scenario #1-10: Rites", "1-10"),
+        ("Pathfinder Society Scenario #5–17: Fate of the Fiend", "5-17"),
         ("Pathfinder Quest (Series 2) #15: Name", "Quest 15"),
         ("Pathfinder Bounty #19: Grim Tidings", "Bounty 19")
     ])

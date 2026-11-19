@@ -35,8 +35,13 @@ public struct CharacterRoster: Sendable {
                 unmatched.append(session)
             }
         }
+        // From every session, as another character's session can be the one that dates an event.
+        let eventDates = EventDates(sessions: sessions)
         characters = summaries.map { summary in
-            Self.record(summary, byNumber[summary.number] ?? [], settings[summary.number] ?? CharacterSettings())
+            let calculator = ProgressCalculator(campaign: summary.campaign, eventDates: eventDates)
+            let settings = settings[summary.number] ?? CharacterSettings()
+            let progress = calculator.history(of: byNumber[summary.number] ?? [], settings: settings)
+            return Self.record(summary, progress, settings)
         }
         unmatchedSessions = unmatched
     }
@@ -70,10 +75,9 @@ public struct CharacterRoster: Sendable {
     }
 
     private static func record(
-        _ summary: CharacterSummary, _ sessions: [PlayedSession], _ settings: CharacterSettings
+        _ summary: CharacterSummary, _ progress: [SessionProgress], _ settings: CharacterSettings
     ) -> CharacterRecord {
         let calculator = ProgressCalculator(campaign: summary.campaign)
-        let progress = calculator.history(of: sessions, settings: settings)
         // Lost XP (the Guide's "Applying Credit" level cap) never counts toward the total.
         let xp = progress.reduce(0) { $0 + $1.xp - $1.xpLost }
         let level = calculator.level(forXP: xp, startingLevel: settings.startingLevel)

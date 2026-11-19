@@ -23,6 +23,7 @@ public struct ChronicleKeeperApp: App {
                 .task { await session.startSync(portraits: portraits) }
                 .task { await session.startBoons() }
                 .task { await session.startChronicles() }
+                .task { await session.startCovers(search: WarhornCatalog.forApp) }
             #if os(macOS)
                 .frame(minWidth: 860, minHeight: 520)
             #endif

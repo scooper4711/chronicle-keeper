@@ -54,6 +54,34 @@ final class DemoAccountUITests: XCTestCase {
     }
 
     @MainActor
+    func testAnAdventuresChronicleMenuNamesItsActions() {
+        app.staticTexts["Valeria Stonebrook"].firstMatch.tap()
+        scrollIntoView(app.buttons["session-details"].firstMatch)
+        let chronicle = app.buttons["Attach chronicle sheet"].firstMatch
+        XCTAssertTrue(chronicle.waitForExistence(timeout: 5), app.debugDescription)
+        scrollIntoView(chronicle)
+        chronicle.tap()
+        XCTAssertTrue(app.buttons["Attach PDF…"].waitForExistence(timeout: 5), app.debugDescription)
+        saveScreenshots("chronicle-menu")
+    }
+
+    @MainActor
+    func testAnAdventureOpensItsSessionWithTheChronicleSheet() {
+        app.staticTexts["Valeria Stonebrook"].firstMatch.tap()
+        let adventure = app.buttons["session-details"].firstMatch
+        XCTAssertTrue(adventure.waitForExistence(timeout: 5), app.debugDescription)
+        scrollIntoView(adventure)
+        adventure.tap()
+        XCTAssertTrue(app.staticTexts["Chronicle Sheet"].waitForExistence(timeout: 5), app.debugDescription)
+        saveScreenshots("session")
+        let sheet = app.buttons["chronicle-sheet-pages"]
+        XCTAssertTrue(sheet.waitForExistence(timeout: 10),
+                      "the demo chronicle sheet did not show: \(app.debugDescription)")
+        scrollIntoView(sheet)
+        saveScreenshots("session-sheet")
+    }
+
+    @MainActor
     func testTheAccountMenuOpensAbout() {
         app.buttons["Account"].firstMatch.tap()
         XCTAssertTrue(app.buttons["Leave the Demo"].waitForExistence(timeout: 5), app.debugDescription)
@@ -63,11 +91,29 @@ final class DemoAccountUITests: XCTestCase {
     }
 
     @MainActor
-    func testTheFinderListsTheAdventuresPlayed() {
+    func testTheFinderOffersAnAdventureNobodyHasPlayed() {
         app.buttons["Who Can Play…"].firstMatch.tap()
-        XCTAssertTrue(app.textFields.firstMatch.waitForExistence(timeout: 5), app.debugDescription)
-        XCTAssertGreaterThan(app.cells.count, 0, app.debugDescription)
+        let search = app.textFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5), app.debugDescription)
+        search.tap()
+        search.typeText("Clockmaker")
+        let adventure = app.staticTexts["#6-14: The Clockmaker's Debt"].firstMatch
+        XCTAssertTrue(adventure.waitForExistence(timeout: 5), app.debugDescription)
         saveScreenshots("finder")
+        adventure.tap()
+        XCTAssertTrue(app.buttons["Other Adventures"].waitForExistence(timeout: 5), app.debugDescription)
+        saveScreenshots("finder-candidates")
+    }
+
+    /// Scrolls until the element is well clear of the status bar at the foot of the window, which would take a tap
+    /// meant for something under it. On the iPhone the adventures start below the fold, and their rows are made
+    /// only as they scroll into view.
+    @MainActor
+    private func scrollIntoView(_ element: XCUIElement) {
+        let lowestMiddle = app.windows.firstMatch.frame.maxY * 0.7
+        for _ in 0..<6 where !element.exists || element.frame.midY > lowestMiddle {
+            app.swipeUp(velocity: .slow)
+        }
     }
 
     /// Writes the screen in portrait and in landscape to SCREENSHOT_DIR, when it is set.

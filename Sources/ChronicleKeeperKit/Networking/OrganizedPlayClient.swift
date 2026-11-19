@@ -6,6 +6,9 @@ public struct AccountSnapshot: Codable, Sendable {
     public let sessions: [PlayedSession]
     public let boons: [Boon]
     public let fetchedAt: Date
+    /// Where each adventure's cover is, by `AdventureEntry.id`. Not from paizo.com: `CoverFinder` looks them up
+    /// once the account is read, and a refresh carries them over.
+    public var covers: [String: URL] = [:]
 
     public init(characters: [CharacterSummary], sessions: [PlayedSession], boons: [Boon] = [], fetchedAt: Date) {
         self.characters = characters
@@ -14,9 +17,9 @@ public struct AccountSnapshot: Codable, Sendable {
         self.fetchedAt = fetchedAt
     }
 
-    private enum CodingKeys: String, CodingKey { case characters, sessions, boons, fetchedAt }
+    private enum CodingKeys: String, CodingKey { case characters, sessions, boons, fetchedAt, covers }
 
-    /// Reads a snapshot saved before the app read boons as having none.
+    /// Reads a snapshot saved before the app read boons or looked up covers as having none.
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         self.init(
@@ -24,6 +27,7 @@ public struct AccountSnapshot: Codable, Sendable {
             sessions: try values.decode([PlayedSession].self, forKey: .sessions),
             boons: try values.decodeIfPresent([Boon].self, forKey: .boons) ?? [],
             fetchedAt: try values.decode(Date.self, forKey: .fetchedAt))
+        covers = try values.decodeIfPresent([String: URL].self, forKey: .covers) ?? [:]
     }
 }
 

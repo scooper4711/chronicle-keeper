@@ -3,12 +3,31 @@ import PDFKit
 import QuickLook
 import SwiftUI
 
-/// A session's chronicle sheet: attach a PDF, photograph a paper one (iPhone and iPad), or open, share or remove
-/// the one it already has. Shown as a small button beside the adventure's title.
+/// A session's chronicle sheet as a small button beside the adventure's title in the adventures table.
 struct ChronicleButton: View {
     let session: PlayedSession
     let characterName: String
     let store: CharacterStore
+
+    var body: some View {
+        let isAttached = store.chronicleFiles[session.id] != nil
+        // No label style here: the menu's own label is a symbol already, and a style would reach the items too.
+        ChronicleMenu(session: session, characterName: characterName, store: store) { isAttached in
+            Image(systemName: isAttached ? "doc.text.fill" : "doc.badge.plus")
+        }
+        .menuStyle(.button).buttonStyle(.borderless)
+        .accessibilityLabel(isAttached ? "Chronicle sheet" : "Attach chronicle sheet")
+        .help(isAttached ? "This adventure's chronicle sheet" : "Attach this adventure's chronicle sheet")
+    }
+}
+
+/// A session's chronicle sheet: attach a PDF, photograph a paper one (iPhone and iPad), or open, share or remove
+/// the one it already has. The label is told whether a sheet is attached.
+struct ChronicleMenu<MenuLabel: View>: View {
+    let session: PlayedSession
+    let characterName: String
+    let store: CharacterStore
+    @ViewBuilder let label: (_ isAttached: Bool) -> MenuLabel
     @State private var choosesFile = false
     @State private var choosesPhoto = false
     @State private var preview: URL?
@@ -18,24 +37,22 @@ struct ChronicleButton: View {
     var body: some View {
         Menu {
             if let file {
-                Button("Open") { preview = file }
+                Button { preview = file } label: { Label("Open", systemImage: "doc.text.magnifyingglass") }
                 ShareLink(item: file) { Label("Share", systemImage: "square.and.arrow.up") }
-                Button("Remove", role: .destructive) {
+                Button(role: .destructive) {
                     store.removeChronicle(from: session.id, characterName: characterName)
-                }
+                } label: { Label("Remove", systemImage: "trash") }
             } else {
-                Button("Attach PDF…") { choosesFile = true }
+                Button { choosesFile = true } label: { Label("Attach PDF…", systemImage: "doc.badge.plus") }
                 #if os(iOS)
                 if CameraCapture.isAvailable {
-                    Button("Take Photo…") { choosesPhoto = true }
+                    Button { choosesPhoto = true } label: { Label("Take Photo…", systemImage: "camera") }
                 }
                 #endif
             }
         } label: {
-            Image(systemName: file == nil ? "paperclip" : "paperclip.badge.ellipsis")
+            label(file != nil)
         }
-        .menuStyle(.button).buttonStyle(.borderless).labelStyle(.iconOnly)
-        .help(file == nil ? "Attach this adventure's chronicle sheet" : "This adventure's chronicle sheet")
         .fileImporter(isPresented: $choosesFile, allowedContentTypes: [.pdf]) { result in
             if case .success(let url) = result { attach(contentsOf: url) }
         }

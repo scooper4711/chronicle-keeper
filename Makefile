@@ -1,4 +1,4 @@
-.PHONY: build test lint coverage app run install dmg icon simulator uitest clean
+.PHONY: build test lint coverage app run install dmg icon covers simulator uitest clean
 
 build:
 	swift build
@@ -29,6 +29,10 @@ dmg: app
 # Redraws Resources/AppIcon.icns from scripts/make-icon.swift.
 icon:
 	scripts/make-icon.sh
+
+# Rewrites the table of covers the app ships with, from Warhorn's catalog (see scripts/update-adventure-covers.sh).
+covers:
+	scripts/update-adventure-covers.sh
 
 # Builds the iPad app and starts it in a simulator (see scripts/run-simulator.sh).
 simulator:

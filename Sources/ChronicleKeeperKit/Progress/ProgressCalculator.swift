@@ -3,9 +3,12 @@ import Foundation
 /// Turns a character's sessions into XP and a level, inferring slow track where the site doesn't say.
 public struct ProgressCalculator: Sendable {
     public let rules: CampaignRules
+    /// Dates for the sessions paizo.com gave none, worked out from the whole account's sessions.
+    public let eventDates: EventDates
 
-    public init(campaign: Campaign) {
+    public init(campaign: Campaign, eventDates: EventDates = EventDates()) {
         rules = CampaignRules(campaign: campaign)
+        self.eventDates = eventDates
     }
 
     public func progress(of session: PlayedSession, settings: CharacterSettings) -> SessionProgress {
@@ -15,22 +18,34 @@ public struct ProgressCalculator: Sendable {
         let (normalXP, xpSource) = normalXP(of: session, kind: kind)
         let xp = override.xp ?? normalXP * track.rewardFactor
         return SessionProgress(
-            session: session, kind: kind, track: track, trackSource: trackSource,
-            xp: xp, xpSource: override.xp == nil ? xpSource : .override
+            session: session, date: eventDates.date(of: session), kind: kind, track: track,
+            trackSource: trackSource, xp: xp, xpSource: override.xp == nil ? xpSource : .override
         )
     }
 
     /// Every session, newest first, each with the level it was credited at and where that fell in the order
     /// credit was actually banked (see `CreditApplier`). Sessions without a date count as the oldest; sessions
-    /// on the same day keep the site's order (newest first).
+    /// on the same day keep the site's order (newest first), except that a date inferred from the event's last day
+    /// comes after the sessions really played that day, as the convention's Chronicles apply when it ends.
     public func history(of sessions: [PlayedSession], settings: CharacterSettings) -> [SessionProgress] {
         let oldestFirst = sessions.enumerated()
-            .sorted { ($0.element.date ?? .distantPast, -$0.offset) < ($1.element.date ?? .distantPast, -$1.offset) }
-            .map { progress(of: $0.element, settings: settings) }
+            .map { (offset: $0.offset, progress: progress(of: $0.element, settings: settings)) }
+            .sorted { Self.isEarlier($0, than: $1) }
+            .map(\.progress)
         let applier = CreditApplier(rules: rules, startingLevel: settings.startingLevel) { xp in
             self.level(forXP: xp, startingLevel: settings.startingLevel)
         }
         return applier.apply(to: oldestFirst).reversed()
+    }
+
+    /// `offset` is the session's place in the site's list, which is newest first.
+    private static func isEarlier(
+        _ first: (offset: Int, progress: SessionProgress), than second: (offset: Int, progress: SessionProgress)
+    ) -> Bool {
+        let (one, two) = (first.progress.date, second.progress.date)
+        if one.day != two.day { return (one.day ?? .distantPast) < (two.day ?? .distantPast) }
+        if one.isInferred != two.isInferred { return two.isInferred }
+        return first.offset > second.offset
     }
 
     /// The level a character reaches with this much XP, counting up from the level they began play at.
@@ -48,7 +63,7 @@ public struct ProgressCalculator: Sendable {
         of session: PlayedSession, kind: AdventureKind, override: SessionOverride, settings: CharacterSettings
     ) -> (Track, TrackSource) {
         if let chosen = override.track { return (chosen, .override) }
-        guard rules.allowsSlowTrack(on: session.date) else { return (.normal, .campaignRule) }
+        guard rules.allowsSlowTrack(on: eventDates.date(of: session).day) else { return (.normal, .campaignRule) }
         if let inferred = inferredTrack(of: session, kind: kind) { return (inferred, .inferred) }
         return (settings.defaultTrack, .characterDefault)
     }

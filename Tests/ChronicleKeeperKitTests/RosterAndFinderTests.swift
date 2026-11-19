@@ -98,4 +98,97 @@ struct RosterAndFinderTests {
             Issue.record("a repeatable adventure should not count as played")
         }
     }
+
+    // MARK: - Published adventures
+
+    private func published(
+        _ title: String, campaign: Campaign = .pathfinder2, isRepeatable: Bool = false
+    ) -> AdventureEntry {
+        var adventure = PublishedAdventure(campaign: campaign, title: title)
+        adventure.levelRange = LevelRange(lowest: 1, highest: 4)
+        adventure.isRepeatable = isRepeatable
+        return AdventureEntry(published: adventure)
+    }
+
+    @Test func aPublishedAdventureStandsForTheSessionsThatPlayedIt() {
+        let sessions = [
+            SessionFactory.session(title: "PFS(2ed) #6-04: An Enkindled Carnival - [Some Con]"),
+            SessionFactory.session(title: "Intro: Year of Immortal Influence", summary: ""),
+            SessionFactory.session(title: "A Homemade Adventure", summary: "")
+        ]
+        let found = [
+            published("#6-04: An Enkindled Carnival"), published("#6-01: Intro: Year of Immortal Influence"),
+            published("#8-01: Never Played")
+        ]
+        let merged = AdventureCatalog.merged(published: found, own: AdventureCatalog(sessions: sessions).entries)
+        #expect(merged.map(\.title) == [
+            "#6-01: Intro: Year of Immortal Influence", "#6-04: An Enkindled Carnival", "#8-01: Never Played",
+            "A Homemade Adventure"
+        ])
+        #expect(merged.count == Set(merged.map(\.id)).count)
+    }
+
+    @Test func listsCampaignsInTheSidebarsOrderAndTitlesByNumber() {
+        let merged = AdventureCatalog.merged(
+            published: [
+                published("#1-01: Starfinder", campaign: .starfinder2), published("#6-10: Ten"),
+                published("#6-04: Four"), published("#6-04: Four Again")
+            ],
+            own: [])
+        #expect(merged.map(\.title) == ["#6-04: Four", "#6-10: Ten", "#1-01: Starfinder"])
+    }
+
+    @Test func aRostersCatalogHoldsItsSessionsAdventures() throws {
+        let roster = try roster()
+        let catalog = AdventureCatalog(roster: roster)
+        #expect(catalog.search("6-04").count == 1)
+        #expect(catalog.search("1-0", campaign: .pathfinder1).isEmpty)
+        #expect(catalog.entries.allSatisfy { $0.coverArt == nil })
+    }
+
+    @Test func aPublishedAdventureIsPlayedByItsCodeOrItsName() throws {
+        let numbered = SessionFactory.session(title: "PFS(2ed) #6-04: An Enkindled Carnival")
+        let intro = SessionFactory.session(title: "Intro: Year of Immortal Influence")
+        #expect(published("#6-04: An Enkindled Carnival").matches(numbered))
+        #expect(!published("#6-05: Another").matches(numbered))
+        #expect(published("#6-01: Intro: Year of Immortal Influence").matches(intro))
+        #expect(!published("#5-01: Intro: Year of Boundless Wonder").matches(intro))
+        #expect(!published("#6-01: Intro: Year of Immortal Influence", campaign: .starfinder2).matches(intro))
+    }
+
+    @Test(arguments: [
+        ("Intro to the Year of Battle’s Spark—Enough is Enough",
+         "#7-01: Intro: Year of Battle's Spark—Enough is Enough"),
+        ("Intro #2: United in Purpose", "Intro #2: United in Purpose"),
+        ("Starfinder Free RPG Day: Battle for Nova Rush", "Adventure: Battle for Nova Rush"),
+        ("Pathfinder Society Scenario #3: Murder on the Silken Caravan", "#0-03: Murder on the Silken Caravan")
+    ])
+    func oneAdventureGoesByDifferentTitles(played: String, published: String) {
+        #expect(AdventureTitle.isSameName(played, published))
+    }
+
+    @Test(arguments: [
+        ("Intro: Year of Boundless Wonder", "#6-01: Intro: Year of Immortal Influence"),
+        ("The Great Abduction of Absalom", "#1-09: Abduction"),
+        ("Intro #1: The Second Confirmation", "Intro #2: United in Purpose"),
+        ("#6-04", "#6-05")
+    ])
+    func differentAdventuresStayApart(first: String, second: String) {
+        #expect(!AdventureTitle.isSameName(first, second))
+    }
+
+    @Test func aPublishedRepeatableAdventureNeverCountsAsPlayed() throws {
+        let roster = try roster()
+        let record = try #require(roster.characters.first { record in
+            record.sessions.contains { AdventureClassifier.code(of: $0.session.adventure) == "6-04" }
+        })
+        let once = published("#6-04: An Enkindled Carnival")
+        let again = published("#6-04: An Enkindled Carnival", isRepeatable: true)
+        if case .alreadyPlayed = AdventureFinder.eligibility(of: record, for: once) {} else {
+            Issue.record("a published adventure the character played should count as played")
+        }
+        if case .alreadyPlayed = AdventureFinder.eligibility(of: record, for: again) {
+            Issue.record("a repeatable adventure should not count as played")
+        }
+    }
 }

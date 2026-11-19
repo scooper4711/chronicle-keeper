@@ -49,6 +49,12 @@ adventures played, faction reputation, XP and level.
 - **R2.8** Each session shows the level the character was at walking in, when its credit lands (not the level it
   leaves them at), marked when that session was held (R2.6), and sorts by when its credit was actually banked
   (`applyOrder`), not necessarily by when it was played.
+- **R2.9** paizo.com leaves the date off some sessions reported at a convention. Such a session counts as played on
+  the last day of its event, as a convention's Chronicles apply when it ends: the latest date of the account's
+  sessions with the same event code, any character's, when those dates fall within a week of each other. It sorts
+  after the sessions really played that day, and the date is marked as worked out wherever it shows, with the
+  reason. An event code in use for longer than a week (a store's or lodge's regular games) dates nothing, nor does
+  an empty one, and such a session stays undated and counts as the oldest.
 
 ## 3. Using the record
 
@@ -58,6 +64,27 @@ adventures played, faction reputation, XP and level.
 - **R3.3** Each character has notes, a portrait and a character sheet link.
 - **R3.4** Boon PDFs can be opened, shared and printed.
 - **R3.5** A demo account with fictional data runs without a Paizo account or the network.
+- **R3.6** An adventure in a character's table opens that session's details, laid out like a message: the
+  adventure, the Game Master, the character and the date at its head; then everything the row abbreviates spelled
+  out (kind and levels, the level it was credited at, track, XP awarded and lost, progress into the level,
+  reputation, points, event, paizo.com's notes), each with its explanation where the table has only a mark; then
+  the session's chronicle sheet (R1.8), its pages shown in place, to open, share, remove or attach.
+
+- **R3.7** "Who can play...?" offers every adventure Paizo has published for the Pathfinder and Starfinder Society
+  campaigns the player has characters in (scenarios, specials, intros, quests, bounties, and the sanctioned
+  adventures and Adventure Paths), not only the adventures in their own sessions. It searches Warhorn's catalog
+  (warhorn.net) by code or title as the user types, so a new scenario shows as soon as Warhorn lists it, and can
+  be narrowed to one campaign. Warhorn's other games and the entries events make for themselves are left out.
+  Each adventure has its cover, its levels, and whether it is tagged Repeatable (R3.2). Before anything is
+  typed, offline, and when Warhorn can't be reached, the adventures in the player's own sessions are listed, and
+  the app says which it is showing. The demo searches a few made-up adventures of its own (R3.5).
+- **R3.8** A session's details show its adventure's cover. The covers of the numbered adventures in the player's
+  sessions are looked up in Warhorn's catalog once, by number, after the account is read, and saved with it, so
+  showing one asks nobody; a later refresh looks up only the adventures that are new or had no cover. An
+  adventure without a number (a standalone adventure, an Adventure Path volume, an intro) gets its cover from a
+  table the app ships with, and is never asked for. A catalog that can't be reached leaves the account as it is,
+  without a message. Warhorn is sent the text typed into "Who can play...?" and the numbers of the adventures in
+  the sessions, and nothing that says whose they are: no title, and never the event a session was played at.
 
 ## 4. Data
 

@@ -67,6 +67,11 @@ public final class AccountSession {
         liveStore.useChronicleLibrary(library)
     }
 
+    /// Starts looking up the covers of the adventures in the user's sessions, in the catalog given.
+    public func startCovers(search: any AdventureSearching) async {
+        await liveStore.useCoverFinder(CoverFinder(search: search))
+    }
+
     public var canRefresh: Bool { mode != .signedOut && !store.isRefreshing }
 
     /// Signs in with new credentials, then reads the account.
@@ -105,7 +110,9 @@ public final class AccountSession {
         Task {
             await demo.refresh()
             await demo.useBoonDownloads(downloads)
-            demo.useChronicleLibrary(ChronicleLibrary(folder: chronicleFolder))
+            let chronicles = ChronicleLibrary(folder: chronicleFolder)
+            demo.attempt { try DemoChronicles.addSheet(to: chronicles) }
+            demo.useChronicleLibrary(chronicles)
         }
     }
 

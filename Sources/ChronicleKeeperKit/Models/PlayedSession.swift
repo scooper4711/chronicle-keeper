@@ -40,6 +40,8 @@ public struct SessionPoints: Hashable, Codable, Sendable {
 
 /// One row of the Sessions tab: a session that applied to one of the player's characters.
 public struct PlayedSession: Hashable, Codable, Sendable, Identifiable {
+    /// As paizo.com gives it, which for some convention sessions is not at all: `EventDates` works out when such a
+    /// session counts as played, and `SessionProgress.date` carries it.
     public let date: Date?
     public let gameMaster: String
     public let adventure: AdventureReference

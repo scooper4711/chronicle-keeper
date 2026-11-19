@@ -1,10 +1,16 @@
 #!/bin/sh
-# Builds "build/Chronicle Keeper.app" from the Swift package, signed ad hoc.
+# Builds "build/Chronicle Keeper.app" from the Swift package, signed with the Developer ID in the keychain, or ad hoc
+# without one.
 #
 # VERSION       version written to the bundle (default: scripts/version.sh marketing)
 # BUILD_NUMBER  CFBundleVersion (default: scripts/version.sh build)
 # UNIVERSAL     set to 1 to build for both Apple silicon and Intel
 # SIGNING_IDENTITY  passed to scripts/sign-app.sh; "-" signs ad hoc
+# TEAM_ID       team the app is signed for (default: the team of the Developer ID certificate in the keychain; none
+#               when signing ad hoc)
+# PROVISIONING_PROFILE  Developer ID provisioning profile with iCloud; with a team, the app syncs the user's own data
+#               through iCloud (scripts/add-icloud-entitlements.sh, which ICLOUD_ENVIRONMENT also affects). Without
+#               one the app keeps its data on this Mac, as macOS stops an app that claims iCloud with no profile.
 set -eu
 
 cd "$(dirname "$0")/.."
@@ -74,5 +80,15 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-scripts/sign-app.sh "$APP" Resources/ChronicleKeeper.entitlements
+# The entitlements turn on the App Sandbox. iCloud is added only to a build signed by the team with a provisioning
+# profile that allows it: an ad hoc signature can't carry it, and the Info.plist names the container only then.
+[ "${SIGNING_IDENTITY:-}" = "-" ] && TEAM_ID="${TEAM_ID:-none}"
+TEAM_ID="${TEAM_ID:-$(security find-identity -v -p codesigning \
+    | sed -n 's/.*"Developer ID Application: .*(\([A-Z0-9]*\))"$/\1/p' | head -n 1)}"
+ENTITLEMENTS="build/ChronicleKeeper.entitlements"
+cp Resources/ChronicleKeeper.entitlements "$ENTITLEMENTS"
+if [ -n "$TEAM_ID" ] && [ "$TEAM_ID" != "none" ] && [ -n "${PROVISIONING_PROFILE:-}" ]; then
+    scripts/add-icloud-entitlements.sh "$APP" "$ENTITLEMENTS" "$TEAM_ID" "$PROVISIONING_PROFILE"
+fi
+scripts/sign-app.sh "$APP" "$ENTITLEMENTS"
 echo "Built $APP ($VERSION, build $BUILD_NUMBER)"

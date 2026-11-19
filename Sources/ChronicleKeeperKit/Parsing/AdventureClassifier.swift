@@ -3,30 +3,43 @@ import Foundation
 /// Works out what kind of adventure a session was and which levels it is for, from its title and the
 /// product description the session links to.
 public enum AdventureClassifier {
+    /// A title that numbers a quest outranks the description, which calls some quests scenarios.
     public static func kind(of adventure: AdventureReference) -> AdventureKind {
-        kindFromSummary(adventure) ?? kindFromTitle(adventure.title)
+        if adventure.title.firstMatch(of: questPattern) != nil { return questKind(adventure.title) }
+        return kindFromSummary(adventure) ?? kindFromTitle(adventure.title)
     }
 
-    /// The level range from a description such as "designed for 1st- through 4th-level characters" or
-    /// "designed for levels 1–4 (subtiers 1–2 and 3–4)".
+    /// The kind of an adventure a catalog names, which has no description to go by: its number says what it is.
+    /// Only a numbered quest counts as one, so that "The Ranger's Request" and "Quest for the Frozen Flame" don't.
+    public static func kind(ofPublished title: String) -> AdventureKind {
+        if title.firstMatch(of: questPattern) != nil { return questKind(title) }
+        if title.firstMatch(of: bountyPattern) != nil { return .bounty }
+        if title.firstMatch(of: seasonPattern) != nil || title.hasPrefix("Intro") { return .scenario }
+        return title.firstMatch(of: longAdventurePattern) == nil ? .other : .adventure
+    }
+
+    /// The level range from a description such as "designed for 1st- through 4th-level characters", "designed for
+    /// levels 1–4 (subtiers 1–2 and 3–4)", "for 5th-6th level characters" or "designed for 5th to 9th level
+    /// characters (Tiers: 5–6 and 8–9)": Paizo has worded it many ways over the years.
     public static func levelRange(of adventure: AdventureReference) -> LevelRange? {
         let text = adventure.summary.replacingOccurrences(of: "–", with: "-")
-        if let match = text.firstMatch(of: throughPattern) {
-            return LevelRange(lowest: Int(match.1) ?? 1, highest: Int(match.2) ?? 1)
+        for pattern in [ordinalRangePattern, levelsPattern] {
+            if let match = text.firstMatch(of: pattern) {
+                return LevelRange(lowest: Int(match.1) ?? 1, highest: Int(match.2) ?? 1)
+            }
         }
-        if let match = text.firstMatch(of: levelsPattern) {
-            return LevelRange(lowest: Int(match.1) ?? 1, highest: Int(match.2) ?? 1)
-        }
-        if let match = text.firstMatch(of: singleLevelPattern) {
-            let level = Int(match.1) ?? 1
-            return LevelRange(lowest: level, highest: level)
+        for pattern in [ordinalLevelPattern, singleLevelPattern] {
+            if let match = text.firstMatch(of: pattern) {
+                let level = Int(match.1) ?? 1
+                return LevelRange(lowest: level, highest: level)
+            }
         }
         return nil
     }
 
     /// A short code that identifies an adventure across title spellings: "6-04", "Quest 14", "Bounty 19".
     public static func code(of adventure: AdventureReference) -> String? {
-        let title = adventure.title
+        let title = adventure.title.replacingOccurrences(of: "–", with: "-")
         if let match = title.firstMatch(of: seasonPattern) { return "\(match.1)-\(match.2)" }
         if let match = title.firstMatch(of: questPattern) { return "Quest \(match.1)" }
         if let match = title.firstMatch(of: bountyPattern) { return "Bounty \(match.1)" }
@@ -67,10 +80,18 @@ public enum AdventureClassifier {
 
     nonisolated(unsafe) private static let summaryKindPattern =
         /^An? (?:Pathfinder|Starfinder)(?: Society)? (Scenario|Special|Quest|Bounty|Adventure)\b/
-    nonisolated(unsafe) private static let throughPattern = /(\d+)(?:st|nd|rd|th)-? through (\d+)(?:st|nd|rd|th)-level/
-    nonisolated(unsafe) private static let levelsPattern = /levels (\d+)\s*-\s*(\d+)/
-    nonisolated(unsafe) private static let singleLevelPattern = /designed for (\d+)(?:st|nd|rd|th)-level/
+    /// "1st- through 4th-level", "5th to 9th level", "5th-6th level".
+    nonisolated(unsafe) private static let ordinalRangePattern =
+        /(\d+)(?:st|nd|rd|th)-?(?: through | to )?(\d+)(?:st|nd|rd|th)[- ]level/
+    /// "levels 1-4", "Levels 7-11", "level 1-2".
+    nonisolated(unsafe) private static let levelsPattern = /[Ll]evels? (\d+)\s*-\s*(\d+)/
+    /// "for 3rd-level characters", "for 12th level characters".
+    nonisolated(unsafe) private static let ordinalLevelPattern = /for (\d+)(?:st|nd|rd|th)[- ]level/
+    /// "designed for level 1".
+    nonisolated(unsafe) private static let singleLevelPattern = /for level (\d+)/
     nonisolated(unsafe) private static let seasonPattern = /#(\d+)-(\d+)/
     nonisolated(unsafe) private static let questPattern = /Quest[^#]*#(\d+)/
     nonisolated(unsafe) private static let bountyPattern = /Bounty #(\d+)/
+    /// How Warhorn starts the name of a standalone adventure, an Adventure Path volume and a first edition module.
+    nonisolated(unsafe) private static let longAdventurePattern = /^(?:Adventure|AP|Mod)\b/
 }

@@ -8,8 +8,27 @@
 // If Xcode reports that the bundle identifier is taken, set your own there as well:
 //
 //     PRODUCT_BUNDLE_IDENTIFIER = com.example.ChronicleKeeper
+//
+// iCloud: a container belongs to one team, so with your own team name a container of your own there too:
+//
+//     ICLOUD_CONTAINER = iCloud.com.example.ChronicleKeeper
+//
+// (The folder in iCloud Drive is the one setting that can't follow it: see NSUbiquitousContainers in Info.plist.)
+//
+// A free personal team can't use iCloud or push notifications at all. Leave both files out there, and the app keeps
+// its data on the device:
+//
+//     APP_ENTITLEMENTS =
+//     APP_INFOPLIST =
 DEVELOPMENT_TEAM =
 PRODUCT_BUNDLE_IDENTIFIER = io.github.scooper4711.ChronicleKeeper
+
+// The iCloud container the user's own data syncs through, which ChronicleKeeper.entitlements and Info.plist name.
+ICLOUD_CONTAINER = iCloud.io.github.scooper4711.ChronicleKeeper
+// The app's entitlements (iCloud and push) and the Info.plist keys that turn syncing on; the app target's
+// CODE_SIGN_ENTITLEMENTS and INFOPLIST_FILE.
+APP_ENTITLEMENTS = ChronicleKeeper.entitlements
+APP_INFOPLIST = Info.plist
 
 // The version and build number come from git (scripts/version.sh): the ChronicleKeeper-iOS scheme's build
 // pre-action writes them to Version.xcconfig before every build, Product > Archive included. These are the

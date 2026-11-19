@@ -23,6 +23,9 @@ struct CharacterDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .navigationTitle(record.name)
+        .navigationDestination(for: SessionRoute.self) { route in
+            SessionDetailView(characterID: record.id, route: route, store: store)
+        }
         #if os(iOS)
         // The header already shows the name large.
         .navigationBarTitleDisplayMode(.inline)

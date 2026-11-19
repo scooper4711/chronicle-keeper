@@ -13,6 +13,9 @@ public enum XPSource: String, Hashable, Codable, Sendable {
 /// What a session contributed to a character: its kind, track and XP, with where each came from.
 public struct SessionProgress: Hashable, Sendable, Identifiable {
     public let session: PlayedSession
+    /// When the session counts as played: paizo.com's date, or the last day of its convention where paizo.com gave
+    /// none (see `EventDates`).
+    public let date: SessionDate
     public let kind: AdventureKind
     public let track: Track
     public let trackSource: TrackSource

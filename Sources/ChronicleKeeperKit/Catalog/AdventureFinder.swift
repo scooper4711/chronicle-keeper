@@ -3,7 +3,7 @@ import Foundation
 /// Whether a character can play an adventure, and if not, why.
 public enum Eligibility: Hashable, Sendable {
     case eligible
-    case alreadyPlayed(Date?)
+    case alreadyPlayed(SessionDate)
     case outsideLevels(level: Int, range: LevelRange)
 
     public var isEligible: Bool { self == .eligible }
@@ -26,7 +26,7 @@ public enum AdventureFinder {
 
     public static func eligibility(of character: CharacterRecord, for adventure: AdventureEntry) -> Eligibility {
         if !adventure.isRepeatable, let played = character.sessions.first(where: { adventure.matches($0.session) }) {
-            return .alreadyPlayed(played.session.date)
+            return .alreadyPlayed(played.date)
         }
         if let range = adventure.levelRange, !range.contains(character.level.level) {
             return .outsideLevels(level: character.level.level, range: range)

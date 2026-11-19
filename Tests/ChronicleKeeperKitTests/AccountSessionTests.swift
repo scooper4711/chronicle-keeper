@@ -127,3 +127,20 @@ struct CharacterStoreAttemptTests {
         #expect(store.errorMessage == "Saving the portrait failed: disk full")
     }
 }
+
+@MainActor
+struct DemoChroniclesTests {
+    @Test func theDemosNewestSessionGetsAChronicleSheet() async throws {
+        let store = CharacterStore(repository: InMemoryCharacterRepository()) { DemoAccount.snapshot() }
+        await store.refresh()
+        let folder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("demo-chronicle-tests-\(UUID().uuidString)")
+        let library = ChronicleLibrary(folder: folder)
+        try DemoChronicles.addSheet(to: library)
+        store.useChronicleLibrary(library)
+        let newest = try #require(store.roster.characters.first?.sessions.first)
+        let sheet = try #require(store.chronicleFiles[newest.id])
+        #expect(store.chronicleFiles.count == 1)
+        #expect(try Data(contentsOf: sheet).starts(with: Data("%PDF".utf8)))
+    }
+}

@@ -21,6 +21,10 @@ public final class CharacterStore {
     /// Where chronicle PDFs are kept; nil until the app has looked up iCloud.
     public private(set) var chronicleLibrary: ChronicleLibrary?
 
+    /// Looks covers up; nil for an account that has none to find, such as the demo.
+    private var coverFinder: CoverFinder?
+    private var isFindingCovers = false
+
     private let repository: CharacterRepository
     private let fetchAccount: @Sendable () async throws -> AccountSnapshot
     private var snapshot: AccountSnapshot?
@@ -48,13 +52,20 @@ public final class CharacterStore {
         locateChronicleFiles()
     }
 
-    /// Reads the account again. The saved data stays as it was when this fails.
+    /// Reads the account again, then looks up the covers of any adventures that are new. The saved data stays as
+    /// it was when reading fails.
     public func refresh() async {
+        await readAccount()
+        await findMissingCovers()
+    }
+
+    private func readAccount() async {
         guard !isRefreshing else { return }
         isRefreshing = true
         defer { isRefreshing = false }
         do {
-            let fresh = try await fetchAccount()
+            var fresh = try await fetchAccount()
+            fresh.covers = snapshot?.covers ?? [:]
             try repository.saveSnapshot(fresh)
             snapshot = fresh
             lastRefresh = fresh.fetchedAt
@@ -66,6 +77,50 @@ public final class CharacterStore {
             return
         }
         await downloadMissingBoons()
+    }
+
+    /// Starts looking covers up, beginning with the adventures of the account that is already saved.
+    public func useCoverFinder(_ finder: CoverFinder) async {
+        coverFinder = finder
+        await findMissingCovers()
+    }
+
+    /// Where the cover of a session's adventure is, once it has been looked up.
+    public func cover(of session: PlayedSession) -> URL? {
+        snapshot?.covers[session.adventureEntry.id]
+    }
+
+    /// The covers saved with the account, by adventure.
+    public var covers: [String: URL] { snapshot?.covers ?? [:] }
+
+    /// Looks up the cover of each adventure in the sessions that has none yet and saves them with the account, so
+    /// that showing one later asks nobody. An adventure the catalog doesn't have is asked for again next time.
+    public func findMissingCovers() async {
+        guard let finder = coverFinder, !isFindingCovers else { return }
+        isFindingCovers = true
+        defer { isFindingCovers = false }
+        var found = 0
+        do {
+            for adventure in adventuresWithoutCover().prefix(Self.coversPerPass) {
+                guard let cover = try await finder.cover(of: adventure) else { continue }
+                snapshot?.covers[adventure.id] = cover
+                found += 1
+            }
+        } catch {
+            // A cover is decoration: when the catalog can't be reached the rest wait for the next refresh, and
+            // the status bar keeps what it says about the account.
+        }
+        guard found > 0, let snapshot else { return }
+        attempt { try repository.saveSnapshot(snapshot) }
+    }
+
+    /// The adventures one pass asks for at most, so that a long history doesn't use up the requests the catalog
+    /// allows an address in a few minutes; the rest follow on later refreshes.
+    static let coversPerPass = 100
+
+    private func adventuresWithoutCover() -> [AdventureEntry] {
+        var known = Set(covers.keys)
+        return (snapshot?.sessions ?? []).map(\.adventureEntry).filter { known.insert($0.id).inserted }
     }
 
     /// Starts keeping chronicle PDFs, and finds the ones already in the library.

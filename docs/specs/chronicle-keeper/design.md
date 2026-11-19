@@ -33,18 +33,137 @@ paizo.com is an old WebObjects site.
   batch-flush and cap from R2.6-R2.8: sessions played below their adventure's own range are queued, in the order
   played, and applied as a batch once the character's level reaches it, each capped at that adventure's own
   highest level), `CharacterSettings` (the user's own data).
-- `Roster/`: `CharacterRoster`, `CharacterMatcher`. `Catalog/`: `AdventureCatalog`, `AdventureFinder`.
+- `Roster/`: `CharacterRoster`, `CharacterMatcher`, and `EventDates` (R2.9), which the roster builds from every
+  session and hands to each character's `ProgressCalculator`. The date a session counts as played on is
+  `SessionProgress.date`, a `SessionDate` that says whether it was inferred; `PlayedSession.date` stays what
+  paizo.com said, so nothing saved or synced passes a guess off as the site's.
+- `Catalog/`: `AdventureCatalog`, `AdventureFinder`, and the search of the published adventures:
+  `AdventureSearching`, `WarhornCatalog`, `WarhornScenario`, `CoverFinder`, `CoverTable` (see "Published adventures").
 - `Storage/`, `Store/`: `CharacterRepository` keeps site data apart from the user's data, keyed by character number
   and a stable session key, so a refresh keeps edits. `CharacterStore` is the `@Observable` model;
   `AccountSession` is signed out, signed in or demo. `Demo/` holds the fictional account.
 - `Sync/`: `SettingsMerge` (three-way, per field, overrides per session key), `SettingsSyncCore`, and the
   `CKSyncEngine` glue in `SettingsSync`. The container is `iCloud.io.github.scooper4711.ChronicleKeeper`.
-  Boon PDFs sync through iCloud Drive. Both stay off in a build that doesn't name the container (ad hoc builds).
+  Boon and chronicle PDFs sync through iCloud Documents in the same container (`BoonLibrary`, `ChronicleLibrary`).
+  Both stay off in a build without the entitlements; see "Turning iCloud on".
+
+## Turning iCloud on
+
+`CKContainer(identifier:)` stops the app when the entitlement is missing, and macOS stops an app at launch that
+claims iCloud without a provisioning profile allowing it. So `SettingsSync` starts only when the Info.plist has
+`ChronicleKeeperContainer`, and builds write that key only together with the entitlements. The PDFs need no key:
+`FileManager.url(forUbiquityContainerIdentifier: nil)` is nil without the entitlements, and the libraries then use
+the local folder.
+
+- iPhone and iPad: `ios/ChronicleKeeper.entitlements` (CloudKit and CloudDocuments, the container as both iCloud
+  and ubiquity container, `aps-environment`) and `ios/Info.plist`, which Xcode merges into the Info.plist it
+  generates, for `ChronicleKeeperContainer`, the `remote-notification` background mode and
+  `NSUbiquitousContainers`, which shows the PDFs in iCloud Drive and the Files app. Both name the container
+  as `$(ICLOUD_CONTAINER)`, and the app target takes the two files from `APP_ENTITLEMENTS` and `APP_INFOPLIST`, all
+  set in `ios/Signing.xcconfig`: a contributor's `Local.xcconfig` names their own team's container, or empties the
+  two files for a team without iCloud. `make simulator` builds unsigned, so it leaves `ios/Info.plist` out.
+- Mac: `Resources/ChronicleKeeper.entitlements` holds only the sandbox. `scripts/build-app.sh` calls
+  `scripts/add-icloud-entitlements.sh` when it signs for the team and has a Developer ID provisioning profile with
+  iCloud (`PROVISIONING_PROFILE`; the release workflow decodes it from the `DEVELOPER_ID_PROVISIONING_PROFILE`
+  secret). That runs tabletop-kit's script of the same name for the CloudKit and push entitlements
+  (`com.apple.developer.aps-environment` on the Mac), the two identifiers and the embedded profile, then adds
+  CloudDocuments, the ubiquity container, `ChronicleKeeperContainer` and `NSUbiquitousContainers`. Without a
+  profile, and in every ad hoc build, the app keeps its data on the Mac.
+
+CloudKit keeps a Development and a Production database per container, and they don't see each other. Builds
+installed from Xcode use Development; TestFlight and App Store builds use Production. The Mac build uses Production
+unless `ICLOUD_ENVIRONMENT=Development`, which is how to sync it with a device installed from Xcode. Before a
+release, deploy the schema to Production in the CloudKit Console.
+
+## Published adventures
+
+"Who can play...?" (R3.7) lists the adventures the player's sessions name (`AdventureCatalog`) and adds the
+published ones a search finds (`AdventureSearching`). `WarhornCatalog` is the search: it posts a GraphQL query to
+`https://warhorn.net/graphql`, which needs no sign-in, for `globalScenarios(query:first:after:)`, whose `query`
+matches any part of a scenario's name, a hundred to a page in the order of the names. The app keeps no copy.
+
+Warhorn answers with every game's scenarios and with the entries events made for themselves, so
+`WarhornScenario.adventure` keeps only those that are not `isCustom` and whose campaign code is PFS1, PFS2, SFS1
+or SFS2, and drops the stand-ins ("Scenario Pending", "Infinite Scenario"). The search has no campaign filter, so:
+
+- Text that starts with a number ("6-04", "7-1") is asked for under each campaign's code ("PFS2 6-04"), as
+  Warhorn names a scenario "PFS2 6-04: An Enkindled Carnival". That is one small page per campaign.
+- Other text is asked for as typed, from three characters on, and read for at most `longestSearch` pages; the
+  adventures behind a common word come after pages of other games' scenarios. When pages are left unread the
+  results say so (`isComplete`) and the finder asks for more of the title. Warhorn allows an address 300 requests
+  in five minutes, which bounds this; a refusal (HTTP 429) is reported as such.
+
+The finder waits 350 ms after the last keystroke, and a newer question cancels the search under way. A failure
+leaves the player's own adventures listed, with the reason (`AdventureSearchFailure`).
+
+`WarhornScenario.title` spells a name the way the Sessions tab does ("#6-04: An Enkindled Carnival", "Bounty #10:
+Hillcross Roundup"), so `AdventureClassifier.code` reads the same code from both. Levels come from `minLevel` and
+`maxLevel`, Repeatable from the campaign's tags, the cover from `coverArtUrl` (Paizo's own image servers), and
+the kind from the title (`AdventureClassifier.kind(ofPublished:)`).
+
+`AdventureEntry.isSameAdventure` decides both "already played" and which entries are one adventure: the same
+product, or the same code in the same campaign, or, when either has no code, the same name. Warhorn numbers some
+adventures the Sessions tab only names ("#7-01: Intro: Year of Battle's Spark" for "Intro to the Year of Battle's
+Spark"), so `AdventureTitle.isSameName` compares the words that name the adventure, and takes one name inside a
+longer one for the same when it is at least twelve letters long. `AdventureCatalog.merged` puts the published
+entry in place of the sessions' spellings of it.
+
+The demo's search is `DemoAdventureSearch`: a few made-up adventures, some of which its characters have played,
+without the network.
+
+### Covers of played adventures
+
+`AccountSnapshot.covers` holds the cover of each adventure in the sessions, by `AdventureEntry.id`, in
+`account.json` with the rest of what a refresh reads (R3.8). `CharacterStore.refresh` reads the account, carrying
+the covers over, and then `findMissingCovers` asks `CoverFinder` for each adventure that has none.
+
+A numbered adventure is one search of the catalog by its number (`CoverFinder.searchText`: "6-04", "Bounty 14",
+"Quest (Series 2) #14"), taking the cover of the result that `isSameAdventure`. Warhorn has a cover for every
+numbered adventure it lists, so only one newer than its catalog comes back without.
+
+An adventure without a number is never asked for: paizo.com and Warhorn name these too differently to search
+for one by the other ("Pathfinder Beginner Box: Menace Under Otari - Lower Dungeon" is Warhorn's "Menace Under
+Otari, Part 2: Lower Level (from PF2 Beginner Box)"), and a title can carry the event the session was played at
+("... - [PaizoCon 2024] PFS(2ed) ..."), which `AdventureTitle.withoutEvent` takes off before anything is compared
+or sent. Its cover comes from `CoverTable`, which the app ships as `Resources/adventure-covers.json`: the some 460
+adventures of the four campaigns that have no number on the Sessions tab (standalone adventures, Adventure Path
+volumes, modules, one-shots, and each season's intro, which only Warhorn numbers), under Warhorn's names.
+`CoverTable.cover(of:)` takes the entry whose name is most like the session's: the same name key, or else the
+most letters of the entry's parts (the stretches between its punctuation, twelve letters or more) that the
+session's name has, so that a volume of an Adventure Path gets its own cover and not the first volume's.
+`scripts/update-adventure-covers.sh` (`make covers`) rewrites the table from Warhorn's catalog; it is run when
+Paizo sanctions another such adventure, and for each season's intro. Warhorn's `globalScenarios` can't be listed
+by campaign and returns the entries events make for themselves too (over 15,000), so the script searches for
+each prefix Warhorn starts a name with instead, and the app doesn't list the catalog itself.
+
+The pass runs after the refresh has finished, so the refresh button doesn't wait for it: a first pass over some
+sixty adventures takes about a quarter of a minute, later ones a request or two. The covers are saved once at
+the end. A pass asks for at most `coversPerPass` adventures, to stay well inside the requests Warhorn allows;
+the rest follow on later refreshes. A numbered adventure the catalog doesn't list is asked for again on the next
+refresh; an error stops the pass quietly. `AccountSession.startCovers` gives the user's own store its finder at
+launch, which also covers an account saved by an earlier version. Covers are not synced: like the account, each device looks them
+up itself. `SessionHeader` and the finder's list of the player's own adventures read them from the store.
+
+Paizo has worded an adventure's levels many ways ("1st- through 4th-level", "levels 1–4", "5th to 9th level
+characters (Tiers: 5–6 and 8–9)", "for 5th-6th level characters"); `AdventureClassifier.levelRange` reads them all,
+for every session.
 
 ## Interface
 
 A `NavigationSplitView`: campaigns, then characters (portrait, level, XP bar), then a detail view (header,
-reputation grid, adventures table with a track override menu, boons, settings). "Who Can Play..." is a sheet.
+reputation grid, adventures table with a track override menu, boons, settings). "Who Can Play..." is a sheet: a
+search field, a campaign picker when the roster has more than one, a line saying what the list holds when that
+isn't every match, and the adventures with their covers (`CoverArt`, an `AsyncImage`). A session's details show the cover beside the
+title once it is known.
+
+The detail column is a `NavigationStack`: an adventure's title in the table pushes `SessionDetailView` (R3.6),
+which looks its session up in the store by ID on every update, so a changed track or a refresh shows there too. It
+reads like a message: `SessionHeader` (the adventure as the subject, the Game Master as the sender, the date),
+`SessionFacts` (each value the row abbreviates, with the sentence that explains it, from `SessionFactText` and
+`SessionExplanation`, which the table's help tags share) and `ChronicleSheetSection`. That draws the sheet's first
+pages full width (`ChroniclePageImages`, PDFKit thumbnails made off the main actor) and opens Quick Look on a tap;
+its menu is the table's `ChronicleMenu` with a different label. The demo account attaches a made-up sheet to its
+newest session (`DemoChronicles`), so the demo and the UI tests show one.
 
 ## Artwork
 

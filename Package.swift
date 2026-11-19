@@ -16,7 +16,8 @@ let package = Package(
     targets: [
         .target(
             name: "ChronicleKeeperKit",
-            dependencies: [.product(name: "SwiftSoup", package: "SwiftSoup")]
+            dependencies: [.product(name: "SwiftSoup", package: "SwiftSoup")],
+            resources: [.copy("Resources/adventure-covers.json")]
         ),
         .target(
             name: "ChronicleKeeperUI",

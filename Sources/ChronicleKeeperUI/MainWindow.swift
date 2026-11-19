@@ -38,7 +38,7 @@ struct CharacterBrowser: View {
         .toolbar { toolbar }
         #endif
         .sheet(isPresented: $showsFinder) {
-            AdventureFinderView(roster: store.roster) { selection = $0 }
+            AdventureFinderView(store: store, search: session.adventureSearch) { selection = $0 }
         }
         .focusedSceneValue(\.showsFinder, $showsFinder)
         .safeAreaInset(edge: .bottom) { StatusBar(store: store, isDemo: session.isDemo) }
@@ -47,7 +47,12 @@ struct CharacterBrowser: View {
 
     @ViewBuilder private var detail: some View {
         if let record = store.roster.characters.first(where: { $0.id == selection }) {
-            CharacterDetailView(record: record, store: store)
+            // A stack, so an adventure opens its session's details over the character; another character starts
+            // again at its own overview.
+            NavigationStack {
+                CharacterDetailView(record: record, store: store)
+            }
+            .id(record.id)
         } else {
             ContentUnavailableView(
                 "No Character Selected", systemImage: "person.crop.rectangle.stack",

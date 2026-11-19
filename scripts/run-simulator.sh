@@ -13,9 +13,11 @@ KIND="${1:-iPad}"
 DEVICE="$(scripts/simulator-id.sh "$KIND")"
 [ -n "$DEVICE" ] || { echo "Starting the simulator failed: no $KIND simulator is installed." >&2; exit 1; }
 
+# Unsigned, the app has no iCloud entitlement, so it leaves out ios/Info.plist, whose ChronicleKeeperContainer would
+# start syncing and make CloudKit stop the app.
 xcodebuild -project ios/ChronicleKeeper.xcodeproj -scheme ChronicleKeeper-iOS \
     -destination "platform=iOS Simulator,id=$DEVICE" -derivedDataPath ios/build \
-    CODE_SIGNING_ALLOWED=NO build | tail -n 3
+    CODE_SIGNING_ALLOWED=NO INFOPLIST_FILE= build | tail -n 3
 
 APP="ios/build/Build/Products/Debug-iphonesimulator/Chronicle Keeper.app"
 xcrun simctl boot "$DEVICE" 2>/dev/null || true

@@ -1,0 +1,37 @@
+import Foundation
+
+/// Finds the cover of an adventure a session played: in the table the app ships with for an adventure that has no
+/// number, and in the catalog "Who can play…?" searches for one that has.
+public struct CoverFinder: Sendable {
+    private let search: any AdventureSearching
+    private let table: CoverTable
+
+    public init(search: any AdventureSearching, table: CoverTable = .bundled) {
+        self.search = search
+        self.table = table
+    }
+
+    /// The cover, or nothing when neither the table nor the catalog lists the adventure with one. Only a numbered
+    /// adventure is asked for, by its number.
+    public func cover(of adventure: AdventureEntry) async throws -> URL? {
+        let number = Self.searchText(for: adventure)
+        guard !number.isEmpty else { return table.cover(of: adventure) }
+        let found = try await search.adventures(matching: number, in: [adventure.campaign])
+        return found.adventures.first(where: adventure.isSameAdventure)?.coverArt
+    }
+
+    /// The number that finds the adventure in the catalog ("6-04", "Bounty 14", "Quest (Series 2) #14"), or
+    /// nothing for an adventure without one. The event a session was played at is no part of it.
+    static func searchText(for adventure: AdventureEntry) -> String {
+        if adventure.code.firstMatch(of: seasonCodePattern) != nil || adventure.code.hasPrefix("Bounty") {
+            return adventure.code
+        }
+        let quest = AdventureTitle.withoutEvent(adventure.title).firstMatch(of: questPattern)
+        return quest.map { String($0.0) } ?? ""
+    }
+
+    // Regex is not Sendable, but these literals are never mutated, so sharing them is safe.
+
+    nonisolated(unsafe) private static let seasonCodePattern = /^\d+-\d+$/
+    nonisolated(unsafe) private static let questPattern = /Quest[^#]*#\d+/
+}

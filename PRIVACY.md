@@ -1,9 +1,11 @@
 # Chronicle Keeper Privacy Policy
 
-Effective November 18, 2026. This policy covers Chronicle Keeper for Mac, iPad and iPhone.
+Effective November 19, 2026. This policy covers Chronicle Keeper for Mac, iPad and iPhone.
 
 **Chronicle Keeper collects no data.** It has no account of its own, no analytics, no advertising, no tracking and
-no third-party code that reports anything. Nothing you do in the app is sent to the developer.
+no third-party code that reports anything. The only things it sends anywhere but paizo.com are the names of
+adventures: what you type into "Who can play...?" and the adventures in your sessions, which go to Warhorn to be
+looked up (see "Network").
 
 ## Your Paizo account
 
@@ -31,8 +33,18 @@ synced: each device reads paizo.com itself.
 
 ## Network
 
-Chronicle Keeper contacts paizo.com (and the Paizo store, for adventure details) to sign in and read your account.
-It contacts no one else. Links you click open in your browser, under the browser's and that website's own policies.
+Chronicle Keeper contacts paizo.com to sign in and read your account.
+
+Chronicle Keeper looks adventures up in the catalog of published adventures at [Warhorn](https://warhorn.net), a
+website for organizing games that the developer of Chronicle Keeper also runs. Two things are sent to Warhorn: the
+text you type into "Who can play...?", and, after your account is read, the number of each numbered adventure in your
+sessions (such as "6-04"), to find its cover. The covers of adventures without a number come with the app. Each
+request carries the app's name and project page and, as any request does, your internet address. Nothing else from
+your Paizo account goes with it: no email address, player number, character, date or event. The covers are loaded from
+Paizo's image servers, which see your internet address. The demo account does none of this.
+
+The app contacts no one else. Links you click open in your browser, under the browser's and that website's own
+policies.
 
 ## Crash reports
 

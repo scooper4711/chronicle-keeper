@@ -24,7 +24,8 @@ make test
 ```
 
 Launch with `-demo` (`open "build/Chronicle Keeper.app" --args -demo`) to try the app with a made-up account, without a
-Paizo sign-in. `make simulator` runs the iPad app and `make uitest` its interface tests.
+Paizo sign-in. `make simulator` runs the iPad app and `make uitest` its interface tests. To run on a device, put
+your developer team in `ios/Local.xcconfig`; `ios/Signing.xcconfig` says how, and what to set for iCloud.
 Never commit credentials, cookies, page captures or anything from a real account, in code, tests or screenshots:
 real captures stay in the gitignored `tmp/`, and the fixtures are sanitized by hand.
 

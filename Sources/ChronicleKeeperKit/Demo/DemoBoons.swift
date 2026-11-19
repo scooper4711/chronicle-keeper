@@ -36,12 +36,17 @@ public enum DemoBoons {
 
     /// A letter-sized page with the boon's name and description, and a note that it is a demo.
     static func pdf(title: String, text: String) -> Data {
+        page("\(title)\n\n\(text)\n\nDemo boon: not a real Organized Play document.")
+    }
+
+    /// A letter-sized PDF page of text.
+    static func page(_ text: String) -> Data {
         let data = NSMutableData()
         var page = CGRect(x: 0, y: 0, width: 612, height: 792)
         guard let consumer = CGDataConsumer(data: data),
               let context = CGContext(consumer: consumer, mediaBox: &page, nil) else { return Data() }
         context.beginPDFPage(nil)
-        draw("\(title)\n\n\(text)\n\nDemo boon: not a real Organized Play document.", in: context, page: page)
+        draw(text, in: context, page: page)
         context.endPDFPage()
         context.closePDF()
         return data as Data
