@@ -44,6 +44,11 @@ else from your Paizo account goes with it: no email address, player number, char
 loaded from Paizo's image servers, which see your internet address, or from Warhorn's; a cover kept anywhere else is
 left out. The demo account does none of this.
 
+If you choose to use a portrait from a Demiplane character sheet, the app reads that sheet's public page at
+[Demiplane](https://www.demiplane.com) and downloads its portrait. Those requests carry the sheet's address, the app's
+name and project page and, as any request does, your internet address. No Demiplane sign-in is used, and nothing from
+your Paizo account is sent.
+
 The app contacts no one else. Links you click open in your browser, under the browser's and that website's own
 policies.
 
