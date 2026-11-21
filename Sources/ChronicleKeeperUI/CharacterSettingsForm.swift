@@ -37,11 +37,25 @@ struct CharacterSettingsForm: View {
                 Button("Use Portrait from Demiplane") { usePortrait(from: sheet) }
                     .disabled(isReadingPortrait)
             }
-            TextField("Notes", text: binding(\.notes), axis: .vertical)
-                .lineLimit(3...8)
+            notesEditor
         }
         .textFieldStyle(.roundedBorder)
         .frame(maxWidth: 520, alignment: .leading)
+    }
+
+    /// Several lines on every platform, where a growing text field opens at the height of one on the Mac.
+    private var notesEditor: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Notes").font(.subheadline).foregroundStyle(.secondary)
+            TextEditor(text: binding(\.notes))
+                .font(.body)
+                .scrollContentBackground(.hidden)
+                .padding(6)
+                .frame(height: 140)
+                .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 8))
+                .overlay { RoundedRectangle(cornerRadius: 8).strokeBorder(.separator) }
+                .accessibilityLabel("Notes")
+        }
     }
 
     private func usePortrait(from sheet: URL) {

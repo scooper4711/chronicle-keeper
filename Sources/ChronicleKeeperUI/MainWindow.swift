@@ -23,6 +23,20 @@ struct CharacterBrowser: View {
     @State private var showsFinder = false
 
     var body: some View {
+        // A stack, not a safe area inset: a split view's columns don't all make room for an inset, which hid the
+        // bottom of a character's page behind the bar.
+        VStack(spacing: 0) {
+            splitView
+            StatusBar(store: store, isDemo: session.isDemo)
+        }
+        .sheet(isPresented: $showsFinder) {
+            AdventureFinderView(store: store, search: session.adventureSearch) { selection = $0 }
+        }
+        .focusedSceneValue(\.showsFinder, $showsFinder)
+        .task { await refreshIfNeverRead() }
+    }
+
+    private var splitView: some View {
         NavigationSplitView {
             CharacterSidebar(roster: store.roster, selection: $selection)
                 .navigationSplitViewColumnWidth(min: 240, ideal: 280)
@@ -37,12 +51,6 @@ struct CharacterBrowser: View {
         #if os(macOS)
         .toolbar { toolbar }
         #endif
-        .sheet(isPresented: $showsFinder) {
-            AdventureFinderView(store: store, search: session.adventureSearch) { selection = $0 }
-        }
-        .focusedSceneValue(\.showsFinder, $showsFinder)
-        .safeAreaInset(edge: .bottom) { StatusBar(store: store, isDemo: session.isDemo) }
-        .task { await refreshIfNeverRead() }
     }
 
     @ViewBuilder private var detail: some View {

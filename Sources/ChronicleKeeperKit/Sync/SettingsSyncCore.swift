@@ -16,6 +16,13 @@ public struct SyncLedger: Codable, Sendable {
     public init() {}
 }
 
+/// iCloud refused to keep a character's settings, for a reason that trying again won't fix.
+public struct SettingsSyncError: Error, Equatable, LocalizedError {
+    public let failure: String
+
+    public var errorDescription: String? { "Syncing with iCloud failed: \(failure)" }
+}
+
 /// Syncing's decisions, without CloudKit's engine, so tests reach them: how a record from the server is merged in,
 /// what a save leaves behind, and which record goes up.
 public struct SettingsSyncCore: Sendable {
@@ -54,6 +61,24 @@ public struct SettingsSyncCore: Sendable {
             ?? CKRecord(recordType: SettingsRecord.recordType, recordID: SettingsRecord.recordID(for: number))
         try SettingsRecord.fill(record, with: settings, portraitFile: portraitFile)
         return record
+    }
+
+    /// The characters whose settings the server hasn't taken, such as edits a rejected save left behind. Settings
+    /// that were never changed have nothing to send.
+    public func unsynced(in settings: [String: CharacterSettings]) -> [String] {
+        settings.compactMap { number, value in
+            let agreed = ledger.entries[number]?.ancestor ?? CharacterSettings()
+            return value == agreed ? nil : number
+        }
+    }
+
+    /// Whether the engine will send a failed save again by itself.
+    public static func isTemporary(_ code: CKError.Code) -> Bool {
+        let temporary: Set<CKError.Code> = [
+            .networkFailure, .networkUnavailable, .serviceUnavailable, .requestRateLimited, .zoneBusy,
+            .accountTemporarilyUnavailable, .notAuthenticated, .batchRequestFailed, .operationCancelled
+        ]
+        return temporary.contains(code)
     }
 
     /// The server doesn't hold the record (any more): the next save makes a new one.
