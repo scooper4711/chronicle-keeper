@@ -1,4 +1,4 @@
-.PHONY: build test lint coverage app run install dmg appstore icon covers simulator uitest archive clean
+.PHONY: build test lint coverage app run install dmg appstore icon artwork covers simulator uitest archive clean
 
 build:
 	swift build
@@ -34,6 +34,11 @@ appstore:
 # Redraws Resources/AppIcon.icns from scripts/make-icon.swift.
 icon:
 	scripts/make-icon.sh
+
+# Writes the Rexard art into the package's resources, from the private Artwork submodule or the full packs
+# (see scripts/add-artwork.sh). The app and archive builds do this themselves.
+artwork:
+	scripts/add-artwork.sh
 
 # Rewrites the table of covers the app ships with, from Warhorn's catalog (see scripts/update-adventure-covers.sh).
 covers:

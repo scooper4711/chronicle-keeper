@@ -205,5 +205,11 @@ made-up sheet to its newest session (`DemoChronicles`), so the demo and the UI t
 
 ## Artwork
 
-Rexard art may be used inside the app only through the private `toolkit-artwork` submodule, never committed here;
-builds without it fall back to SF Symbols. The icon is drawn in code.
+Rexard art may be used inside the app only through the private `toolkit-artwork` submodule (`Artwork/`), never
+committed here; builds without it fall back to SF Symbols. The icon is drawn in code.
+
+`scripts/add-artwork.sh` writes the art, today the rosette beside Fame, into `ChronicleKeeperUI`'s resources as a
+gitignored file, from `Artwork/rexard` or the full packs beside the checkout. The app and archive builds run it
+first. With `REXARD_PACKS` named the art is required, which is how the release workflow builds: it fetches the
+submodule with the `ARTWORK_SSH_KEY` secret, a read-only deploy key, and fails without the art. CI fetches it when
+the secret is there, so pull requests from forks build with the symbol.

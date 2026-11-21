@@ -2,7 +2,8 @@ name: Release
 
 # Builds the app and attaches a disk image to the GitHub release for a version tag, creating a draft release if
 # none exists yet. Run by hand, it builds the branch and keeps the disk image as a workflow artifact instead, to
-# try the build without releasing.
+# try the build without releasing. The app's Rexard art comes from the private Artwork submodule, which the
+# ARTWORK_SSH_KEY secret (a read-only deploy key) reads; without it the build fails.
 on:
   push:
     tags: ['v*']
@@ -25,6 +26,15 @@ jobs:
         with:
           # scripts/version.sh counts every commit for the build number.
           fetch-depth: 0
+
+      - name: Fetch artwork
+        env:
+          ARTWORK_SSH_KEY: ${{ secrets.ARTWORK_SSH_KEY }}
+        run: |
+          printf '%s\n' "$ARTWORK_SSH_KEY" > "$RUNNER_TEMP/artwork_key"
+          chmod 600 "$RUNNER_TEMP/artwork_key"
+          GIT_SSH_COMMAND="ssh -i $RUNNER_TEMP/artwork_key -o IdentitiesOnly=yes" \
+            git submodule update --init --depth 1 Artwork
 
       - name: Derive the version from the tag
         if: env.RELEASING == 'true'
@@ -51,7 +61,8 @@ jobs:
           fi
 
       - name: Build the universal app
-        run: UNIVERSAL=1 scripts/build-app.sh
+        # Naming the packs makes the art required: a release must not fall back to the symbol.
+        run: UNIVERSAL=1 REXARD_PACKS=Artwork/rexard scripts/build-app.sh
 
       - name: Make the disk image
         run: scripts/make-dmg.sh

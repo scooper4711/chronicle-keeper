@@ -6,6 +6,7 @@
 #
 # VERSION       version of the archive (default: scripts/version.sh marketing)
 # BUILD_NUMBER  build number, which must grow with every upload (default: scripts/version.sh build)
+# REXARD_PACKS  folder of Rexard packs the app's art must come from (scripts/add-artwork.sh)
 set -eu
 
 cd "$(dirname "$0")/.."
@@ -14,6 +15,7 @@ VERSION="${VERSION:-$(scripts/version.sh marketing)}"
 BUILD_NUMBER="${BUILD_NUMBER:-$(scripts/version.sh build)}"
 ARCHIVE="build/ChronicleKeeper.xcarchive"
 
+scripts/add-artwork.sh
 rm -rf "$ARCHIVE"
 # The two settings on the command line win over ios/Version.xcconfig, which the scheme writes from git.
 xcodebuild -project ios/ChronicleKeeper.xcodeproj -scheme ChronicleKeeper-iOS -configuration Release \
