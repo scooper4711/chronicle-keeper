@@ -11,6 +11,10 @@
 # PROVISIONING_PROFILE  Developer ID provisioning profile with iCloud; with a team, the app syncs the user's own data
 #               through iCloud (scripts/add-icloud-entitlements.sh, which ICLOUD_ENVIRONMENT also affects). Without
 #               one the app keeps its data on this Mac, as macOS stops an app that claims iCloud with no profile.
+# CHANNEL       "appstore" also builds the Mac App Store package, build/appstore/Chronicle Keeper.pkg, from the same
+#               sources, compiled with -DAPP_STORE; PROVISIONING_PROFILE is then the Mac App Store profile (with
+#               iCloud), and the variables of tabletop-kit's scripts/package-appstore.sh are needed (PACKAGER names
+#               another copy; TRIAL=1 checks the package without them).
 set -eu
 
 cd "$(dirname "$0")/.."
@@ -20,12 +24,17 @@ BUILD_NUMBER="${BUILD_NUMBER:-$(scripts/version.sh build)}"
 APP="build/Chronicle Keeper.app"
 EXECUTABLE="ChronicleKeeper"
 
+SWIFT_FLAGS=""
+[ "${CHANNEL:-}" = "appstore" ] && SWIFT_FLAGS="-Xswiftc -DAPP_STORE"
+
 if [ "${UNIVERSAL:-0}" = "1" ]; then
-    swift build -c release --arch arm64 --arch x86_64
+    # shellcheck disable=SC2086 # SWIFT_FLAGS is a list of words
+    swift build -c release $SWIFT_FLAGS --arch arm64 --arch x86_64
     # Asked rather than assumed: newer SwiftPM moved universal builds out of .build/apple.
     BINARY="$(swift build -c release --arch arm64 --arch x86_64 --show-bin-path)/$EXECUTABLE"
 else
-    swift build -c release
+    # shellcheck disable=SC2086
+    swift build -c release $SWIFT_FLAGS
     BINARY="$(swift build -c release --show-bin-path)/$EXECUTABLE"
 fi
 
@@ -92,3 +101,11 @@ if [ -n "$TEAM_ID" ] && [ "$TEAM_ID" != "none" ] && [ -n "${PROVISIONING_PROFILE
 fi
 scripts/sign-app.sh "$APP" "$ENTITLEMENTS"
 echo "Built $APP ($VERSION, build $BUILD_NUMBER)"
+
+if [ "${CHANNEL:-}" = "appstore" ]; then
+    # The packager reads both from the environment; here they may have come from git and the keychain.
+    export BUILD_NUMBER TEAM_ID
+    # Found beside the package after "swift package resolve", so the script follows the dependency pin.
+    "${PACKAGER:-.build/checkouts/tabletop-kit/scripts/package-appstore.sh}" "$APP" "$ENTITLEMENTS" \
+        io.github.scooper4711.ChronicleKeeper
+fi

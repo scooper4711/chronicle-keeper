@@ -49,8 +49,10 @@ make lint       # swiftlint --strict
 make coverage   # fails below 80% of the lines or regions of ChronicleKeeperKit
 make run        # builds "build/Chronicle Keeper.app" (signed ad hoc without a Developer ID) and opens it
 make dmg        # packages the disk image
+make appstore   # packages the Mac App Store build (TRIAL=1 checks it without the certificates)
 make simulator  # the iPad app in a simulator
 make uitest     # the iPad UI tests, against the demo account
+make archive    # archives the iPhone and iPad app for the App Store
 ```
 
 Launch with `-demo` to open the demo account: `open "build/Chronicle Keeper.app" --args -demo`.

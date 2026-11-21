@@ -1,4 +1,4 @@
-.PHONY: build test lint coverage app run install dmg icon covers simulator uitest clean
+.PHONY: build test lint coverage app run install dmg appstore icon covers simulator uitest archive clean
 
 build:
 	swift build
@@ -26,6 +26,11 @@ install: app
 dmg: app
 	scripts/make-dmg.sh
 
+# Builds the Mac App Store package, build/appstore/Chronicle Keeper.pkg (see scripts/build-app.sh for the variables).
+appstore:
+	swift package resolve
+	CHANNEL=appstore scripts/build-app.sh
+
 # Redraws Resources/AppIcon.icns from scripts/make-icon.swift.
 icon:
 	scripts/make-icon.sh
@@ -41,6 +46,10 @@ simulator:
 # Runs the iPad UI tests in a simulator, against the demo account.
 uitest:
 	scripts/run-uitests.sh
+
+# Archives the iPhone and iPad app for the App Store into build/ChronicleKeeper.xcarchive, versioned from git.
+archive:
+	scripts/archive-ios.sh
 
 clean:
 	rm -rf .build build ios/build

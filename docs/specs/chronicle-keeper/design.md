@@ -75,6 +75,22 @@ installed from Xcode use Development; TestFlight and App Store builds use Produc
 unless `ICLOUD_ENVIRONMENT=Development`, which is how to sync it with a device installed from Xcode. Before a
 release, deploy the schema to Production in the CloudKit Console.
 
+## App Store builds
+
+TestFlight and the App Store get two builds under one bundle ID, uploaded from `main`:
+
+- Mac: `make appstore` (`CHANNEL=appstore scripts/build-app.sh`) compiles the same sources with `-DAPP_STORE`, then
+  hands the app to tabletop-kit's `scripts/package-appstore.sh` (its `appstore-build` spec), which compiles the icon,
+  signs with the Apple Distribution identity and writes `build/appstore/Chronicle Keeper.pkg`.
+  `PROVISIONING_PROFILE` is then the Mac App Store profile, which carries iCloud as the Developer ID one does.
+  `TRIAL=1` checks the package without certificates; `UPLOAD=1` sends it to App Store Connect.
+- iPhone and iPad: `make archive` (`scripts/archive-ios.sh`) writes `build/ChronicleKeeper.xcarchive`, which Xcode's
+  Organizer uploads, signing it for distribution.
+
+Both take the version from the newest `v` tag and the build number from the number of commits
+(`scripts/version.sh`), so the two builds of one commit agree and every merge to `main` raises the number App Store
+Connect needs to grow. `VERSION` and `BUILD_NUMBER` override them.
+
 ## Published adventures
 
 "Who can play...?" (R3.7) lists the adventures the player's sessions name (`AdventureCatalog`) and adds the
