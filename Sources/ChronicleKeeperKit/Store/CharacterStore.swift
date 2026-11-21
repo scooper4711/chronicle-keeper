@@ -274,6 +274,11 @@ public final class CharacterStore {
         }
     }
 
+    /// Shows a failure that happened away from any call to `attempt`.
+    public func reportFailure(_ error: any Error) {
+        errorMessage = error.localizedDescription
+    }
+
     private func rebuild() {
         var roster = CharacterRoster(
             summaries: snapshot?.characters ?? [], sessions: snapshot?.sessions ?? [], settings: settings)

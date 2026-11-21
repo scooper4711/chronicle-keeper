@@ -126,3 +126,34 @@ struct SettingsSyncCoreTests {
         #expect(read.entries == core.ledger.entries)
     }
 }
+
+struct SettingsSyncRecoveryTests {
+    @Test func editsTheServerNeverTookAreUnsynced() throws {
+        var core = SettingsSyncCore()
+        let record = try SettingsSyncCore().record(for: number, settings: settings(notes: "agreed"), portraitFile: nil)
+        core.saved(record)
+        #expect(core.unsynced(in: [number: settings(notes: "agreed")]).isEmpty)
+        #expect(core.unsynced(in: [number: settings(notes: "edited")]) == [number])
+    }
+
+    @Test func aCharacterTheServerHasNeverSeenIsUnsyncedOnlyWhenEdited() {
+        let core = SettingsSyncCore()
+        #expect(core.unsynced(in: [number: CharacterSettings()]).isEmpty)
+        #expect(core.unsynced(in: [number: settings(link: "https://example.com/sheet")]) == [number])
+    }
+
+    @Test(arguments: [CKError.Code.networkFailure, .serviceUnavailable, .requestRateLimited, .zoneBusy])
+    func temporaryFailuresAreLeftToTheEngine(code: CKError.Code) {
+        #expect(SettingsSyncCore.isTemporary(code))
+    }
+
+    @Test(arguments: [CKError.Code.serverRejectedRequest, .invalidArguments, .permissionFailure, .quotaExceeded])
+    func otherFailuresAreRejections(code: CKError.Code) {
+        #expect(!SettingsSyncCore.isTemporary(code))
+    }
+
+    @Test func aRejectionSaysICloudFailed() {
+        let error = SettingsSyncError(failure: "the server said no")
+        #expect(error.errorDescription == "Syncing with iCloud failed: the server said no")
+    }
+}

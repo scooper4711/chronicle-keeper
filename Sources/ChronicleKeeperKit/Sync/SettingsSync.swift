@@ -48,7 +48,13 @@ public actor SettingsSync: CKSyncEngineDelegate {
         let configuration = CKSyncEngine.Configuration(
             database: database, stateSerialization: core.ledger.engineState, delegate: self)
         engine = CKSyncEngine(configuration)
-        if isFirstStart { await uploadEverything() }
+        if isFirstStart { await uploadEverything() } else { await uploadUnsynced() }
+    }
+
+    /// Sends what an earlier launch couldn't, as the engine forgets a save the server rejected.
+    private func uploadUnsynced() async {
+        let settings = await MainActor.run { store.allSettings }
+        core.unsynced(in: settings).forEach(changed)
     }
 
     private func uploadEverything() async {
@@ -141,6 +147,7 @@ public actor SettingsSync: CKSyncEngineDelegate {
     /// A conflict is merged as a fetched record is; a record or zone the server lacks goes up again.
     private func settle(_ failures: [CKSyncEngine.Event.SentRecordZoneChanges.FailedRecordSave]) async {
         var conflicts: [CKRecord] = []
+        var rejection: String?
         for failure in failures {
             let number = failure.record.recordID.recordName
             switch failure.error.code {
@@ -155,10 +162,18 @@ public actor SettingsSync: CKSyncEngineDelegate {
                 core.forgetServerCopy(of: number)
                 changed(number)
             default:
-                break // The engine retries what is left pending, such as after a network failure.
+                // The engine retries a temporary failure; anything else goes up again at the next launch.
+                if !SettingsSyncCore.isTemporary(failure.error.code) { rejection = failure.error.localizedDescription }
             }
         }
         await merge(conflicts)
+        if let rejection { await report(rejection) }
+    }
+
+    private func report(_ failure: String) async {
+        await MainActor.run {
+            store.reportFailure(SettingsSyncError(failure: failure))
+        }
     }
 
     private func accountChanged(_ change: CKSyncEngine.Event.AccountChange.ChangeType) async {
