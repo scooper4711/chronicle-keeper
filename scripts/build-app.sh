@@ -15,6 +15,7 @@
 #               sources, compiled with -DAPP_STORE; PROVISIONING_PROFILE is then the Mac App Store profile (with
 #               iCloud), and the variables of tabletop-kit's scripts/package-appstore.sh are needed (PACKAGER names
 #               another copy; TRIAL=1 checks the package without them).
+# REXARD_PACKS  folder of Rexard packs the app's art must come from (scripts/add-artwork.sh)
 set -eu
 
 cd "$(dirname "$0")/.."
@@ -23,6 +24,9 @@ VERSION="${VERSION:-$(scripts/version.sh marketing)}"
 BUILD_NUMBER="${BUILD_NUMBER:-$(scripts/version.sh build)}"
 APP="build/Chronicle Keeper.app"
 EXECUTABLE="ChronicleKeeper"
+
+# The Rexard art, where this checkout has it (REXARD_PACKS makes it required).
+scripts/add-artwork.sh
 
 SWIFT_FLAGS=""
 [ "${CHANNEL:-}" = "appstore" ] && SWIFT_FLAGS="-Xswiftc -DAPP_STORE"

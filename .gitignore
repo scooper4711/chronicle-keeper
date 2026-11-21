@@ -9,5 +9,6 @@ xcuserdata/
 ios/build/
 ios/Version.xcconfig
 
-# Rexard art, for testing only: it moves to the private toolkit-artwork submodule before this repo is published.
+# Rexard art, licensed for use inside the app only: scripts/add-artwork.sh writes it from the private Artwork
+# submodule.
 Sources/ChronicleKeeperUI/Resources/Factions/fame.png
