@@ -42,11 +42,17 @@ struct CharacterHeader: View {
     @State private var choosesPortrait = false
     @State private var choosesPhoto = false
     @State private var photo: PhotosPickerItem?
+    @State private var hasClipboardImage = false
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            PortraitButton(record: record, choose: choosePortrait, drop: dropPortrait)
-                .contextMenu { portraitMenu }
+            PortraitButton(
+                record: record,
+                choose: { choosesPortrait = true },
+                drop: dropPortrait,
+                choices: { portraitMenu }
+            )
+            .contextMenu { portraitMenu }
             VStack(alignment: .leading, spacing: 6) {
                 Text(record.name).font(.title.bold())
                 Text("\(record.campaign.displayName) · \(record.id)")
@@ -62,18 +68,24 @@ struct CharacterHeader: View {
         }
         .photosPicker(isPresented: $choosesPhoto, selection: $photo, matching: .images)
         .onChange(of: photo) { _, item in Task { await savePortrait(from: item) } }
+        .task { await watchClipboard() }
     }
 
-    /// Photos on the iPhone and iPad, where most pictures are; a file on the Mac.
-    private func choosePortrait() {
-        #if os(iOS)
-        choosesPhoto = true
-        #else
-        choosesPortrait = true
-        #endif
+    private var editor: PortraitEditor {
+        PortraitEditor(number: record.id, store: store, portraits: portraits)
     }
 
+    /// The clipboard and Demiplane when they have a picture, then Photos or Files on the iPhone and iPad, or a file
+    /// on the Mac.
     @ViewBuilder private var portraitMenu: some View {
+        if hasClipboardImage {
+            Button("Paste Image") { editor.paste(from: SystemPasteboard.general) }
+        }
+        if let sheet = DemiplanePortraitSource.sheetURL(from: record.settings.characterSheetURL) {
+            Button("Use Demiplane Portrait") {
+                Task { await editor.usePortrait(fromSheet: sheet, source: .forApp) }
+            }
+        }
         #if os(iOS)
         Button("Choose from Photos…") { choosesPhoto = true }
         Button("Choose from Files…") { choosesPortrait = true }
@@ -81,7 +93,21 @@ struct CharacterHeader: View {
         Button("Choose Portrait…") { choosesPortrait = true }
         #endif
         if !record.settings.portraitFileName.isEmpty {
-            Button("Remove Portrait", role: .destructive, action: removePortrait)
+            Button("Remove Portrait", role: .destructive, action: editor.remove)
+        }
+    }
+
+    /// Follows the clipboard while the header is on screen, since another app can copy a picture beside this one
+    /// on an iPad. The change count is cheap to read and never asks the user for permission to paste.
+    private func watchClipboard() async {
+        let pasteboard = SystemPasteboard.general
+        var seen: Int?
+        while !Task.isCancelled {
+            if seen != pasteboard.changeCount {
+                seen = pasteboard.changeCount
+                hasClipboardImage = pasteboard.hasImage
+            }
+            try? await Task.sleep(for: .seconds(1))
         }
     }
 
@@ -89,7 +115,7 @@ struct CharacterHeader: View {
         guard let provider = providers.first else { return false }
         _ = provider.loadDataRepresentation(for: .image) { data, _ in
             guard let data else { return }
-            Task { @MainActor in savePortrait(data) }
+            Task { @MainActor in editor.save(data) }
         }
         return true
     }
@@ -97,51 +123,52 @@ struct CharacterHeader: View {
     private func savePortrait(from item: PhotosPickerItem?) async {
         guard let item, let data = try? await item.loadTransferable(type: Data.self) else { return }
         photo = nil
-        savePortrait(data)
+        editor.save(data)
     }
 
     private func savePortrait(from url: URL) {
         let isScoped = url.startAccessingSecurityScopedResource()
         defer { if isScoped { url.stopAccessingSecurityScopedResource() } }
         guard let data = try? Data(contentsOf: url) else { return }
-        savePortrait(data)
-    }
-
-    private func savePortrait(_ data: Data) {
-        let previous = record.settings.portraitFileName
-        guard let name = store.attempt({ try portraits.save(imageData: data, forCharacter: record.id) }) else {
-            return
-        }
-        store.update(record.id) { $0.portraitFileName = name }
-        if previous != name { _ = store.attempt { try portraits.remove(fileName: previous) } }
-    }
-
-    private func removePortrait() {
-        let previous = record.settings.portraitFileName
-        store.update(record.id) { $0.portraitFileName = "" }
-        _ = store.attempt { try portraits.remove(fileName: previous) }
+        editor.save(data)
     }
 }
 
+extension DemiplanePortraitSource {
+    static let forApp = DemiplanePortraitSource(http: URLSessionHTTPClient())
+}
+
 /// The portrait in the header, which says what clicking it does: on hover, or while a picture is dragged over it.
-struct PortraitButton: View {
+struct PortraitButton<Choices: View>: View {
     let record: CharacterRecord
     let choose: () -> Void
     let drop: ([NSItemProvider]) -> Bool
+    @ViewBuilder let choices: () -> Choices
     @State private var isHovered = false
     @State private var isDropTarget = false
 
     var body: some View {
-        Button(action: choose) {
-            PortraitView(record: record, side: 96)
-                .overlay { if isHovered || isDropTarget { hint } }
-        }
-        .buttonStyle(.plain)
-        .onHover { isHovered = $0 }
-        .onDrop(of: [.image, .fileURL], isTargeted: $isDropTarget, perform: drop)
-        .animation(.easeOut(duration: 0.15), value: isHovered || isDropTarget)
-        .help("Choose a portrait, or drop a picture here")
-        .accessibilityLabel(record.settings.portraitFileName.isEmpty ? "Choose Portrait" : "Change Portrait")
+        control
+            .buttonStyle(.plain)
+            .onHover { isHovered = $0 }
+            .onDrop(of: [.image, .fileURL], isTargeted: $isDropTarget, perform: drop)
+            .animation(.easeOut(duration: 0.15), value: isHovered || isDropTarget)
+            .help("Choose a portrait, drop a picture here, or right-click to paste one")
+            .accessibilityLabel(record.settings.portraitFileName.isEmpty ? "Choose Portrait" : "Change Portrait")
+    }
+
+    /// A tap offers Photos or Files on the iPhone and iPad; a click opens a file on the Mac.
+    @ViewBuilder private var control: some View {
+        #if os(iOS)
+        Menu(content: choices) { face }.menuStyle(.button)
+        #else
+        Button(action: choose) { face }
+        #endif
+    }
+
+    private var face: some View {
+        PortraitView(record: record, side: 96)
+            .overlay { if isHovered || isDropTarget { hint } }
     }
 
     private var hint: some View {
