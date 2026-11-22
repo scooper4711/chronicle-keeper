@@ -52,9 +52,25 @@ simulator:
 uitest:
 	scripts/run-uitests.sh
 
-# Archives the iPhone and iPad app for the App Store into build/ChronicleKeeper.xcarchive, versioned from git.
-archive:
-	scripts/archive-ios.sh
+# Archives the app for the App Store and exports build/ipad/export/*.ipa, versioned from git. Upload it with
+# `make testflight`.
+.PHONY: ipad-archive testflight
+ipad-archive:
+	scripts/add-artwork.sh
+	.build/checkouts/tabletop-kit/scripts/archive-ios.sh ios/ChronicleKeeper.xcodeproj ChronicleKeeper-iOS build/ipad
+
+# Uploads the newest build (the .ipa from ipad-archive or the .pkg from appstore) to TestFlight, with this release's
+# notes from the tableside-store checkout next to this repository (TABLESIDE_STORE).
+TABLESIDE_STORE ?= ../tableside-store
+TESTFLIGHT_NOTES = $(TABLESIDE_STORE)/chronicle-keeper/testflight/what-to-test.txt
+TESTFLIGHT_BUILD ?= $(shell ls -t build/ipad/export/*.ipa build/appstore/*.pkg 2>/dev/null | head -n 1)
+testflight:
+	@test -f "$(TESTFLIGHT_NOTES)" || { echo "testflight failed: $(TESTFLIGHT_NOTES) not found; set TABLESIDE_STORE"; exit 1; }
+	@test -n "$(TESTFLIGHT_BUILD)" || { echo "testflight failed: no build; run make ipad-archive or make appstore"; exit 1; }
+	.build/checkouts/tabletop-kit/scripts/testflight.sh io.github.scooper4711.ChronicleKeeper "$(TESTFLIGHT_BUILD)" "$(TESTFLIGHT_NOTES)"
+
+# The old name of ipad-archive.
+archive: ipad-archive
 
 clean:
 	rm -rf .build build ios/build
