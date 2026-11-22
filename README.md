@@ -52,7 +52,8 @@ make dmg        # packages the disk image
 make appstore   # packages the Mac App Store build (TRIAL=1 checks it without the certificates)
 make simulator  # the iPad app in a simulator
 make uitest     # the iPad UI tests, against the demo account
-make archive    # archives the iPhone and iPad app for the App Store
+make ipad-archive  # archives the iPhone and iPad app and exports the .ipa
+make testflight    # uploads the newest .ipa or .pkg to TestFlight with this release's notes
 ```
 
 Launch with `-demo` to open the demo account: `open "build/Chronicle Keeper.app" --args -demo`.
