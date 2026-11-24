@@ -36,7 +36,7 @@ struct ChronicleSheetSection: View {
 
     private static var invitation: String {
         #if os(iOS)
-        "No chronicle sheet is attached. Attach the PDF from your GM, or photograph the paper sheet."
+        "No chronicle sheet is attached. Attach the PDF from your GM, or scan the paper sheet."
         #else
         "No chronicle sheet is attached. Attach the PDF from your GM."
         #endif
