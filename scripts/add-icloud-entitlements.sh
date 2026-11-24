@@ -6,8 +6,8 @@
 # settings sync on, and its folder in iCloud Drive. It can run again on the same files.
 #
 # Usage: scripts/add-icloud-entitlements.sh <app> <entitlements> <team ID> <provisioning profile>
-# ICLOUD_ENVIRONMENT  CloudKit environment, Production (default) or Development. An iPad or iPhone build installed
-#                     from Xcode uses Development, so to sync with one, build the Mac app for Development too.
+# ICLOUD_ENVIRONMENT  CloudKit environment, Production or Development. Default: Production for the App Store
+#                     (CHANNEL=appstore), Development for every other build, like an iPad or iPhone build from Xcode.
 # KIT_SCRIPT          another copy of tabletop-kit's script (default: the one beside the resolved package)
 set -eu
 
