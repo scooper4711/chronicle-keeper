@@ -42,7 +42,7 @@ struct ProgressCalculatorTests {
 
     @Test func overrideWins() {
         let session = SessionFactory.session(reputation: 4)
-        let settings = CharacterSettings(overrides: [session.id: SessionOverride(track: .slow)])
+        let settings = CharacterSettings(overrides: [session.keyWithinCharacter: SessionOverride(track: .slow)])
         let progress = pathfinder.progress(of: session, settings: settings)
         #expect(progress.track == .slow)
         #expect(progress.trackSource == .override)
@@ -50,7 +50,7 @@ struct ProgressCalculatorTests {
 
     @Test func xpOverrideWins() {
         let session = SessionFactory.session()
-        let settings = CharacterSettings(overrides: [session.id: SessionOverride(xp: 3)])
+        let settings = CharacterSettings(overrides: [session.keyWithinCharacter: SessionOverride(xp: 3)])
         let progress = pathfinder.progress(of: session, settings: settings)
         #expect(progress.xp == 3)
         #expect(progress.xpSource == .override)

@@ -25,7 +25,7 @@ struct SessionDetailView: View {
                     Divider()
                     SessionFacts(cells: AdventureCells(progress: progress, record: record, store: store))
                     Divider()
-                    ChronicleSheetSection(session: progress.session, characterName: record.name, store: store)
+                    ChronicleSheetSection(session: progress.session, characterNumber: record.id, store: store)
                 }
                 .padding(20)
                 .frame(maxWidth: 700, alignment: .leading)

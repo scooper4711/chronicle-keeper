@@ -13,7 +13,7 @@ public struct ProgressCalculator: Sendable {
 
     public func progress(of session: PlayedSession, settings: CharacterSettings) -> SessionProgress {
         let kind = AdventureClassifier.kind(of: session.adventure)
-        let override = settings.overrides[session.id] ?? SessionOverride()
+        let override = settings.override(for: session) ?? SessionOverride()
         let (track, trackSource) = track(of: session, kind: kind, override: override, settings: settings)
         let (normalXP, xpSource) = normalXP(of: session, kind: kind)
         let xp = override.xp ?? normalXP * track.rewardFactor

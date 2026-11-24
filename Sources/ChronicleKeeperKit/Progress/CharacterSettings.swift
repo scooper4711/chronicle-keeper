@@ -6,7 +6,8 @@ public struct CharacterSettings: Hashable, Codable, Sendable {
     public var defaultTrack: Track
     /// The level the character began play at (1, 3, 5 or 7 in second edition campaigns); it can't change later.
     public var startingLevel: Int
-    /// Corrections keyed by `PlayedSession.id`.
+    /// Corrections keyed by `PlayedSession.keyWithinCharacter` and by `PlayedSession.id`, as 1.0.0 keyed them;
+    /// read and write them with `override(for:)` and `setOverride(_:for:)`.
     public var overrides: [String: SessionOverride]
     public var notes: String
     /// The portrait's file name in the Portraits folder, or empty when the character has none.
@@ -31,6 +32,27 @@ public struct CharacterSettings: Hashable, Codable, Sendable {
         guard let url = URL(string: characterSheetLink.trimmingCharacters(in: .whitespaces)),
               let scheme = url.scheme?.lowercased(), ["http", "https", "file"].contains(scheme) else { return nil }
         return url
+    }
+}
+
+extension CharacterSettings {
+    /// The user's correction to a session. This version saves it under both the session's key and its ID (which
+    /// has the character's name in it), so a device still on 1.0.0, which reads and writes only the ID, keeps
+    /// working. When the two differ, the ID's was changed last, on such a device, so it wins. After that come ones
+    /// 1.0.0 saved under a name the character no longer has, in a fixed order so the same one wins every time.
+    public func override(for session: PlayedSession) -> SessionOverride? {
+        overrides[session.id] ?? overrides[session.keyWithinCharacter] ?? olderOverride(for: session)
+    }
+
+    /// Saves the user's correction to a session under its key and its ID; nil removes it from both.
+    public mutating func setOverride(_ override: SessionOverride?, for session: PlayedSession) {
+        overrides[session.keyWithinCharacter] = override
+        overrides[session.id] = override
+    }
+
+    private func olderOverride(for session: PlayedSession) -> SessionOverride? {
+        let prefix = session.keyWithinCharacter + "#"
+        return overrides.keys.filter { $0.hasPrefix(prefix) }.min().flatMap { overrides[$0] }
     }
 }
 

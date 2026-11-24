@@ -80,44 +80,79 @@ struct CharacterStoreTests {
         #expect(store.settings(for: "nobody") == CharacterSettings())
     }
 
+    private func chronicleFolder() -> URL {
+        FileManager.default.temporaryDirectory.appendingPathComponent("chronicle-store-tests-\(UUID().uuidString)")
+    }
+
+    private let session = SessionFactory.session()
+    private let sheet = Data("%PDF-1.4".utf8)
+
     @Test func attachingAChronicleSavesItAndFindsItAgain() async throws {
         let original = store { SnapshotFactory.snapshot() }
         await original.refresh()
-        let folder = FileManager.default.temporaryDirectory
-            .appendingPathComponent("chronicle-store-tests-\(UUID().uuidString)")
+        let folder = chronicleFolder()
         original.useChronicleLibrary(ChronicleLibrary(folder: folder))
-        let sessionID = "1234#1#Valeria Stonebrook"
-        original.attachChronicle(Data("%PDF-1.4".utf8), to: sessionID, characterName: "Valeria Stonebrook")
+        original.attachChronicle(sheet, to: session, characterNumber: number)
         #expect(original.errorMessage == nil)
-        #expect(original.chronicleFiles[sessionID] != nil)
+        #expect(original.chronicleFiles[session.id] != nil)
 
         // A fresh store, pointed at the same library, finds the file that's already there.
         let again = store { SnapshotFactory.snapshot() }
         await again.refresh()
         again.useChronicleLibrary(ChronicleLibrary(folder: folder))
-        #expect(again.chronicleFiles[sessionID] != nil)
+        #expect(again.chronicleFiles[session.id] != nil)
+    }
+
+    @Test func aRenamedCharacterKeepsTheSheetsAttachedUnderItsOldName() async throws {
+        let library = ChronicleLibrary(folder: chronicleFolder())
+        let oldName = "PF Coop 333"
+        let named = library.folder.appendingPathComponent("\(oldName)/1234#1#\(oldName).pdf")
+        try library.save(sheet, to: named)
+        let store = store { SnapshotFactory.snapshot() }
+        await store.refresh()
+        store.useChronicleLibrary(library)
+        let url = try #require(store.chronicleFiles[session.id])
+        #expect(url == library.fileURL(characterNumber: number, session: session))
+        #expect(try Data(contentsOf: url) == sheet)
+    }
+
+    @Test func attachingInPlaceOfASheetFiledByNameRemovesIt() async throws {
+        let library = ChronicleLibrary(folder: chronicleFolder(), isInICloud: true)
+        let named = library.folder.appendingPathComponent("Old Name/1234#1#Old Name.pdf")
+        try library.save(Data(), to: ChronicleLibrary.placeholder(of: named))
+        let store = store { SnapshotFactory.snapshot() }
+        await store.refresh()
+        store.useChronicleLibrary(library)
+        #expect(store.chronicleFiles[session.id] == named)
+        store.attachChronicle(sheet, to: session, characterNumber: number)
+        #expect(store.chronicleFiles[session.id] == library.fileURL(characterNumber: number, session: session))
+    }
+
+    @Test func anEarlierFailureDoesntStopASheetBeingAttachedOrRemoved() async throws {
+        let store = store { throw URLError(.notConnectedToInternet) }
+        await store.refresh()
+        #expect(store.errorMessage != nil)
+        store.useChronicleLibrary(ChronicleLibrary(folder: chronicleFolder()))
+        store.attachChronicle(sheet, to: session, characterNumber: number)
+        #expect(store.chronicleFiles[session.id] != nil)
+        store.removeChronicle(from: session, characterNumber: number)
+        #expect(store.chronicleFiles[session.id] == nil)
     }
 
     @Test func removingAChronicleForgetsIt() async throws {
         let store = store { SnapshotFactory.snapshot() }
         await store.refresh()
-        let folder = FileManager.default.temporaryDirectory
-            .appendingPathComponent("chronicle-store-tests-\(UUID().uuidString)")
-        store.useChronicleLibrary(ChronicleLibrary(folder: folder))
-        let sessionID = "1234#1#Valeria Stonebrook"
-        store.attachChronicle(Data("%PDF-1.4".utf8), to: sessionID, characterName: "Valeria Stonebrook")
-        store.removeChronicle(from: sessionID, characterName: "Valeria Stonebrook")
-        #expect(store.chronicleFiles[sessionID] == nil)
+        store.useChronicleLibrary(ChronicleLibrary(folder: chronicleFolder()))
+        store.attachChronicle(sheet, to: session, characterNumber: number)
+        store.removeChronicle(from: session, characterNumber: number)
+        #expect(store.chronicleFiles[session.id] == nil)
     }
 
     @Test func signingOutForgetsTheChronicleFiles() async throws {
         let store = store { SnapshotFactory.snapshot() }
         await store.refresh()
-        let folder = FileManager.default.temporaryDirectory
-            .appendingPathComponent("chronicle-store-tests-\(UUID().uuidString)")
-        store.useChronicleLibrary(ChronicleLibrary(folder: folder))
-        store.attachChronicle(
-            Data("%PDF-1.4".utf8), to: "1234#1#Valeria Stonebrook", characterName: "Valeria Stonebrook")
+        store.useChronicleLibrary(ChronicleLibrary(folder: chronicleFolder()))
+        store.attachChronicle(sheet, to: session, characterNumber: number)
         store.signOut()
         #expect(store.chronicleFiles.isEmpty)
     }
@@ -163,7 +198,7 @@ struct FileCharacterRepositoryTests {
     @Test func roundTripsTheSettings() throws {
         let repository = repository()
         var settings = CharacterSettings(defaultTrack: .slow)
-        settings.overrides["1234#1#Sunny"] = SessionOverride(track: .slow, xp: 2)
+        settings.overrides["1234#1"] = SessionOverride(track: .slow, xp: 2)
         settings.characterSheetLink = "https://example.com/sheet"
         try repository.saveSettings(["123456-2001": settings])
         #expect(try repository.loadSettings() == ["123456-2001": settings])

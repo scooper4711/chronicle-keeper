@@ -12,6 +12,6 @@ public enum DemoChronicles {
         let sheet = DemoBoons.page(
             "Chronicle Sheet\n\n\(newest.session.adventure.title)\n\(record.name)\n\n"
                 + "Demo chronicle: not a real Organized Play document.")
-        try library.save(sheet, to: library.fileURL(characterName: record.name, sessionID: newest.id))
+        try library.save(sheet, to: library.fileURL(characterNumber: record.id, session: newest.session))
     }
 }
