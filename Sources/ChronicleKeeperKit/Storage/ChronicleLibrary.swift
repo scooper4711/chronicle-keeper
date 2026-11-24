@@ -1,7 +1,8 @@
 import Foundation
 
-/// The folder of chronicle sheet PDFs the user has attached to their own sessions: one folder per character, one
-/// PDF per session, keyed by the session's own stable ID (so a refresh never loses the link). Unlike boons, these
+/// The folder of chronicle sheet PDFs the user has attached to their own sessions: one folder per character number,
+/// one PDF per session, keyed by event and session number. Neither has the character's name in it, as the player can
+/// rename a character on paizo.com: a refresh or a rename never loses the link. Unlike boons, these
 /// never come from paizo.com: the user attaches a PDF or photographs a paper sheet.
 ///
 /// In a build with iCloud Documents it is `Chronicle Keeper/Chronicles` in the user's iCloud Drive, alongside
@@ -27,11 +28,43 @@ public struct ChronicleLibrary: ICloudDocumentLibrary {
         return ChronicleLibrary(folder: chronicles, isInICloud: true)
     }
 
-    /// Where a session's chronicle PDF goes, keyed by its stable ID (event code, session number and character).
-    public func fileURL(characterName: String, sessionID: String) -> URL {
+    /// Where a session's chronicle PDF goes: "123456-2001/5235126#2.pdf".
+    public func fileURL(characterNumber: String, session: PlayedSession) -> URL {
         folder
-            .appendingPathComponent(DocumentFileName.of(characterName), isDirectory: true)
-            .appendingPathComponent(DocumentFileName.of(sessionID) + ".pdf")
+            .appendingPathComponent(DocumentFileName.of(characterNumber), isDirectory: true)
+            .appendingPathComponent(DocumentFileName.of(session.keyWithinCharacter) + ".pdf")
+    }
+
+    /// The sheets 1.0.0 filed by character name ("Name/5235126#2#Name.pdf"), by `PlayedSession.keyWithinCharacter`,
+    /// so a sheet is found whatever the character was called when it was attached. One player has one character in
+    /// a session, so the key alone tells whose it is.
+    public func namedFiles() -> [String: URL] {
+        var candidates: [String: [(folder: URL, name: String)]] = [:]
+        // Built from `folder` rather than what listing it returns, which can resolve links ("/private/var").
+        for characterFolder in contents(of: folder).map({ folder.appendingPathComponent($0.lastPathComponent) }) {
+            for file in contents(of: characterFolder) {
+                guard let (key, name) = Self.namedFile(file) else { continue }
+                candidates[key, default: []].append((characterFolder, name))
+            }
+        }
+        // iCloud names a conflicting copy "…#Name 2.pdf": the shortest name is the original, whichever is listed first.
+        return candidates.compactMapValues { files in
+            files.min { ($0.name.count, $0.name) < ($1.name.count, $1.name) }
+                .map { $0.folder.appendingPathComponent($0.name) }
+        }
+    }
+
+    /// Moves a sheet 1.0.0 filed by name to where it goes now, and says where it is. One that isn't on this device
+    /// yet stays where it is, as only iCloud can move it then; so does one that can't be moved.
+    public func moveNamedFile(_ named: URL, to url: URL) -> URL {
+        guard isOnDevice(named) else { return named }
+        do {
+            try coordinatedMove(from: named, to: url)
+        } catch {
+            return named
+        }
+        removeIfEmpty(named.deletingLastPathComponent())
+        return url
     }
 
     /// Writes a PDF, coordinated so iCloud sees a whole file.
@@ -60,6 +93,54 @@ public struct ChronicleLibrary: ICloudDocumentLibrary {
         }
     }
 
+    /// Moves a file, telling the coordinator it moved so iCloud keeps it as the same document, not a new one.
+    private func coordinatedMove(from source: URL, to destination: URL) throws {
+        try FileManager.default.createDirectory(
+            at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
+        var coordinationError: NSError?
+        var moveError: Error?
+        let coordinator = NSFileCoordinator()
+        coordinator.coordinate(
+            writingItemAt: source, options: .forMoving, writingItemAt: destination, options: .forReplacing,
+            error: &coordinationError
+        ) { from, to in
+            coordinator.item(at: from, willMoveTo: to)
+            do {
+                try FileManager.default.moveItem(at: from, to: to)
+                coordinator.item(at: from, didMoveTo: to)
+            } catch {
+                moveError = error
+            }
+        }
+        if let failure = coordinationError ?? moveError { throw failure }
+    }
+
+    /// Removes a folder 1.0.0 named after a character once nothing is left in it; one that can't be is left.
+    private func removeIfEmpty(_ oldFolder: URL) {
+        guard contents(of: oldFolder).isEmpty else { return }
+        var coordinationError: NSError?
+        NSFileCoordinator().coordinate(writingItemAt: oldFolder, options: .forDeleting, error: &coordinationError) {
+            try? FileManager.default.removeItem(at: $0)
+        }
+    }
+
+    /// A folder's files and folders, hidden ones (iCloud's placeholders) included; none when it can't be read.
+    private func contents(of url: URL) -> [URL] {
+        (try? FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)) ?? []
+    }
+
+    /// A file named "event#session#name.pdf", or iCloud's ".event#session#name.pdf.icloud" for one, as the key and
+    /// the PDF's own name.
+    private static func namedFile(_ file: URL) -> (key: String, name: String)? {
+        var name = file.lastPathComponent
+        if name.hasPrefix("."), name.hasSuffix(".icloud") {
+            name = String(name.dropFirst().dropLast(".icloud".count))
+        }
+        guard name.hasSuffix(".pdf") else { return nil }
+        let parts = name.dropLast(".pdf".count).split(separator: "#", maxSplits: 2, omittingEmptySubsequences: false)
+        guard parts.count == 3 else { return nil }
+        return ("\(parts[0])#\(parts[1])", name)
+    }
 }
 
 /// A name that is safe as a file or folder name on the Mac, iPad and iPhone. Shared by `BoonLibrary` and

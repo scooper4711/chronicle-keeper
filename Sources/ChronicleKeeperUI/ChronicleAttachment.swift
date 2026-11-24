@@ -6,13 +6,13 @@ import SwiftUI
 /// A session's chronicle sheet as a small button beside the adventure's title in the adventures table.
 struct ChronicleButton: View {
     let session: PlayedSession
-    let characterName: String
+    let characterNumber: String
     let store: CharacterStore
 
     var body: some View {
         let isAttached = store.chronicleFiles[session.id] != nil
         // No label style here: the menu's own label is a symbol already, and a style would reach the items too.
-        ChronicleMenu(session: session, characterName: characterName, store: store) { isAttached in
+        ChronicleMenu(session: session, characterNumber: characterNumber, store: store) { isAttached in
             Image(systemName: isAttached ? "doc.text.fill" : "doc.badge.plus")
         }
         .menuStyle(.button).buttonStyle(.borderless)
@@ -25,7 +25,7 @@ struct ChronicleButton: View {
 /// the one it already has. The label is told whether a sheet is attached.
 struct ChronicleMenu<MenuLabel: View>: View {
     let session: PlayedSession
-    let characterName: String
+    let characterNumber: String
     let store: CharacterStore
     @ViewBuilder let label: (_ isAttached: Bool) -> MenuLabel
     @State private var choosesFile = false
@@ -40,7 +40,7 @@ struct ChronicleMenu<MenuLabel: View>: View {
                 Button { open(file) } label: { Label("Open", systemImage: "doc.text.magnifyingglass") }
                 ShareLink(item: file) { Label("Share", systemImage: "square.and.arrow.up") }
                 Button(role: .destructive) {
-                    store.removeChronicle(from: session.id, characterName: characterName)
+                    store.removeChronicle(from: session, characterNumber: characterNumber)
                 } label: { Label("Remove", systemImage: "trash") }
             } else {
                 Button { choosesFile = true } label: { Label("Attach PDF…", systemImage: "doc.badge.plus") }
@@ -76,7 +76,7 @@ struct ChronicleMenu<MenuLabel: View>: View {
         let accessing = url.startAccessingSecurityScopedResource()
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
         guard let data = try? Data(contentsOf: url) else { return }
-        store.attachChronicle(data, to: session.id, characterName: characterName)
+        store.attachChronicle(data, to: session, characterNumber: characterNumber)
     }
 
     #if os(iOS)
@@ -85,7 +85,7 @@ struct ChronicleMenu<MenuLabel: View>: View {
         let document = PDFDocument()
         document.insert(page, at: 0)
         guard let data = document.dataRepresentation() else { return }
-        store.attachChronicle(data, to: session.id, characterName: characterName)
+        store.attachChronicle(data, to: session, characterNumber: characterNumber)
     }
     #endif
 }

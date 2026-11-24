@@ -7,7 +7,7 @@ import SwiftUI
 /// menu to open, share or remove the sheet, or to attach one.
 struct ChronicleSheetSection: View {
     let session: PlayedSession
-    let characterName: String
+    let characterNumber: String
     let store: CharacterStore
     @State private var preview: URL?
 
@@ -18,7 +18,7 @@ struct ChronicleSheetSection: View {
             HStack {
                 Label("Chronicle Sheet", systemImage: "paperclip").font(.headline)
                 Spacer()
-                ChronicleMenu(session: session, characterName: characterName, store: store) { isAttached in
+                ChronicleMenu(session: session, characterNumber: characterNumber, store: store) { isAttached in
                     Label(isAttached ? "Sheet" : "Attach", systemImage: isAttached ? "ellipsis.circle" : "plus")
                 }
                 .menuStyle(.button).buttonStyle(.bordered).fixedSize()

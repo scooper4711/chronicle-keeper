@@ -187,7 +187,7 @@ struct AdventureCells {
             .help("Show everything about this session")
             .accessibilityHint("Shows the session's details")
             .accessibilityIdentifier("session-details")
-            ChronicleButton(session: session, characterName: record.name, store: store)
+            ChronicleButton(session: session, characterNumber: record.id, store: store)
         }
     }
 

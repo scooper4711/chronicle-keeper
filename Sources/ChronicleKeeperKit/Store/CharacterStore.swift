@@ -141,30 +141,37 @@ public final class CharacterStore {
     }
 
     /// Attaches a PDF to one session as its chronicle sheet, replacing any it already had.
-    public func attachChronicle(_ data: Data, to sessionID: String, characterName: String) {
+    public func attachChronicle(_ data: Data, to session: PlayedSession, characterNumber: String) {
         guard let library = chronicleLibrary else { return }
-        let url = library.fileURL(characterName: characterName, sessionID: sessionID)
-        attempt { try library.save(data, to: url) }
-        guard errorMessage == nil else { return }
-        chronicleFiles[sessionID] = url
+        let url = library.fileURL(characterNumber: characterNumber, session: session)
+        // This call's own outcome: an error left from an earlier failure mustn't stop the sheet showing.
+        guard attempt({ try library.save(data, to: url) }) != nil else { return }
+        // A sheet 1.0.0 filed by name, that it replaces.
+        if let replaced = chronicleFiles[session.id], replaced != url { attempt { try library.remove(at: replaced) } }
+        chronicleFiles[session.id] = url
     }
 
     /// Removes a session's chronicle PDF.
-    public func removeChronicle(from sessionID: String, characterName: String) {
+    public func removeChronicle(from session: PlayedSession, characterNumber: String) {
         guard let library = chronicleLibrary else { return }
-        let url = library.fileURL(characterName: characterName, sessionID: sessionID)
-        attempt { try library.remove(at: url) }
-        guard errorMessage == nil else { return }
-        chronicleFiles[sessionID] = nil
+        let url = chronicleFiles[session.id] ?? library.fileURL(characterNumber: characterNumber, session: session)
+        guard attempt({ try library.remove(at: url) }) != nil else { return }
+        chronicleFiles[session.id] = nil
     }
 
+    /// Finds each session's sheet, moving any that 1.0.0 filed by the character's name to where it goes now.
     private func locateChronicleFiles() {
         guard let library = chronicleLibrary else { return }
+        let namedFiles = library.namedFiles()
         var files: [String: URL] = [:]
         for record in roster.characters {
-            for session in record.sessions {
-                let url = library.fileURL(characterName: record.name, sessionID: session.session.id)
-                if library.hasFile(at: url) { files[session.session.id] = url }
+            for session in record.sessions.map(\.session) {
+                let url = library.fileURL(characterNumber: record.id, session: session)
+                if library.hasFile(at: url) {
+                    files[session.id] = url
+                } else if let named = namedFiles[session.keyWithinCharacter] {
+                    files[session.id] = library.moveNamedFile(named, to: url)
+                }
             }
         }
         chronicleFiles = files
