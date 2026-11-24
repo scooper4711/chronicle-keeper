@@ -203,6 +203,13 @@ doesn't arrive. Both libraries get this, and `hasFile` and the coordinated write
 Share hands over the file as it is, since `ShareLink` gives nothing to wait in. The demo account attaches a
 made-up sheet to its newest session (`DemoChronicles`), so the demo and the UI tests show one.
 
+A paper sheet is scanned with VisionKit's document scanner (`DocumentScanner`), which finds the sheet's edges,
+straightens it, and has its own review screen to rotate, crop or rescan each page. Its pages are drawn upright
+(`UIImage.uprightJPEG`) before `ChroniclePDF` makes them a PDF: Quartz draws a picture's pixels and ignores its
+orientation tag, so a portrait photo would otherwise land sideways (as 1.0.0's camera did). Each JPEG goes into the
+PDF as it is, on a page whose longer side is a letter sheet's 11 inches. The scanner is iOS only and isn't offered
+where `VNDocumentCameraViewController.isSupported` is false, such as the Simulator.
+
 ## Artwork
 
 Rexard art may be used inside the app only through the private `toolkit-artwork` submodule (`Artwork/`), never
