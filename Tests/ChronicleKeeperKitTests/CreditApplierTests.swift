@@ -22,7 +22,7 @@ struct LevelWhenPlayedTests {
     @Test func aTrackOverrideMovesTheLaterLevels() {
         let sessions = scenarios(reputations: [4, 4, 4, 4])
         var settings = CharacterSettings()
-        settings.overrides[sessions[0].id] = SessionOverride(track: .slow)
+        settings.overrides[sessions[0].keyWithinCharacter] = SessionOverride(track: .slow)
         let history = pathfinder.history(of: sessions, settings: settings)
         #expect(history.map(\.levelWhenPlayed) == [1, 1, 1, 1])
     }
@@ -120,7 +120,7 @@ struct LevelWhenPlayedTests {
             title: "#6-04: A Mid-Tier Scenario",
             summary: "A Pathfinder Society Scenario designed for 3rd- through 4th-level characters")
         var settings = CharacterSettings()
-        settings.overrides[held.id] = SessionOverride(xp: 50)
+        settings.overrides[held.keyWithinCharacter] = SessionOverride(xp: 50)
         let history = pathfinder.history(of: [held], settings: settings)
         let progress = try #require(history.first)
         #expect(progress.isOutOfLevelRange)
@@ -140,8 +140,8 @@ struct LevelWhenPlayedTests {
         let catchUp = SessionFactory.session(
             title: "#1-01: An Ordinary Session", date: Date(timeIntervalSince1970: 1_780_086_400), sessionNumber: 2)
         var settings = CharacterSettings()
-        settings.overrides[held.id] = SessionOverride(xp: 50)
-        settings.overrides[catchUp.id] = SessionOverride(xp: 24)
+        settings.overrides[held.keyWithinCharacter] = SessionOverride(xp: 50)
+        settings.overrides[catchUp.keyWithinCharacter] = SessionOverride(xp: 24)
         let history = pathfinder.history(of: [held, catchUp], settings: settings)
         let heldResult = try #require(history.first { $0.session.id == held.id })
         let catchUpResult = try #require(history.first { $0.session.id == catchUp.id })
@@ -163,7 +163,7 @@ struct LevelWhenPlayedTests {
             title: "#1-01: An Early Scenario",
             summary: "A Pathfinder Society Scenario designed for 1st- through 2nd-level characters")
         var settings = CharacterSettings()
-        settings.overrides[early.id] = SessionOverride(xp: 30)
+        settings.overrides[early.keyWithinCharacter] = SessionOverride(xp: 30)
         let history = pathfinder.history(of: [early], settings: settings)
         let progress = try #require(history.first)
         #expect(!progress.isOutOfLevelRange)

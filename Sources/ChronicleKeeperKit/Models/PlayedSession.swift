@@ -62,6 +62,11 @@ public struct PlayedSession: Hashable, Codable, Sendable, Identifiable {
 
     public var id: String { "\(eventCode)#\(sessionNumber)#\(characterName)" }
 
+    /// Names the session among its own character's sessions, without the character's name: the player can rename
+    /// a character on paizo.com, so anything the user keeps for a session (a chronicle sheet, a correction) is
+    /// filed under this and the character number.
+    public var keyWithinCharacter: String { "\(eventCode)#\(sessionNumber)" }
+
     /// The character number when the row names one (played sessions only).
     public var characterNumber: String? {
         playerNumber.contains("-") ? playerNumber : nil

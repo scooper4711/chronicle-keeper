@@ -224,12 +224,12 @@ struct AdventureCells {
 
     private var overrideBinding: Binding<Track?> {
         Binding(
-            get: { record.settings.overrides[session.id]?.track },
+            get: { record.settings.override(for: session)?.track },
             set: { track in
                 store.update(record.id) { settings in
-                    var override = settings.overrides[session.id] ?? SessionOverride()
+                    var override = settings.override(for: session) ?? SessionOverride()
                     override.track = track
-                    settings.overrides[session.id] = override
+                    settings.setOverride(override, for: session)
                 }
             })
     }
