@@ -1,4 +1,4 @@
-.PHONY: build test lint coverage app run install dmg appstore icon artwork covers simulator uitest archive clean
+.PHONY: build test lint coverage app run install dmg appstore icon artwork covers items simulator uitest archive clean
 
 build:
 	swift build
@@ -44,6 +44,10 @@ artwork:
 covers:
 	scripts/update-adventure-covers.sh
 
+# Writes the item price list the purchase ledger searches, from pf2e.release (see scripts/import-items.sh).
+items:
+	scripts/import-items.sh
+
 # Builds the iPad app and starts it in a simulator (see scripts/run-simulator.sh).
 simulator:
 	scripts/run-simulator.sh
@@ -57,6 +61,7 @@ uitest:
 .PHONY: ipad-archive testflight
 ipad-archive:
 	scripts/add-artwork.sh
+	scripts/import-items.sh
 	.build/checkouts/tabletop-kit/scripts/archive-ios.sh ios/ChronicleKeeper.xcodeproj ChronicleKeeper-iOS build/ipad
 
 # Uploads the newest build (the .ipa from ipad-archive or the .pkg from appstore) to TestFlight, with this release's

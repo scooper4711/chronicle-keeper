@@ -43,11 +43,20 @@ extension AboutInfo {
     // swiftlint:disable:next force_unwrapping
     static let contactURL = URL(string: "https://github.com/scooper4711/chronicle-keeper/issues")!
 
-    static let chronicleKeeper = AboutInfo(
+    /// The About panel, with the licenses `make items` bundled for the item prices.
+    static var chronicleKeeper: AboutInfo {
+        guard let licenses = ItemPriceList.licensesFolder else { return chronicleKeeperNotices }
+        return chronicleKeeperNotices.licensed(by: licenses)
+    }
+
+    private static let chronicleKeeperNotices = AboutInfo(
         appName: "Chronicle Keeper",
         tagline: "Keeps track of your Pathfinder Society and Starfinder Society characters: adventures, reputation, "
             + "XP and level, read from your My Organized Play page on paizo.com.",
-        credits: [],
+        credits: [
+            "Item names and prices come from the pf2e system for Foundry VTT and are used under the ORC License "
+                + "and the Open Game License 1.0a, whose notices ship with the app."
+        ],
         contactURL: contactURL)
 }
 
