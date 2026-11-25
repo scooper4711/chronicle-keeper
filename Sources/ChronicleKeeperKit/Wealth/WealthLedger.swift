@@ -120,11 +120,16 @@ private struct GroupBuilder {
 
     func group(for place: LedgerGroup.Place, balance: inout Int) -> LedgerGroup {
         let level = characterLevel(at: place)
+        // Sales come before purchases, so selling to buy doesn't dip below zero; but an item bought and sold after
+        // the same adventure is listed as bought first.
+        let sales = purchases(in: place) { $0.soldAfter }
+        let isBoughtHere = { (purchase: Purchase) in purchase.boughtAfter == purchase.soldAfter }
         var entries = [opening(of: place)].compactMap { $0 }
-        entries += purchases(in: place) { $0.soldAfter }.map { LedgerLine.Entry.sale($0) }
+        entries += sales.filter { !isBoughtHere($0) }.map { LedgerLine.Entry.sale($0) }
         entries += purchases(in: place) { $0.boughtAfter }.map {
             LedgerLine.Entry.purchase($0, marks: PurchaseLegality.marks(for: $0, characterLevel: level))
         }
+        entries += sales.filter(isBoughtHere).map { LedgerLine.Entry.sale($0) }
         let lines = entries.map { entry in
             let line = LedgerLine(entry: entry, balance: balance + LedgerLine(entry: entry, balance: 0).amount)
             balance = line.balance
