@@ -13,13 +13,13 @@ public enum Money {
     public static let copperPerSilver = 10
     public static let copperPerCredit = 10
 
-    /// "11 gp, 2 sp" or "112 credits"; parts that are zero are left out, and nothing at all is "0 gp".
+    /// Always in gold pieces or credits, as the chronicles give them: "11.2 gp", "0.05 gp" or "112 credits".
     public static func format(_ copper: Int, in currency: Currency, locale: Locale = .autoupdatingCurrent) -> String {
         let sign = copper < 0 ? "−" : ""
         let amount = abs(copper)
         switch currency {
-        case .gold: return sign + goldParts(of: amount, locale: locale)
-        case .credits: return sign + credits(of: amount, locale: locale)
+        case .gold: return sign + decimal(amount, unit: copperPerGold, locale: locale) + " gp"
+        case .credits: return sign + decimal(amount, unit: copperPerCredit, locale: locale) + " credits"
         }
     }
 
@@ -61,19 +61,8 @@ public enum Money {
             in: text, range: NSRange(text.startIndex..., in: text), withTemplate: replacement)
     }
 
-    private static func goldParts(of amount: Int, locale: Locale) -> String {
-        let parts = [
-            (amount / copperPerGold, "gp"),
-            (amount % copperPerGold / copperPerSilver, "sp"),
-            (amount % copperPerSilver, "cp")
-        ]
-        let shown = parts.filter { $0.0 > 0 }.map { "\($0.0.formatted(.number.locale(locale))) \($0.1)" }
-        return shown.isEmpty ? "0 gp" : shown.joined(separator: ", ")
-    }
-
-    private static func credits(of amount: Int, locale: Locale) -> String {
-        let value = Decimal(amount) / Decimal(copperPerCredit)
-        return "\(value.formatted(.number.locale(locale))) credits"
+    private static func decimal(_ amount: Int, unit: Int, locale: Locale) -> String {
+        (Decimal(amount) / Decimal(unit)).formatted(.number.locale(locale))
     }
 
     private static func parseGold(_ text: String) -> Int? {

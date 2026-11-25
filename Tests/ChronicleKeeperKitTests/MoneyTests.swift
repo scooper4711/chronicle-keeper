@@ -6,7 +6,7 @@ private let english = Locale(identifier: "en_US")
 
 struct MoneyTests {
     @Test(arguments: [
-        (1_120, "11 gp, 2 sp"), (0, "0 gp"), (125, "1 gp, 2 sp, 5 cp"), (5, "5 cp"), (-350, "−3 gp, 5 sp"),
+        (1_120, "11.2 gp"), (0, "0 gp"), (125, "1.25 gp"), (5, "0.05 gp"), (50, "0.5 gp"), (-350, "−3.5 gp"),
         (150_000, "1,500 gp")
     ])
     func formatsGold(copper: Int, text: String) {
