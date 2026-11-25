@@ -220,7 +220,8 @@ for every session.
 ## Interface
 
 A `NavigationSplitView`: campaigns, then characters (portrait, level, XP bar), then a detail view (header,
-reputation grid, adventures table with a track override menu, boons, settings). "Who Can Play..." is a sheet: a
+reputation grid, adventures table with a track override menu, boons, settings). The table's title cell carries a
+small gray caption, "Scenario · 4 XP (4 lost) · 2 Rep" (`SessionCaption`), instead of kind, XP and reputation columns. "Who Can Play..." is a sheet: a
 search field, a campaign picker when the roster has more than one, a line saying what the list holds when that
 isn't every match, and the adventures with their covers (`CoverArt`, an `AsyncImage`). A session's details show
 the cover beside the title once it is known.

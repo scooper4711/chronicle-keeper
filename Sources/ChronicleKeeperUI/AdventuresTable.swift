@@ -55,7 +55,7 @@ struct AdventuresTable: View {
         }
     }
 
-    /// On an iPhone the six columns don't fit, so each session gets two lines instead.
+    /// On an iPhone the five columns don't fit, so each session gets two lines instead.
     private var isCompact: Bool {
         #if os(iOS)
         sizeClass == .compact
@@ -78,7 +78,6 @@ struct AdventuresTable: View {
             Text("Date")
             Text("Lv").help("The character's level when they played it")
             Text("Adventure")
-            Text("Rep")
             Text("Track")
             Text("Progress")
         }
@@ -87,8 +86,8 @@ struct AdventuresTable: View {
     }
 }
 
-/// One session as a grid row: when and at what level it was played, what it was (its kind and XP in small gray text
-/// under the title, which gets the room), how it counted, and a menu to correct its track.
+/// One session as a grid row: when and at what level it was played, what it was (its kind, XP and reputation in
+/// small gray text under the title, which gets the room), how it counted, and a menu to correct its track.
 struct AdventureRow: View {
     let cells: AdventureCells
 
@@ -98,10 +97,9 @@ struct AdventureRow: View {
             cells.level
             VStack(alignment: .leading, spacing: 2) {
                 cells.title
-                cells.kindAndXP
+                cells.caption
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            cells.reputation
             cells.trackMenu
             cells.progressCell
         }
@@ -195,10 +193,9 @@ struct AdventureCells {
         Text(session.reputation.map(XPText.of) ?? "—").monospacedDigit()
     }
 
-    /// "Scenario · 4 XP", or "Scenario · 4 XP (4 lost)", small and gray under the title in the grid.
-    var kindAndXP: some View {
-        let lost = progress.xpLost > 0 ? " (\(XPText.of(progress.xpLost)) lost)" : ""
-        return Text("\(progress.kind.displayName) · \(XPText.of(progress.xp)) XP\(lost)")
+    /// "Scenario · 4 XP · 2 Rep" (see `SessionCaption`), small and gray under the title in the grid.
+    var caption: some View {
+        Text(SessionCaption.text(for: progress, showsReputation: record.campaign.showsReputation))
             .font(.caption).foregroundStyle(.secondary).monospacedDigit()
             .help(SessionExplanation.xp(progress))
     }

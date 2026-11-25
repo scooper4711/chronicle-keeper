@@ -72,10 +72,3 @@ struct LevelSummary: View {
         }
     }
 }
-
-/// XP as people write it: whole numbers plain, halves (slow-track quests) with one decimal.
-enum XPText {
-    static func of(_ xp: Double) -> String {
-        xp.formatted(.number.precision(.fractionLength(0...1)))
-    }
-}
