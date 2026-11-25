@@ -30,6 +30,20 @@ struct ItemPriceListTests {
         #expect(purchase.cost == 8_000 && purchase.level == 2 && purchase.boughtAfter == "1234#1")
     }
 
+    /// Candles are 1 cp for 10: a purchase counts batches, so two of them cost 2 cp, not 20.
+    @Test func anItemSoldInBatchesIsBoughtByTheBatch() {
+        let candles = PricedItem(id: "5", game: .pathfinder, name: "Candle", level: 0, price: 1, batchSize: 10)
+        let purchase = candles.purchase(after: "", quantity: 2)
+        #expect(purchase.name == "Candle (10)")
+        #expect(purchase.unitPrice == 1 && purchase.cost == 2)
+        #expect(list.items[0].purchaseName == "Longsword")
+    }
+
+    @Test func itemsAreFoundByID() {
+        #expect(list.item(id: "3")?.name == "Longbow")
+        #expect(list.item(id: "missing") == nil)
+    }
+
     @Test func campaignsMapToTheirGame() {
         #expect(ItemGame(campaign: .pathfinder2) == .pathfinder)
         #expect(ItemGame(campaign: .starfinder2) == .starfinder)

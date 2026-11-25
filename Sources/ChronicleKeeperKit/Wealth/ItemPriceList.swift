@@ -42,10 +42,16 @@ public struct PricedItem: Hashable, Codable, Sendable, Identifiable {
         self.source = source
     }
 
-    /// A new purchase of this item.
+    /// The name a purchase of it carries: "Candle (10)" for an item sold in batches, since its price and a
+    /// purchase's quantity count batches, not single items.
+    public var purchaseName: String {
+        batchSize > 1 ? "\(name) (\(batchSize))" : name
+    }
+
+    /// A new purchase of this item; `quantity` counts batches.
     public func purchase(after key: String, quantity: Int = 1) -> Purchase {
         Purchase(
-            itemID: id, name: name, level: level, rarity: rarity, unitPrice: price, quantity: quantity,
+            itemID: id, name: purchaseName, level: level, rarity: rarity, unitPrice: price, quantity: quantity,
             boughtAfter: key)
     }
 }
@@ -53,9 +59,16 @@ public struct PricedItem: Hashable, Codable, Sendable, Identifiable {
 /// The items a purchase can be picked from, searched as the user types (R5.3).
 public struct ItemPriceList: Sendable {
     public let items: [PricedItem]
+    private let byID: [String: PricedItem]
 
     public init(items: [PricedItem]) {
         self.items = items
+        byID = Dictionary(items.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    /// The item with this ID, as a picked purchase names it; nil when the item data has none.
+    public func item(id: String) -> PricedItem? {
+        byID[id]
     }
 
     /// The list the build bundled, or an empty one when the build has none (`make items` wasn't run).

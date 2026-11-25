@@ -14,6 +14,8 @@ struct PurchaseEditor: View {
     @State private var draft: Purchase
     @State private var name: String
     @State private var priceText: String
+    /// Matches for what was typed, worked out once per change of the name rather than on every redraw.
+    @State private var suggestions: [PricedItem] = []
     @FocusState private var isNameFocused: Bool
 
     init(
@@ -36,7 +38,10 @@ struct PurchaseEditor: View {
                 .textFieldStyle(.roundedBorder)
                 .focused($isNameFocused)
                 .onSubmit { suggestions.first.map(pick) }
-                .onChange(of: name) { _, typed in if typed != draft.name { draft.itemID = "" } }
+                .onChange(of: name) { _, typed in
+                    if typed != draft.name { draft.itemID = "" }
+                    refreshSuggestions()
+                }
                 .accessibilityIdentifier("purchase-name")
             ItemSuggestions(items: suggestions, currency: currency, pick: pick)
             details
@@ -52,11 +57,16 @@ struct PurchaseEditor: View {
         .onAppear { isNameFocused = initial.name.isEmpty }
     }
 
-    /// Matches for what was typed; none once an item is picked and its name left alone.
-    private var suggestions: [PricedItem] {
-        guard let game, !(draft.itemID.isEmpty == false && name == draft.name) else { return [] }
-        return ItemPriceList.bundled.suggestions(for: name, game: game)
+    /// Lists matches for what was typed; none once an item is picked and its name left alone.
+    private func refreshSuggestions() {
+        guard let game, !isShowingPickedItem else {
+            suggestions = []
+            return
+        }
+        suggestions = ItemPriceList.bundled.suggestions(for: name, game: game)
     }
+
+    private var isShowingPickedItem: Bool { !draft.itemID.isEmpty && name == draft.name }
 
     private var isCustom: Bool { draft.itemID.isEmpty }
 
@@ -66,7 +76,7 @@ struct PurchaseEditor: View {
     /// The picked item as the item data has it, for its catalog price.
     private var catalogItem: PricedItem? {
         guard !isCustom else { return nil }
-        return ItemPriceList.bundled.items.first { $0.id == draft.itemID }
+        return ItemPriceList.bundled.item(id: draft.itemID)
     }
 
     private var price: Int? { Money.parse(priceText, in: currency) }
@@ -95,11 +105,12 @@ struct PurchaseEditor: View {
 
     private func pick(_ item: PricedItem) {
         draft.itemID = item.id
-        draft.name = item.name
+        draft.name = item.purchaseName
         draft.level = item.level
         draft.rarity = item.rarity
-        name = item.name
+        name = item.purchaseName
         priceText = Money.format(item.price, in: currency)
+        suggestions = []
     }
 
     private func finish() {
