@@ -87,6 +87,8 @@ final class DemoAccountUITests: XCTestCase {
         let ledger = app.staticTexts["Gold & Purchases"]
         scrollIntoView(ledger)
         XCTAssertTrue(ledger.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.staticTexts["Starting Funds"].exists, app.debugDescription)
+        saveScreenshots("ledger-start")
         let sale = app.staticTexts["Sold: Leather Armor"]
         scrollIntoView(sale)
         XCTAssertTrue(sale.exists, app.debugDescription)

@@ -1,10 +1,24 @@
 import ChronicleKeeperKit
 import SwiftUI
 
-/// A ledger line's columns: what it is, what it changed and the balance after it, and its menu. On one line when
-/// there's room, on two on an iPhone.
+/// The widths of the ledger's number columns, so every amount lines up under its header like a spreadsheet.
+enum LedgerColumn {
+    static let income: CGFloat = 110
+    static let change: CGFloat = 90
+    static let balance: CGFloat = 90
+    static let actions: CGFloat = 24
+    static let spacing: CGFloat = 8
+    static let minimumLabel: CGFloat = 120
+}
+
+/// A ledger line's columns: what it is, money coming in (treasure and earned income), money spent or got back from
+/// a sale, the balance after it, and its menu. The label wraps inside its column, so the figures stay under their
+/// titles; only where even the columns don't fit (an iPhone) do the figures go on a second line, without the empty
+/// column.
 struct LedgerLineLayout<Label: View, Amount: View, Actions: View>: View {
     let balance: Int
+    /// Whether the amount goes in the income column rather than the bought-and-sold one.
+    let isIncome: Bool
     let context: LedgerContext
     @ViewBuilder let label: () -> Label
     @ViewBuilder let amount: () -> Amount
@@ -12,28 +26,70 @@ struct LedgerLineLayout<Label: View, Amount: View, Actions: View>: View {
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
-            HStack(spacing: 10) {
-                label().frame(minWidth: 150, maxWidth: .infinity, alignment: .leading)
-                figures
+            HStack(spacing: LedgerColumn.spacing) {
+                // A small ideal width, so ViewThatFits measures the label as wrapped rather than on one line.
+                label().frame(minWidth: LedgerColumn.minimumLabel, idealWidth: LedgerColumn.minimumLabel,
+                              maxWidth: .infinity, alignment: .leading)
+                incomeCell
+                changeCell
+                balanceAndActions
             }
             VStack(alignment: .leading, spacing: 4) {
                 label()
-                HStack(spacing: 10) { Spacer(minLength: 0); figures }
+                HStack(spacing: LedgerColumn.spacing) {
+                    Spacer(minLength: 0)
+                    if isIncome { incomeCell } else { changeCell }
+                    balanceAndActions
+                }
             }
         }
         .font(.callout)
     }
 
-    private var figures: some View {
-        HStack(spacing: 10) {
-            amount().frame(minWidth: 110, alignment: .trailing)
-            Text(context.format(balance))
-                .monospacedDigit()
-                .foregroundStyle(balance < 0 ? Color.red : Color.secondary)
-                .frame(minWidth: 100, alignment: .trailing)
+    private var incomeCell: some View {
+        Group { if isIncome { amount() } else { Text("") } }
+            .frame(width: LedgerColumn.income, alignment: .trailing)
+    }
+
+    private var changeCell: some View {
+        Group { if isIncome { Text("") } else { amount() } }
+            .frame(width: LedgerColumn.change, alignment: .trailing)
+    }
+
+    private var balanceAndActions: some View {
+        HStack(spacing: LedgerColumn.spacing) {
+            MoneyText(amount: balance, context: context)
+                .frame(width: LedgerColumn.balance, alignment: .trailing)
                 .accessibilityLabel("Balance \(context.format(balance))")
-            actions().frame(width: 28)
+            actions().frame(width: LedgerColumn.actions)
         }
+    }
+}
+
+/// The column titles over the ledger's lines.
+struct LedgerHeader: View {
+    let currency: Currency
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .bottom, spacing: LedgerColumn.spacing) {
+                Text("Adventure or Item")
+                    .frame(minWidth: LedgerColumn.minimumLabel, idealWidth: LedgerColumn.minimumLabel,
+                           maxWidth: .infinity, alignment: .leading)
+                Text(currency == .credits ? "Credits & Earned Income" : "Treasure & Earned Income")
+                    .frame(width: LedgerColumn.income, alignment: .trailing)
+                Text("Bought & Sold").frame(width: LedgerColumn.change, alignment: .trailing)
+                Text("Balance").frame(width: LedgerColumn.balance, alignment: .trailing)
+                Text("").frame(width: LedgerColumn.actions)
+            }
+            // Where the columns don't fit, each line puts its figures on a second line and needs no titles. A
+            // real view, since ViewThatFits skips an EmptyView and would keep the row that is too wide.
+            Color.clear.frame(width: 0, height: 0)
+        }
+        .multilineTextAlignment(.trailing)
+        .font(.caption.bold())
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, 6)
     }
 }
 
@@ -44,7 +100,7 @@ struct OpeningLine: View {
     let context: LedgerContext
 
     var body: some View {
-        LedgerLineLayout(balance: line.balance, context: context) {
+        LedgerLineLayout(balance: line.balance, isIncome: true, context: context) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(group.title).lineLimit(2)
                 if case .session = group.place {
@@ -54,7 +110,8 @@ struct OpeningLine: View {
         } amount: {
             field
         } actions: {
-            EmptyView()
+            // Holds the menu's column, so this balance lines up with those of the purchases.
+            Text("")
         }
     }
 
@@ -93,10 +150,10 @@ struct PurchaseLine: View {
     let edit: () -> Void
 
     var body: some View {
-        LedgerLineLayout(balance: line.balance, context: context) {
+        LedgerLineLayout(balance: line.balance, isIncome: false, context: context) {
             name
         } amount: {
-            Text(context.formatChange(line.amount)).monospacedDigit()
+            MoneyText(amount: line.amount, context: context, showsSign: true)
         } actions: {
             Menu { menu } label: { Image(systemName: "ellipsis.circle") }
                 .menuStyle(.borderlessButton).fixedSize()
@@ -107,23 +164,15 @@ struct PurchaseLine: View {
         .draggable(LedgerDragItem(kind: .purchase, purchaseID: purchase.id).text)
     }
 
-    /// A marked item has a star and orange text, with the reason as help text and for VoiceOver (R5.7).
+    /// A marked item has a warning sign that explains itself, and orange text (R5.7).
     private var name: some View {
         HStack(spacing: 4) {
-            if !marks.isEmpty {
-                Image(systemName: "star.fill").foregroundStyle(.orange).accessibilityHidden(true)
-            }
+            if !marks.isEmpty { LegalityWarning(marks: marks) }
             Text(purchase.name + (purchase.quantity > 1 ? " ×\(purchase.quantity)" : ""))
                 .foregroundStyle(marks.isEmpty ? Color.primary : Color.orange)
+                .help(marks.isEmpty ? "" : LegalityWarning.explanation(of: marks))
+                .accessibilityLabel(purchase.name + (purchase.quantity > 1 ? ", \(purchase.quantity) of them" : ""))
         }
-        .help(explanation)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(purchase.name + (purchase.quantity > 1 ? ", \(purchase.quantity) of them" : ""))
-        .accessibilityValue(explanation)
-    }
-
-    private var explanation: String {
-        marks.map(\.explanation).joined(separator: " ")
     }
 
     @ViewBuilder private var menu: some View {
@@ -147,6 +196,35 @@ struct PurchaseLine: View {
     }
 }
 
+/// The sign on a purchase that may not be Society legal. Hovering shows why on the Mac and with an iPad's pointer;
+/// tapping or clicking shows it in a popover, which is how the iPhone and a touch-only iPad see it.
+struct LegalityWarning: View {
+    let marks: [LegalityMark]
+    @State private var isShowingWhy = false
+
+    var body: some View {
+        Button { isShowingWhy = true } label: {
+            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+        }
+        .buttonStyle(.borderless)
+        .help(Self.explanation(of: marks))
+        .accessibilityLabel("May not be Society legal")
+        .accessibilityHint(marks.map(\.explanation).joined(separator: " "))
+        .popover(isPresented: $isShowingWhy) {
+            Text(Self.explanation(of: marks))
+                .font(.callout)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(width: 300, alignment: .leading)
+                .padding()
+                .presentationCompactAdaptation(.popover)
+        }
+    }
+
+    static func explanation(of marks: [LegalityMark]) -> String {
+        (["This purchase may not be Society legal."] + marks.map(\.explanation)).joined(separator: " ")
+    }
+}
+
 /// A sale, under the adventure it followed: "Sold: Longsword" and what it brought back (R5.4).
 struct SaleLine: View {
     let purchase: Purchase
@@ -154,11 +232,11 @@ struct SaleLine: View {
     let context: LedgerContext
 
     var body: some View {
-        LedgerLineLayout(balance: line.balance, context: context) {
+        LedgerLineLayout(balance: line.balance, isIncome: false, context: context) {
             Text("Sold: \(purchase.name)" + (purchase.quantity > 1 ? " ×\(purchase.quantity)" : ""))
                 .foregroundStyle(.secondary)
         } amount: {
-            Text(context.formatChange(line.amount)).monospacedDigit()
+            MoneyText(amount: line.amount, context: context, showsSign: true)
         } actions: {
             Menu { menu } label: { Image(systemName: "ellipsis.circle") }
                 .menuStyle(.borderlessButton).fixedSize()
@@ -191,51 +269,5 @@ struct DestinationButtons: View {
         ForEach(context.destinations(from: from)) { group in
             Button(group.title) { choose(group.id) }
         }
-    }
-}
-
-/// A money amount typed by hand. Empty means none (nil); text that doesn't read as money is put back as it was.
-/// Saved on Return and when the field loses focus.
-struct MoneyField: View {
-    let label: String
-    let amount: Int?
-    let placeholder: String
-    let currency: Currency
-    let commit: (Int?) -> Void
-    @State private var text = ""
-    @FocusState private var isFocused: Bool
-
-    var body: some View {
-        TextField(label, text: $text, prompt: Text(placeholder))
-            .labelsHidden()
-            .textFieldStyle(.roundedBorder)
-            .multilineTextAlignment(.trailing)
-            .monospacedDigit()
-            .frame(width: 120)
-            .focused($isFocused)
-            #if os(iOS)
-            .keyboardType(.numbersAndPunctuation)
-            #endif
-            .onSubmit(save)
-            .onChange(of: isFocused) { _, focused in if !focused { save() } }
-            .onChange(of: amount) { _, _ in if !isFocused { text = shown } }
-            .onAppear { text = shown }
-            .accessibilityLabel(label)
-    }
-
-    private var shown: String {
-        amount.map { Money.format($0, in: currency) } ?? ""
-    }
-
-    private func save() {
-        let typed = text.trimmingCharacters(in: .whitespaces)
-        guard typed != shown else { return }
-        if typed.isEmpty { return commit(nil) }
-        guard let value = Money.parse(typed, in: currency) else {
-            text = shown
-            return
-        }
-        commit(value)
-        text = Money.format(value, in: currency)
     }
 }

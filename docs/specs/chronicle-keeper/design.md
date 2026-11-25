@@ -234,7 +234,11 @@ made-up sheet to its newest session (`DemoChronicles`), so the demo and the UI t
 
 The ledger (`WealthSection`) sits between the adventures and the boons, for second edition campaigns only. Each
 group opens with a `MoneyField` (starting funds, or what the adventure gave; the hint is only a placeholder), then its
-sales and purchases with the running balance. A purchase's menu edits, sells, moves or removes it; a sale's menu
+sales and purchases with the running balance. It reads like a spreadsheet: column titles ("Treasure & Earned
+Income", or "Credits & Earned Income" in Starfinder; "Bought & Sold"; "Balance"), fixed-width number columns
+(`LedgerColumn`) so the amounts line up, stripes that alternate across the whole ledger, and red for any negative
+amount (`MoneyText`). An item that may not be Society legal has an orange warning sign (`LegalityWarning`) whose
+reasons show on hover and, for touch, in a popover when tapped. A purchase's menu edits, sells, moves or removes it; a sale's menu
 moves or undoes it. Both lines are also `.draggable` onto any group's `.dropDestination`; the menu is the way in for
 the keyboard, VoiceOver and the iPhone. `PurchaseEditor` lists up to eight matches from `ItemPriceList` right under
 its field, as plain rows rather than a popover, so focus behaves on the Mac and the iPad. A line falls to two rows

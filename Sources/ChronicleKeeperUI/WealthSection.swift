@@ -12,10 +12,24 @@ struct WealthSection: View {
         VStack(alignment: .leading, spacing: 8) {
             header(context)
             LedgerNotes(ledger: context.ledger, currency: context.currency)
-            ForEach(context.ledger.groups) { group in
-                Divider()
-                LedgerGroupView(group: group, context: context)
+            VStack(alignment: .leading, spacing: 0) {
+                LedgerHeader(currency: context.currency).padding(.bottom, 4)
+                let groups = Array(zip(context.ledger.groups, Self.firstRows(of: context.ledger)))
+                ForEach(groups, id: \.0.id) { group, firstRow in
+                    Divider()
+                    LedgerGroupView(group: group, firstRow: firstRow, context: context)
+                }
             }
+        }
+    }
+
+    /// Where each group's lines start when every line of the ledger is counted, so the stripes alternate across
+    /// groups as a spreadsheet's rows do.
+    private static func firstRows(of ledger: WealthLedger) -> [Int] {
+        var next = 0
+        return ledger.groups.map { group in
+            defer { next += group.lines.count }
+            return next
         }
     }
 
@@ -113,22 +127,25 @@ extension LedgerGroup {
 /// purchases, and a way to add one. Purchases and sales can be dropped on it to move them here (R5.5).
 struct LedgerGroupView: View {
     let group: LedgerGroup
+    /// The ledger-wide number of this group's first line, for the stripes.
+    let firstRow: Int
     let context: LedgerContext
     @State private var isAdding = false
     @State private var editingID: String?
     @State private var isDropTarget = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 0) {
             if group.place == .unlisted {
-                Text(group.title).font(.callout.bold()).foregroundStyle(.secondary)
+                Text(group.title).font(.callout.bold()).foregroundStyle(.secondary).padding(6)
             }
-            ForEach(group.lines) { line in
+            ForEach(Array(group.lines.enumerated()), id: \.element.id) { index, line in
                 row(for: line)
+                    .padding(.horizontal, 6).padding(.vertical, 5)
+                    .background((firstRow + index).isMultiple(of: 2) ? Color.clear : Color.primary.opacity(0.05))
             }
-            addOrEdit
+            addOrEdit.padding(6)
         }
-        .padding(4)
         .background(isDropTarget ? Color.accentColor.opacity(0.12) : .clear, in: RoundedRectangle(cornerRadius: 6))
         .dropDestination(for: String.self) { items, _ in drop(items) } isTargeted: { isDropTarget = $0 }
     }
