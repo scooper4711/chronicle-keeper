@@ -21,12 +21,19 @@ public final class CharacterStore {
     /// Where chronicle PDFs are kept; nil until the app has looked up iCloud.
     public private(set) var chronicleLibrary: ChronicleLibrary?
 
+    /// What each character may claim of the free rewards, by character number (see `CharacterStore+Rewards`).
+    public internal(set) var claimableRewards: [String: [ClaimableReward]] = [:]
+    var rewardSource: RewardCatalogSource?
+    var rewardCatalog: RewardCatalog?
+    var rewardEligibility: RewardEligibility?
+    var rewardFetch: Task<Void, Never>?
+
     /// Looks covers up; nil for an account that has none to find, such as the demo.
     private var coverFinder: CoverFinder?
     /// The cover pass under way, which signing out stops.
     private(set) var coverPass: Task<Void, Never>?
 
-    private let repository: CharacterRepository
+    let repository: CharacterRepository
     private let fetchAccount: @Sendable () async throws -> AccountSnapshot
     var snapshot: AccountSnapshot?
     private var settings: [String: CharacterSettings] = [:]
@@ -54,6 +61,7 @@ public final class CharacterStore {
         loadSettings()
         rebuild()
         locateChronicleFiles()
+        loadRewardCatalog()
     }
 
     private func loadSnapshot() {
@@ -84,6 +92,7 @@ public final class CharacterStore {
     public func refresh() async {
         await readAccount()
         startCoverPass()
+        startRewardFetch()
     }
 
     private func readAccount() async {
@@ -99,6 +108,7 @@ public final class CharacterStore {
             errorMessage = nil
             rebuild()
             locateChronicleFiles()
+            findClaimableRewards()
         } catch {
             errorMessage = FailureMessage.text(for: error)
             return
@@ -206,6 +216,7 @@ public final class CharacterStore {
     public func signOut() {
         coverPass?.cancel()
         coverPass = nil
+        stopRewardFetch()
         do { try repository.deleteSnapshot() } catch { errorMessage = error.localizedDescription }
         snapshot = nil
         lastRefresh = nil
@@ -213,6 +224,7 @@ public final class CharacterStore {
         unavailableBoons = []
         chronicleFiles = [:]
         rebuild()
+        findClaimableRewards()
     }
 
     public func settings(for number: String) -> CharacterSettings {

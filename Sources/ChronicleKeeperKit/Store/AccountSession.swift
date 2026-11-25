@@ -40,6 +40,7 @@ public final class AccountSession {
         mode = live.credentials.load().map { .signedIn(email: $0.email) } ?? .signedOut
         let client = live.client
         liveStore = CharacterStore(repository: live.repository) { try await client.fetchAccount() }
+        liveStore.useRewardSource(client)
         store = liveStore
         store.load()
     }
@@ -100,6 +101,7 @@ public final class AccountSession {
         let demo = CharacterStore(repository: InMemoryCharacterRepository(settings: DemoWealth.settings)) {
             DemoAccount.snapshot(fetchedAt: Date())
         }
+        demo.useRewardSource(DemoRewards.Source())
         show(.demo, store: demo)
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent("Demo Boons", isDirectory: true)
         try? FileManager.default.removeItem(at: folder)
