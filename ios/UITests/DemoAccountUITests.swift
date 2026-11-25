@@ -87,7 +87,7 @@ final class DemoAccountUITests: XCTestCase {
         let ledger = app.staticTexts["Gold & Purchases"]
         scrollIntoView(ledger)
         XCTAssertTrue(ledger.waitForExistence(timeout: 5), app.debugDescription)
-        XCTAssertTrue(app.staticTexts["Starting Funds"].exists, app.debugDescription)
+        XCTAssertTrue(app.staticTexts["Before the First Adventure"].exists, app.debugDescription)
         saveScreenshots("ledger-start")
         let sale = app.staticTexts["Sold: Leather Armor"]
         scrollIntoView(sale)
@@ -100,6 +100,7 @@ final class DemoAccountUITests: XCTestCase {
         XCTAssertTrue(name.waitForExistence(timeout: 5), app.debugDescription)
         name.tap()
         name.typeText("Rope")
+        saveScreenshots("purchase-editor")
         let price = app.textFields["Price of one"]
         price.tap()
         price.typeText("5 sp")

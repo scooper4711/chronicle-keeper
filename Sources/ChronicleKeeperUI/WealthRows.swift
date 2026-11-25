@@ -101,18 +101,19 @@ struct OpeningLine: View {
 
     var body: some View {
         LedgerLineLayout(balance: line.balance, isIncome: true, context: context) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(group.title).lineLimit(2)
-                if case .session = group.place {
-                    Text("Level \(group.characterLevel)").font(.caption).foregroundStyle(.secondary)
-                }
-            }
+            Text(label)
         } amount: {
             field
         } actions: {
             // Holds the menu's column, so this balance lines up with those of the purchases.
             Text("")
         }
+    }
+
+    /// Words as the chronicle has them.
+    private var label: String {
+        let money = context.currency == .credits ? "credits" : "gold"
+        return group.place == .start ? "Starting \(money)" : "\(money.capitalized) earned"
     }
 
     @ViewBuilder private var field: some View {

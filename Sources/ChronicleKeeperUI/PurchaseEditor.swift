@@ -3,7 +3,8 @@ import SwiftUI
 
 /// Adds or edits a purchase (R5.3). Typing a name lists up to eight items from the item data right under the field
 /// (plain rows, no popover, so focus behaves on the Mac and the iPad); Return takes the first. Picking one fills
-/// its price, level and rarity. A name that matches nothing is an item typed by hand, with its own price.
+/// its price, level and rarity; the price stays editable, to override it. A name that matches nothing is a custom
+/// item, with its own price, level and rarity.
 struct PurchaseEditor: View {
     let initial: Purchase
     let currency: Currency
@@ -39,6 +40,10 @@ struct PurchaseEditor: View {
                 .accessibilityIdentifier("purchase-name")
             ItemSuggestions(items: suggestions, currency: currency, pick: pick)
             details
+            PriceNote(catalogPrice: catalogItem?.price, price: price, isCustom: isUnmatched,
+                      currency: currency) { catalogPrice in
+                priceText = Money.format(catalogPrice, in: currency)
+            }
             if isCustom { CustomItemFields(level: $draft.level, rarity: $draft.rarity) }
             buttons
         }
@@ -55,13 +60,23 @@ struct PurchaseEditor: View {
 
     private var isCustom: Bool { draft.itemID.isEmpty }
 
+    /// A name typed that nothing in the item data matches: a custom item.
+    private var isUnmatched: Bool { isCustom && !trimmedName.isEmpty && suggestions.isEmpty }
+
+    /// The picked item as the item data has it, for its catalog price.
+    private var catalogItem: PricedItem? {
+        guard !isCustom else { return nil }
+        return ItemPriceList.bundled.items.first { $0.id == draft.itemID }
+    }
+
     private var price: Int? { Money.parse(priceText, in: currency) }
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespaces) }
 
     private var details: some View {
         HStack(spacing: 12) {
-            TextField("Price each", text: $priceText, prompt: Text("Price each"))
+            Text("Price each")
+            TextField("Price each", text: $priceText, prompt: Text("e.g. 0.05 gp"))
                 .textFieldStyle(.roundedBorder).monospacedDigit().frame(maxWidth: 150)
                 .accessibilityLabel("Price of one")
             Stepper("Quantity: \(draft.quantity)", value: $draft.quantity, in: 1...999).fixedSize()
@@ -93,6 +108,29 @@ struct PurchaseEditor: View {
         purchase.name = trimmedName
         purchase.unitPrice = price
         save(purchase)
+    }
+}
+
+/// Says whose price this is: the item data's, an override of it (with a way back), or a custom item's.
+struct PriceNote: View {
+    let catalogPrice: Int?
+    let price: Int?
+    let isCustom: Bool
+    let currency: Currency
+    let useCatalogPrice: (Int) -> Void
+
+    var body: some View {
+        if let catalogPrice, let price, price != catalogPrice {
+            HStack {
+                Text("Your price overrides the item data's \(Money.format(catalogPrice, in: currency)).")
+                Button("Use \(Money.format(catalogPrice, in: currency))") { useCatalogPrice(catalogPrice) }
+                    .buttonStyle(.borderless)
+            }
+            .font(.caption).foregroundStyle(.secondary)
+        } else if isCustom {
+            Text("Nothing in the item data matches: this is a custom item with your own price, level and rarity.")
+                .font(.caption).foregroundStyle(.secondary)
+        }
     }
 }
 

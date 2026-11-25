@@ -116,7 +116,7 @@ extension LedgerGroup {
     /// The group's name in the ledger and in menus.
     var title: String {
         switch place {
-        case .start: "Starting Funds"
+        case .start: "Before the First Adventure"
         case .session(let progress): progress.session.adventure.titleWithLevels
         case .unlisted: "Adventures paizo.com no longer lists"
         }
@@ -136,9 +136,7 @@ struct LedgerGroupView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if group.place == .unlisted {
-                Text(group.title).font(.callout.bold()).foregroundStyle(.secondary).padding(6)
-            }
+            GroupTitle(group: group)
             ForEach(Array(group.lines.enumerated()), id: \.element.id) { index, line in
                 row(for: line)
                     .padding(.horizontal, 6).padding(.vertical, 5)
@@ -202,6 +200,22 @@ struct LedgerGroupView: View {
             }
         }
         return true
+    }
+}
+
+/// A group's name in bold across all the columns, with the character's level there for an adventure.
+struct GroupTitle: View {
+    let group: LedgerGroup
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(group.title).font(.callout.bold())
+            if case .session = group.place {
+                Text("Level \(group.characterLevel)").font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 6).padding(.top, 8).padding(.bottom, 2)
+        .accessibilityAddTraits(.isHeader)
     }
 }
 
