@@ -4,9 +4,10 @@ name: Release
 # none exists yet. Run by hand, it builds the branch and keeps the disk image as a workflow artifact instead, to
 # try the build without releasing. The app's Rexard art comes from the private Artwork submodule, which the
 # ARTWORK_SSH_KEY secret (a read-only deploy key) reads; without it the build fails.
+#
+# It no longer runs when a tag is pushed: a v* tag now marks the build Apple accepted, and that build ships
+# through the App Store.
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
 
 permissions:
