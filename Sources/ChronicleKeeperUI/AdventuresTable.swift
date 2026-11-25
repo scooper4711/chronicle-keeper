@@ -30,15 +30,12 @@ struct AdventuresTable: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Adventures (\(record.sessions.count))").font(.headline)
-                Spacer()
-                Picker("Sort", selection: $sort) {
-                    ForEach(AdventureSort.allCases) { Text($0.displayName).tag($0) }
-                }
-                .pickerStyle(.segmented).labelsHidden().frame(width: 160)
+        CollapsibleSection("Adventures (\(record.sessions.count))", id: "adventures") {
+            Picker("Sort", selection: $sort) {
+                ForEach(AdventureSort.allCases) { Text($0.displayName).tag($0) }
             }
+            .pickerStyle(.segmented).labelsHidden().frame(width: 160)
+        } content: {
             if sessions.isEmpty {
                 Text("No sessions on paizo.com yet.").foregroundStyle(.secondary)
             } else if isCompact {
