@@ -121,8 +121,10 @@ final class DemoAccountUITests: XCTestCase {
         let price = app.textFields["Price of one"]
         price.tap()
         price.typeText("5 sp")
+        app.steppers.firstMatch.buttons.element(boundBy: 1).tap()
+        saveScreenshots("purchase-editor-filled")
         app.buttons["Add"].tap()
-        XCTAssertTrue(app.staticTexts["Rope"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.staticTexts["Rope, 2 of them"].waitForExistence(timeout: 5), app.debugDescription)
     }
 
     @MainActor

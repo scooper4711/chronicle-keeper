@@ -254,8 +254,9 @@ spreadsheet: column titles ("Treasure & Earned Income", or "Credits & Earned Inc
 ledger, and red for any negative amount (`MoneyText`). An item that may not be Society legal has an orange warning sign
 (`LegalityWarning`) whose reasons show on hover and, for touch, in a popover when tapped. A purchase's menu edits,
 sells, moves or removes it; a sale's menu moves or undoes it. Both lines are also `.draggable` onto any group's
-`.dropDestination`; the menu is the way in for the keyboard, VoiceOver and the iPhone. `PurchaseEditor` lists up to
-eight matches from `ItemPriceList` right under its field, as plain rows rather than a popover, so focus behaves on the
+`.dropDestination`; the menu is the way in for the keyboard, VoiceOver and the iPhone. `PurchaseEditor` takes the item,
+its quantity (a short field with a stepper) and the price of one on one line, the price dropping below when the pane is
+too narrow, and lists up to eight matches from `ItemPriceList` right under its field, as plain rows rather than a popover, so focus behaves on the
 Mac and the iPad. A picked item's price stays editable; `PriceNote` shows the item data's price when it is overridden,
 or says that an unmatched name is a custom item. A line falls to two rows (`ViewThatFits`) where one doesn't fit. The
 demo gives Valeria and Zix-7 ledgers (`DemoWealth`) through the in-memory repository's starting settings.
