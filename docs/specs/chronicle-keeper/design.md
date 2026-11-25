@@ -125,9 +125,10 @@ TestFlight and the App Store get two builds under one bundle ID, uploaded from `
 - iPhone and iPad: `make archive` (`scripts/archive-ios.sh`) writes `build/ChronicleKeeper.xcarchive`, which Xcode's
   Organizer uploads, signing it for distribution.
 
-Both take the version from the newest `v` tag and the build number from the number of commits
-(`scripts/version.sh`), so the two builds of one commit agree and every merge to `main` raises the number App Store
-Connect needs to grow. `VERSION` and `BUILD_NUMBER` override them.
+Both take the version from the `VERSION` file, which names the release being worked toward, and the build number
+from the number of commits (`scripts/version.sh`), so the two builds of one commit agree and every merge to `main`
+raises the number App Store Connect needs to grow. The `VERSION` and `BUILD_NUMBER` environment variables override
+them.
 
 ## Published adventures
 

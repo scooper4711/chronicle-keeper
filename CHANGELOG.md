@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- A gold and purchases ledger for each character, laid out as a spreadsheet, with amounts in gold pieces
+- Ledger groups have titles, and a picked item's price can be overridden; a name nothing matches is a custom item
+  with its own price
+- Item prices from the pf2e data, for picking purchases
+- The demo characters have ledgers
+- An adventure's kind and XP show under its title
+
+### Fixed
+- Typed amounts are read with the device's decimal mark
+- Items sold in batches are bought by the batch
+- An item bought and sold together is listed in order
+- A character whose ledger this version can't read is held back from syncing, with a prompt to update, and never
+  overwrites the newer copy
+- Settings that can't be read are never saved over
+
 ## [1.1.0] - 2026-11-24
 
 ### Added
