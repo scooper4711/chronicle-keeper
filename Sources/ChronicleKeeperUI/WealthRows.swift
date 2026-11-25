@@ -173,6 +173,7 @@ struct PurchaseLine: View {
     /// A marked item has a warning sign that explains itself, and orange text (R5.7).
     private var name: some View {
         HStack(spacing: 4) {
+            ItemIcon(itemID: purchase.itemID)
             if !marks.isEmpty { LegalityWarning(marks: marks) }
             Text(purchase.name + (purchase.quantity > 1 ? " ×\(purchase.quantity)" : ""))
                 .foregroundStyle(marks.isEmpty ? Color.primary : Color.orange)
@@ -239,8 +240,11 @@ struct SaleLine: View {
 
     var body: some View {
         LedgerLineLayout(balance: line.balance, column: .boughtAndSold, context: context) {
-            Text("Sold: \(purchase.name)" + (purchase.quantity > 1 ? " ×\(purchase.quantity)" : ""))
-                .foregroundStyle(.secondary)
+            HStack(spacing: 4) {
+                ItemIcon(itemID: purchase.itemID).opacity(0.6)
+                Text("Sold: \(purchase.name)" + (purchase.quantity > 1 ? " ×\(purchase.quantity)" : ""))
+                    .foregroundStyle(.secondary)
+            }
         } amount: {
             MoneyChangeText(amount: line.amount, context: context)
         } actions: {

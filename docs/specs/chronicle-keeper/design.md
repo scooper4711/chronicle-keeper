@@ -278,3 +278,12 @@ gitignored file, from `Artwork/rexard` or the full packs beside the checkout. Th
 first. With `REXARD_PACKS` named the art is required, which is how the release workflow builds: it fetches the
 submodule with the `ARTWORK_SSH_KEY` secret, a read-only deploy key, and fails without the art. CI fetches it when
 the secret is there, so pull requests from forks build with the symbol.
+
+Purchases, sales and the editor's suggestions show each item's Rexard icon (`ItemIcon`), the one Field Guide shows
+before any item cards are read. `scripts/item-icons.py` writes the committed table
+`ChronicleKeeperUI/Resources/ItemIcons/item-icons.tsv` (item id, Rexard picture, icon file) from the equipment rows of
+Field Guide's `icon-map.tsv`; run it after a Field Guide import. `toolkit-artwork` keeps every picture that map names,
+so the submodule holds them all. `add-artwork.sh` makes a 64-pixel HEIC of each picture once (about 1,400, some 3 MB),
+gitignored beside the table; a picture missing from the packs only leaves its items without an icon. Items without
+an icon, custom items and builds without the art show Field Guide's equipment symbol. The demo's purchases carry
+the item data's ids so they show theirs.

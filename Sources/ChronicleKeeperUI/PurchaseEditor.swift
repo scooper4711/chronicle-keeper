@@ -189,6 +189,7 @@ struct ItemSuggestions: View {
 
     private func row(_ item: PricedItem) -> some View {
         HStack {
+            ItemIcon(itemID: item.id)
             Text(item.name)
             if item.rarity != .common {
                 Text(item.rarity.rawValue.capitalized).font(.caption).foregroundStyle(.orange)
