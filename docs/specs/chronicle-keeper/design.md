@@ -43,7 +43,10 @@ paizo.com is an old WebObjects site.
   extends `CampaignRules` with starting funds and the placeholder amount; `WealthLedger` turns a `CharacterRecord`
   into lines with a running balance; `PurchaseLegality` marks level and rarity. Sources: the Guide's Character
   Creation, Purchasing Guidelines and Selling Gear sections, and its Treasure Bundles table ("10 TB" column); for
-  Starfinder, the sfs2guide's Credits Awarded table.
+  Starfinder, the sfs2guide's Credits Awarded table. `Money.parse` follows the device's locale, as `format`
+  does: its decimal mark ("11,5" is 11.5 gp in Norwegian) and its thousands separator, which counts only before
+  exactly three digits; any other comma between digits is refused rather than guessed at, so a typo never
+  multiplies an amount.
 - Item prices: `make items` (`scripts/import-items.sh`) runs the `ItemPrices` tool (`ItemPriceImport` target) on the
   pf2e release pinned in `pf2e.release`. It reads both games' `equipment` packs (not `virtual-items` or
   `bestiary-items`; weapons, armor, shields, gear, consumables, backpacks and kits that have a coin or credit price)
@@ -228,6 +231,15 @@ meanwhile, and after `ICloudDownload.longest` (a minute) offers to try again. Bo
 doesn't arrive. Both libraries get this, and `hasFile` and the coordinated write, from `ICloudDocumentLibrary`.
 Share hands over the file as it is, since `ShareLink` gives nothing to wait in. The demo account attaches a
 made-up sheet to its newest session (`DemoChronicles`), so the demo and the UI tests show one.
+
+The ledger (`WealthSection`) sits between the adventures and the boons, for second edition campaigns only. Each
+group opens with a `MoneyField` (starting funds, or what the adventure gave; the hint is only a placeholder), then its
+sales and purchases with the running balance. A purchase's menu edits, sells, moves or removes it; a sale's menu
+moves or undoes it. Both lines are also `.draggable` onto any group's `.dropDestination`; the menu is the way in for
+the keyboard, VoiceOver and the iPhone. `PurchaseEditor` lists up to eight matches from `ItemPriceList` right under
+its field, as plain rows rather than a popover, so focus behaves on the Mac and the iPad. A line falls to two rows
+(`ViewThatFits`) where one doesn't fit. The demo gives Valeria and Zix-7 ledgers (`DemoWealth`) through the
+in-memory repository's starting settings.
 
 A paper sheet is scanned with VisionKit's document scanner (`DocumentScanner`), which finds the sheet's edges,
 straightens it, and has its own review screen to rotate, crop or rescan each page. Its pages are drawn upright
