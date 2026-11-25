@@ -104,6 +104,15 @@ The same risk lives inside the ledger: a later version may add fields to a purch
 `CharacterWealth` and `Purchase` keep any field they don't know (`UnknownFields`) and write it back as it was,
 and an older version moving or selling a purchase keeps what a newer one added.
 
+Data this build can't read is never written over. When `settings.json` or `wealth.json` won't decode,
+`CharacterStore` keeps nothing it read, says so, and refuses to save or merge settings until it can read them:
+saving what little was read would overwrite both files, and syncing would spread the loss. A `Character` record on
+the server whose ledger won't decode (saved by a newer version) is held back by `SettingsSync`: this device stops
+sending that character, so its copy doesn't overwrite the newer one, and the user is told to update.
+
+An item the item data sells in batches (candles, 1 cp for 10) is bought by the batch: the purchase is named
+"Candle (10)" (`PricedItem.purchaseName`), its price is the batch's, and its quantity counts batches.
+
 ## App Store builds
 
 TestFlight and the App Store get two builds under one bundle ID, uploaded from `main`:

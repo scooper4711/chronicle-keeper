@@ -227,3 +227,46 @@ struct FileCharacterRepositoryTests {
         return folder
     }
 }
+
+/// A file of the user's data that can't be read must never be saved over, nor its loss synced (code review).
+@MainActor
+struct UnreadableSettingsTests {
+    private let number = "123456-2001"
+    private let broken = Data(#"{"123456-2001":{"earned":"not a dictionary"}}"#.utf8)
+
+    private func storeWithUnreadableLedger() throws -> (CharacterStore, FileCharacterRepository) {
+        let repository = FileCharacterRepository(folder: FileManager.default.temporaryDirectory
+            .appendingPathComponent("chronicle-store-unreadable-\(UUID().uuidString)"))
+        try repository.saveSettings([number: CharacterSettings(notes: "keep me")])
+        try broken.write(to: repository.directory.appendingPathComponent("wealth.json"))
+        let store = CharacterStore(repository: repository) { SnapshotFactory.snapshot() }
+        store.load()
+        return (store, repository)
+    }
+
+    @Test func anUnreadableLedgerStopsSavingAndSays() throws {
+        let (store, _) = try storeWithUnreadableLedger()
+        #expect(!store.canSaveSettings)
+        #expect(store.errorMessage?.contains("aren't saved") == true)
+    }
+
+    @Test func anEditLeavesBothFilesAsTheyWere() throws {
+        let (store, repository) = try storeWithUnreadableLedger()
+        let settingsFile = repository.directory.appendingPathComponent("settings.json")
+        let before = try Data(contentsOf: settingsFile)
+        var reported: [String] = []
+        store.onLocalChange = { reported.append($0) }
+        store.update(number) { $0.notes = "overwritten" }
+        #expect(try Data(contentsOf: settingsFile) == before)
+        #expect(try Data(contentsOf: repository.directory.appendingPathComponent("wealth.json")) == broken)
+        #expect(reported.isEmpty)
+    }
+
+    @Test func remoteChangesWaitToo() throws {
+        let (store, repository) = try storeWithUnreadableLedger()
+        let settingsFile = repository.directory.appendingPathComponent("settings.json")
+        let before = try Data(contentsOf: settingsFile)
+        store.applyRemote([number: CharacterSettings(notes: "from another device")])
+        #expect(try Data(contentsOf: settingsFile) == before)
+    }
+}
