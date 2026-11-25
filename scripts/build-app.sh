@@ -28,10 +28,14 @@ EXECUTABLE="ChronicleKeeper"
 # The Rexard art, where this checkout has it (REXARD_PACKS makes it required).
 scripts/add-artwork.sh
 
-# The item prices the purchase ledger searches. A store build fails without them; others build without if the
-# import can't run (no network, say).
+# The item prices the purchase ledger searches. A store build always imports them and fails without them. Other
+# builds reuse a list newer than pf2e.release (`make items` imports it again), and build without one if the import
+# can't run (no network, say).
+ITEMS=Sources/ChronicleKeeperKit/Resources/Items/items.json
 if [ "${CHANNEL:-}" = "appstore" ]; then
     scripts/import-items.sh
+elif [ -f "$ITEMS" ] && [ "$ITEMS" -nt pf2e.release ]; then
+    echo "Using the item price list from $(date -r "$ITEMS" '+%Y-%m-%d %H:%M'); make items imports it again."
 else
     scripts/import-items.sh || echo "Warning: no item price list; the ledger can't suggest items." >&2
 fi
