@@ -37,6 +37,13 @@ paizo.com is an old WebObjects site.
   session and hands to each character's `ProgressCalculator`. The date a session counts as played on is
   `SessionProgress.date`, a `SessionDate` that says whether it was inferred; `PlayedSession.date` stays what
   paizo.com said, so nothing saved or synced passes a guess off as the site's.
+- `Wealth/`: the ledger (R5). Amounts are `Int` copper pieces (`Money`; a credit is 10). `CharacterWealth` holds the
+  starting funds override, the gold entered per session key and the purchases by ID; a `Purchase` places itself
+  and its sale with `boughtAfter` and `soldAfter`, both session keys (empty for starting gold). `RewardTables`
+  extends `CampaignRules` with starting funds and the placeholder amount; `WealthLedger` turns a `CharacterRecord`
+  into lines with a running balance; `PurchaseLegality` marks level and rarity. Sources: the Guide's Character
+  Creation, Purchasing Guidelines and Selling Gear sections, and its Treasure Bundles table ("10 TB" column); for
+  Starfinder, the sfs2guide's Credits Awarded table.
 - `Catalog/`: `AdventureCatalog`, `AdventureFinder`, and the search of the published adventures:
   `AdventureSearching`, `WarhornCatalog`, `WarhornScenario`, `CoverFinder`, `CoverTable` (see "Published adventures").
 - `Storage/`, `Store/`: `CharacterRepository` keeps site data apart from the user's data, keyed by character number
@@ -74,6 +81,16 @@ CloudKit keeps a Development and a Production database per container, and they d
 installed from Xcode use Development; TestFlight and App Store builds use Production. The Mac build uses Production
 unless `ICLOUD_ENVIRONMENT=Development`, which is how to sync it with a device installed from Xcode. Before a
 release, deploy the schema to Production in the CloudKit Console.
+
+## The ledger's storage
+
+An older build decodes `CharacterSettings`, drops fields it doesn't know and writes the rest back, so the ledger
+lives outside the `settings` JSON. In memory it is `CharacterSettings.wealth`, left out of its `CodingKeys`, so the
+store, its updates and merging need nothing new. On disk `FileCharacterRepository` keeps it in `wealth.json`
+beside `settings.json` and joins the two when loading. In CloudKit it is the `wealth` field (BYTES) of the
+`Character` record: an old build sets only `settings` and `portrait`, so the server keeps `wealth`. The sync
+ledger stores the agreed wealth beside the agreed settings (`SyncLedger.Entry.ancestorWealth`). `WealthMerge`
+merges entered gold and purchases per key, three ways, as overrides are; the starting funds pick as a field.
 
 ## App Store builds
 
