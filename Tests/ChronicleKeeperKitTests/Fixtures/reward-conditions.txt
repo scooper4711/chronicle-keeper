@@ -1,0 +1,339 @@
+# The free reward lists on paizo.com's Boons tab, as read on 2026-11-26: each reward's name, then its condition.
+# Chronicle Boons carry only the condition's sentence; Game Rewards carry their whole description.
+## Chronicle Boons - PFS(2ed)
+PFS (2ed) Scenario #1–00: Origin of the Open Road ¦
+PFS (2ed) Scenario #1–01: The Absalom Initiation Boon A ¦
+PFS (2ed) Scenario #1-01: The Absalom Initiation Boon B ¦
+PFS (2ed) Scenario #1-02: The Mosquito Witch ¦
+PFS (2ed) Scenario #1–03: Escaping the Grave ¦
+PFS (2ed) Scenario #1–04: Bandits of Immenwood Boon A ¦
+PFS (2ed) Scenario #1-04: Bandits of Immenwood Boon B ¦
+PFS (2ed) Scenario #1-05: Trailblazer’s Bounty ¦
+PFS (2ed) Scenario #1–06: Lost on the Spirit Road ¦
+PFS (2ed) Scenario #1–07: Flooded King's Court Boon A ¦
+PFS (2ed) Scenario #1–07: Flooded King's Court Boon B ¦
+PFS (2ed) Scenario #1–08: Revolution on the Riverside ¦
+PFS (2ed) Scenario #1–09: Star-Crossed Voyages Boon A ¦
+PFS (2ed) Scenario #1–09: Star-Crossed Voyages Boon B ¦
+PFS (2ed) Scenario #1–10: Tarnbreaker’s Trail ¦
+PFS (2ed) Scenario #1–11: Flames of Rebellion Boon A ¦
+PFS (2ed) Scenario #1–11: Flames of Rebellion Boon B ¦
+PFS (2ed) Scenario #1–12: Burden of Envy ¦
+PFS (2ed) Scenario #1–13: Devil at the Crossroads ¦
+PFS (2ed) Scenario #1–14: Lions of Katapesh ¦
+PFS (2ed) Scenario #1–15: The Blooming Catastrophe ¦
+PFS (2ed) Scenario #1–16: The Perennial Crown Part 1: Opal of Bhopan ¦
+PFS (2ed) Scenario #1-16: Danced the Grand Dance ¦ Must have played PFS #1-16: The Perennial Crown Part 1: Opal of Bhopan to download.
+PFS (2ed) Scenario #1–17: The Perennial Crown Part 2: The Thorned Monarch ¦
+PFS (2ed) Scenario #1–18: Lodge of the Living God Boon A ¦
+PFS (2ed) Scenario #1–18: Lodge of the Living God Boon B ¦
+PFS (2ed) Scenario #1–19: Iolite Squad Alpha ¦
+PFS (2ed) Scenario #1–20: The Lost Legend ¦
+PFS (2ed) Scenario #1–21: Mistress of the Maze ¦
+PFS (2ed) Scenario #1–22: Doom of Cassomir ¦
+PFS (2ed) Scenario #1–23: Star-Crossed Court ¦
+PFS (2ed) Scenario #1–25: Grim Symphony ¦
+PFS (2ed) Scenario #2–00: The King in Thorns ¦
+PFS (2ed) Scenario #2–03: Catastrophe's Spark ¦
+PFS (2ed) Scenario #2–08: A Frosty Mug ¦
+PFS (2ed) Scenario #2–19: Enter the Pallid Peak ¦
+PFS (2ed) Intro #1: The Second Confirmation ¦
+PFS (2ed) Scenario #3-07: Infernal Magistrix’s Blessing ¦ Must have played PFS 3-07: The Locked Lodge to download.
+PFS (2ed) Special #3-99: Time Traveler ¦ Must have played PFS 3-99: Fate in the Future to download.
+PFS (2ed) Scenario #3-09: Cracked Animus Gem ¦ Must have played PFS2 3-09: The Secluded Siege to download.
+PFS (2ed) Scenario #3-15: Nivi Rhombodazzle’s Reward ¦ Must have played PFS2 3-15: Cavern of the Sundered Song to download.
+PFS (2ed) Scenario #3-16: Muesello’s Magnificent Message Mark ¦ Must have played PFS2 3-16: Escape from Oppara to download.
+PFS (2ed) Scenario #3-18: Dacilane Academy Chaperone ¦ Must have played PFS2 3-18: Dacilane Academy's Delightful Disaster to download.
+PFS (2ed) Scenario #3-19: Friend from the Shadows ¦ Must have played PFS2 3-19: Mean Streets of Shadow Absalom to download.
+PFS (2ed) Scenario #3-98: Deathtouched Explorer ¦ Must have played Expedition into Pallid Peril to download.
+PFS (2ed) Scenario #4-03: Stalwart Shield ¦ Must have played Linnorm's Legacy to download.
+PFS (2ed) Scenario #4-13: Gunsmith’s Reward ¦ Must have played PFS #4-13: Within the Prairies to download.
+PFS (2ed) Scenario #4-15: Drakebonded ¦ Must have played PFS #4-15: In Glorious Battle to download.
+PFS (2ed) Scenario #4-16: Awesome Opossum ¦ Must have played PFS #4-16: Dacilane Academy's First Great Prank War to download.
+PFS (2ed) Scenario #4-17: Crone in Rags ¦ Must have played PFS #4-17: Trapping the Hag's Claw to download.
+PFS (2ed) Scenario #4-99: The Queen's Gratitude ¦ Must have played PFS #4-99: Blessings of the Forest to download.
+PFS (2ed) Scenario #5-08: The Mayor’s Luck ¦ Must have played PFS2 #5-08: Protecting the Firelight to download
+PFS (2ed) Scenario #5-13: Farah's Sword ¦ Must have played PFS2 #5-13: Thick as Thieves to download.
+PFS (2ed) Scenario #5-20: Outwitting the Crocodile ¦ Must have played PFS2 #5-20: The Rakshasa's Court to download.
+PFS (2ed) Scenario #6-00: Abendego’s Cannon ¦ Must have played PFS2 #6-00: Salt of the Ocean to download.
+PFS (2ed) Scenario #6-03: Is There a Doctor in the House? ¦ Must have played PFS2 #6-03: Godsrain in a Godless Land to download.
+PFS (2ed) Scenario #6-08: Frozen Tongues ¦ Must have played Upon Wheels and Rime to download.
+PFS (2ed) Scenario #6-14: Alicorn's Blessing ¦ Must have played Twice in Steel to download.
+PFS (2ed) Scenario #6-19: Wielder of Locusts ¦ Must have played What Walks Again to download.
+PFS (2ed) Scenario #6-20: Mender of Carved Rifts ¦ Must have played #6-20: The Overthrow of Ambition to download.
+PFS (2ed) Special #6-99: Crimson Apprentice ¦ Must have played #6-99: Under the Eye of the Mantis to download.
+PFS (2ed) Scenario #7-22: Battle Hardened ¦ Must have played #7-22: The Handmaiden's Gaze to download.
+PFS (2ed) Scenario #7-99: The Centipede Savior ¦ Must have played #7-99: The Kaiju Crisis to download.
+PFS (2ed) Quest #1: The Sandstone Secret ¦
+PFS (2ed) Quest #2: Unforgiving Fire Boon A ¦
+PFS (2ed) Quest #2: Unforgiving Fire Boon B ¦
+PFS (2ed) Quest #3: Grehunde’s Gorget ¦
+PFS (2ed) Quest #4: Port Peril Pub Crawl Boon A ¦
+PFS (2ed) Quest #4: Port Peril Pub Crawl Boon B ¦
+PFS (2ed) Quest #6: Archaeology in Aspenthar ¦
+PFS (2ed) Quest #7: A Curious Claim ¦
+PFS (2ed) Quest #8: Shadows of the Black Sovereign ¦
+PFS (2ed) Quest #9: Wayfinder Origins ¦
+PFS (2ed) Quest #10: The Broken Scales ¦
+PFS (2ed) Quest #11: A Parchment Tree ¦
+PFS (2ed) Quest #12: Putrid Seeds ¦
+Pathfinder Module: The Fall of Plaguestone Boon A ¦
+Pathfinder Module: The Fall of Plaguestone Boon B ¦
+Pathfinder Adventure Path #146: Cult of Cinders (Age of Ashes 2 of 6) ¦
+Pathfinder Adventure Path #147: Tomorrow Must Burn (Age of Ashes 3 of 6) Boon A ¦
+Pathfinder Adventure Path #147: Tomorrow Must Burn (Age of Ashes 3 of 6) Boon B ¦
+Pathfinder Adventure Path #148: Fires of the Haunted City (Age of Ashes 4 of 6) Boon A ¦
+Pathfinder Adventure Path #148: Fires of the Haunted City (Age of Ashes 4 of 6) Boon B ¦
+Pathfinder Adventure Path #149: Against the Scarlet Triad (Age of Ashes 5 of 6) Boon A ¦
+Pathfinder Adventure Path #149: Against the Scarlet Triad (Age of Ashes 5 of 6) Boon B ¦
+Pathfinder Adventure Path #149: Against the Scarlet Triad (Age of Ashes 5 of 6) Boon C ¦
+Pathfinder Adventure Path #150: Broken Promises (Age of Ashes 6 of 6) Boon A ¦
+Pathfinder Adventure Path #150: Broken Promises (Age of Ashes 6 of 6) Boon B ¦
+PFS (2ed) Adventure: Menace Under Otari (Beginner Box) ¦ Must have played at least one level of Menace Under Otari to obtain.
+Extinction Curse: The Show Must Go On - Run Away and Join the Circus ¦ Must have played The Show Must Go On to obtain.
+Extinction Curse: The Show Must Go On - Snare Training ¦ Must have played The Show Must Go On to obtain.
+Extinction Curse: The Show Must Go On - One with Nature ¦ Must have played The Show Must Go On to obtain.
+Extinction Curse: The Show Must Go On - Expanded Summoning ¦ Must have played The Show Must Go On to obtain.
+Extinction Curse: Legacy of the Lost God - Friend to the Animals ¦ Must have played Legacy of the Lost God to obtain.
+Extinction Curse: Legacy of the Lost God - Circus Caster ¦ Must have played Legacy of the Lost God to obtain.
+Extinction Curse: Life's Long Shadows - Hero Material ¦ Must have played Life's Long Shadows to obtain.
+Extinction Curse: Life's Long Shadows - Expanded Summoning ¦ Must have played Life's Long Shadows to obtain.
+Extinction Curse: Siege of the Dinosaurs - Scaled Friends ¦ Must have played Siege of the Dinosaurs to obtain.
+Extinction Curse: Siege of the Dinosaurs - Eater-Eating Magic ¦ Must have played Siege of the Dinosaurs to obtain.
+Extinction Curse: Siege of the Dinosaurs - Expanded Summoning ¦ Must have played Siege of the Dinosaurs to obtain.
+Extinction Curse: Lord of the Black Sands - Darklands Magic ¦ Must have played Lord of the Black Sands to obtain.
+Extinction Curse: The Apocalypse Prophet - Extinction Curse Capstones ¦ Must have played The Apocalypse Prophet to obtain.
+Extinction Curse: The Apocalypse Prophet - Pinnacle of Power ¦ Must have played The Apocalypse Prophet to obtain.
+Pathfinder Module: The Slithering: Build Slimy Doom ¦ Must have played The Slithering to obtain.
+Pathfinder Module: The Slithering: Heroes of Kibwe ¦ Must have played The Slithering to obtain.
+Pathfinder Adventure Path: Abomination Vaults - Ghost Hunter ¦ Must have played Ruins of Gauntlight or part 1 of the Abomination Vaults Compilation to obtain.
+Pathfinder Adventure Path: Abomination Vaults - Cursed Knowledge ¦ Must have played Hands of the Devil or part 2 of the Abomination Vaults Compilation to obtain.
+Pathfinder Adventure Path: Abomination Vaults - Thresholds of Truth ¦ Must have played Hands of the Devil or part 2 of the Abomination Vaults Compilation to obtain.
+Pathfinder Adventure Path: Abomination Vaults - Blood and Plasma ¦ Must have played Eyes of Empty Death or part 3 of the Abomination Vaults Compilation to obtain.
+Pathfinder Adventure Path: Abomination Vaults - Drow Shootist ¦ Must have played Eyes of Empty Death or part 3 of the Abomination Vaults Compilation to obtain.
+Fists of the Ruby Phoenix: Despair on Danger Island - Learn from the Competition ¦ Must have played Despair on Danger Island to download.
+Fists of the Ruby Phoenix: Despair on Danger Island - Tien Training ¦ Must have played Despair on Danger Island to download.
+Fists of the Ruby Phoenix: Despair on Danger Island - Expanded Summoning ¦ Must have played Despair on Danger Island to download.
+Fists of the Ruby Phoenix: Ready? Fight! - Ready? Feats! ¦ Must have played Ready? Fight! to download.
+Fists of the Ruby Phoenix: Ready? Fight! - Golden Enforcer ¦ Must have played Ready? Fight! to download.
+Fists of the Ruby Phoenix: Ready? Fight! - Expanded Summoning ¦ Must have played Ready? Fight! to download.
+Fists of the Ruby Phoenix: King of the Mountain - Touched by the Phoenix ¦ Must have played King of the Mountain to download.
+Fists of the Ruby Phoenix: King of the Mountain - Feather in Your Capstone ¦ Must have played King of the Mountain to download.
+Pathfinder One-Shot Sundered Waves: Friends on the High Seas ¦ Must have played Sundered Waves to obtain.
+Pathfinder One-Shot Dinner at Lionlodge: Survivor of Lionlodge ¦ Must have played Dinner at Lionlodge to obtain.
+Pathfinder One-Shot: Head-Shot the Rot: New Sheriff in Town ¦ Must have played Head-Shot the Rot to obtain.
+Mark of the Mantis: Mantis Devotee ¦ Must have played Mark of the Mantis to download.
+Threshold of Knowledge: Across the Threshold ¦ Must have played Threshold of Knowledge to download.
+Night of the Gray Death: Retired Gardener ¦ Must have played Night of the Gray Death to download.
+Strength of Thousands - Magaambyan Attendant ¦ Character must have credit for at least one volume of Strength of Thousands to download.
+Strength of Thousands: Kindled Magic - Study Group ¦ Must have played Kindled Magic to download.
+Strength of Thousands: Kindled Magic - Expanded Summoning ¦ Must have played Kindled Magic to download.
+Strength of Thousands: Spoken on the Song Wind - Of Tale and Song ¦ Must have played Spoken on the Song Wind to download.
+Strength of Thousands: Hurricane's Howl - Bloodsalt Dragon Disciple ¦ Must have played Hurricane's Howl to download.
+Strength of Thousands: Hurricane's Howl - Spells of the Sodden Lands ¦ Must have played Hurricane's Howl to download.
+Strength of Thousands: Secrets of the Temple-City - Unquenchable Light ¦ Must have played Secrets of the Temple-City to download.
+Strength of Thousands: Secrets of the Temple-City - Eclipse Spells ¦ Must have played Secrets of the Temple-City to download.
+Strength of Thousands: Secrets of the Temple-City - Revolutionary Training ¦ Must have played Secrets of the Temple-City to download.
+Strength of Thousands: Doorway to the Red Star - Galaxy Brain ¦ Must have played Doorway to the Red Star to download.
+Strength of Thousands: Shadows of the Ancients - Masks of the Magic Warriors ¦ Must have played Shadows of the Ancients to download.
+Quest for the Frozen Flame: Broken Tusk Moon - Skills of the Following ¦ Must have played Broken Tusk Moon to download.
+Quest for the Frozen Flame: Broken Tusk Moon - Mammoth Lords Magic ¦ Must have played Broken Tusk Moon to download.
+Quest for the Frozen Flame: Broken Tusk Moon - Game Hunter ¦ Must have played Broken Tusk Moon to download.
+Quest for the Frozen Flame: Broken Tusk Moon - Expanded Summoning ¦ Must have played Broken Tusk Moon to download.
+Quest for the Frozen Flame: Lost Mammoth Valley - Cold, Dead Spells ¦ Must have played Lost Mammoth Valley to download.
+Quest for the Frozen Flame: Lost Mammoth Valley - Gods of the North ¦ Must have played Lost Mammoth Valley to download.
+Quest for the Frozen Flame: Lost Mammoth Valley - Expanded Summoning ¦ Must have played Lost Mammoth Valley to download.
+Quest for the Frozen Flame: Burning Tundra - Emblem Spells ¦ Must have played Burning Tundra to download.
+Quest for the Frozen Flame: Burning Tundra - Mammoth Achievement ¦ Must have played Burning Tundra to download.
+Quest for the Frozen Flame: Burning Tundra - Megafriend ¦ Must have played Burning Tundra to download.
+Shadows at Sundown: Draco Domum ¦ Must have played Shadows at Sundown to download.
+Outlaws of Alkenstar: Punks in a Powder Keg - Her Majesty's Black Powder ¦ Must have played Punks in a Powder Keg to download.
+Outlaws of Alkenstar: The Smoking Gun - Glass Animal ¦ Must have played The Smoking Gun to download.
+Companions of the Stolen Lands ¦ May be downloaded once for each Chronicle Sheet earned for the Kingmaker Adventure Path.
+Adventuring with Amiri ¦ Must have played "The Blade's Legacy" from the Kingmaker Companion Guide to download.
+Exploits with Ekundayo ¦ Must have played "A Score to Settle" from the Kingmaker Companion Guide to download.
+Journeys with Jubilost ¦ Must have played "The Inconsequent Debates" from the Kingmaker Companion Guide to download.
+Learning with Linzi ¦ Must have played "To Ask for Forgiveness" from the Kingmaker Companion Guide to download.
+Trials with Tristian ¦ Must have played "Kingdom of the Cleansed" from the Kingmaker Companion Guide to download.
+Gatewalkers: The Seventh Arch – On the Bubble ¦ Must have played The Seventh Arch to download.
+Gatewalkers: The Seventh Arch – Stargazer ¦ Must have played The Seventh Arch to download.
+Gatewalkers: They Watched the Stars – They Tasted the Salt ¦ Must have played They Watched the Stars to download.
+Gatewalkers: Dreamers of the Nameless Spires – Ilverani Emissary ¦ Must have played Dreamers of the Nameless Spires to download.
+The Enmity Cycle: Sand Shards ¦ Must have played The Enmity Cycle to download.
+Stolen Fate: The Choosing–Holding Out for a Harrow ¦ Must have played The Choosing (Stolen Fate #1) to download.
+Stolen Fate: The Destiny War–Health and Wellness ¦ Must have played The Destiny War (Stolen Fate #2) to download.
+Sky King's Tomb: Cult of the Cave Worm–Undermining Arcana ¦ Must have played Cult of the Cave Worm to download.
+Sky King's Tomb: Cult of the Cave Worm–One With the Worms ¦ Must have played Cult of the Cave Worm to download.
+Sky King's Tomb: Heavy is the Crown–Body of Stone ¦ Must have played Heavy is the Crown to download.
+Season of Ghosts: Let the Leaves Fall–Follower of Sangpotshi ¦ Must have played Let the Leaves Fall to download.
+Season of Ghosts: Let the Leaves Fall–Secrets of Tan Sugi ¦ Must have played Let the Leaves Fall to download.
+Season of Ghosts: To Bloom Below the Web–Once More, With Feeling ¦ Must have played To Bloom Below the Web to download.
+Seven Dooms for Sandpoint: The Butterfly Knife ¦ Must have played Seven Dooms for Sandpoint to download.
+Wardens of Wildwood: Pactbreaker–Friend of the Forest ¦ Must have played Pactbreaker to download.
+Wardens of Wildwood: Severed at the Root–Little Green Men ¦ Must have played Severed at the Root to download.
+Wardens of Wildwood: Severed at the Root–Root of the Problem ¦ Must have played Severed at the Root to download.
+Wardens of Wildwood: Severed at the Root–In Lodge We Trust ¦ Must have played Severed at the Root to download.
+Wardens of Wildwood: Shepherd of Decay–Follower of Decay ¦ Must have played Shepherd of Decay to download.
+Wardens of Wildwood: Shepherd of Decay–Into the Woods ¦ Must have played Shepherd of Decay to download.
+Prey for Death: Red Redemption ¦ Must have played Prey for Death to download.
+Prey for Death: School of the Assassin ¦ Must have played Prey for Death to download.
+Curtain Call: Stage Fright–Operatic Performer ¦ Must have played Stage Fright to download.
+Curtain Call: Singer, Stalker, Skinsaw Man–Stage Magic ¦ Must have played Stage Fright to download.
+Triumph of the Tusk: The Resurrection Flood–Scarred Resourcefulness ¦ Must have played The Resurrection Flood to download.
+Triumph of the Tusk: Hoof, Cinder and Storm–Let Slip the Pigs of War ¦ Must have played Hoof, Cinder and Storm to download.
+Triumph of the Tusk: Destroyer's Doom–Wyvernsting ¦ Must have played Destroyer's Doom to download.
+Triumph of the Tusk: Destroyer's Doom–Mysteries of the Hold ¦ Must have played Destroyer's Doom to download.
+Spore War: Whispers in the Dirt–Elven Exemplar ¦ Must have played Whispers in the Dirt to download.
+Claws of the Tyrant: Blood and Faith ¦ Must have played Claws of the Tyrant to download.
+Shades of Blood: Thirst for Blood–Sense of Blood ¦ Must have played Thirst for Blood to download.
+Shades of Blood: To Blot Out The Sun–School of Hard Cogs ¦ Must have played To Blot Out The Sun to download.
+Myth-Speaker: The Acropolis Pyre–Follower of Hero-Gods ¦ Must have played The Acropolis Pyre to download.
+Myth-Speaker: The Acropolis Pyre–Bailaxian Spellcaster ¦ Must have played The Acropolis Pyre to download.
+Myth-Speaker: The Acropolis Pyre–Iblydian Apparitions ¦ Must have played The Acropolis Pyre to download.
+Myth-Speaker: Death Sails a Wine-Dark Sea–Sweet Sorrow ¦ Must have played Death Sails a Wine-Dark Sea to download.
+Hellbreakers: Hell's Finest Foe ¦ Must have played Hellbreakers, Part 1 to download.
+Hellbreakers: Loyal Friend ¦ Must have played Hellbreakers, Part 2 to download.
+Hell's Destiny: A Class Below ¦ Must have played Hell's Destiny, Part 1 to download.
+Hell's Destiny: Strategic Command ¦ Must have played Hell's Destiny, Part 2 to download.
+Hell's Destiny: Legacy of Cheliax ¦ Must have played Hell's Destiny, Part 3 to download.
+## Game Rewards - PFS(2ed)
+Skillful Mentor (Envoy's Alliance) ¦ Help low-level PCs at your table with skill checks. Must be Liked by Envoy's Alliance to obtain.
+Envoy's Alliance Gear ¦ Gain access to Envoy's Alliance gear from Lost Omens Pathfinder Society Guide. Must be Liked by Envoy's Alliance to obtain.
+Heroic Inspiration (Envoy's Alliance) ¦ Inspire your allies when you spend a Hero Point. Must be Admired by Envoy's Alliance to obtain.
+Magical Mentor (Grand Archive) ¦ Help low-level PCs at your table with spellcasting. Must be Liked by Grand Archive to obtain.
+Grand Archive Gear ¦ Gain access to Grand Archive gear from Lost Omens Pathfinder Society Guide. Must be Liked by Grand Archive to obtain.
+Heroic Recall (Grand Archive) ¦ When you spend a Hero Point, you may Recall Knowledge as a free action, rolling twice and using the better result. Must be Admired by Grand Archive to obtain.
+Rugged Mentor (Horizon Hunters) ¦ Help low-level PCs at your table with saving throws. Must be Liked by Horizon Hunters to obtain.
+Horizon Hunters Gear ¦ Gain access to Horizon Hunters gear from Lost Omens Pathfinder Society Guide. Must be Liked by Horizon Hunters to obtain.
+Heroic Hustle (Horizon Hunters) ¦ Gain extra movement speed when spending Hero Points to reroll, and stand up faster when awakened after spending Hero Points to avert death. Must be Admired by Horizon Hunters to obtain.
+Combat Mentor (Vigilant Seal) ¦ Help low-level PCs at your table with attack rolls. Must be Liked by Vigilant Seal to obtain.
+Vigilant Seal Gear ¦ Gain access to Vigilant Seal gear from Lost Omens Pathfinder Society Guide. Must be Liked by Vigilant Seal to obtain.
+Heroic Defiance (Vigilant Seal) ¦ Wake immediately when spending Hero Points to avert death. Must be Admired by Vigilant Seal to obtain.
+Protective Mentor (Radiant Oath) ¦ Help low-level PCs at your table by increasing their Hit Points as part of a Level Bump. Must be Liked by Radiant Oath to obtain.
+Heroic Intervention (Radiant Oath) ¦ Grant healing to your allies when spending Hero Points. Must be Admired by Radiant Oath to obtain.
+Worldly Mentor (Verdant Wheel) ¦ Help low-level PCs at your table with Perception checks and Initiative rolls. Must be Liked by Verdant Wheel to obtain.
+Heroic Aegis (Verdant Wheel) ¦ When spending Hero Points to avert death, gain a +2 status bonus to AC and saving throws. Must be Admired by Verdant Wheel to obtain.
+Expert Hireling ¦ Improve a Hireling's skill modifier to 4 + your level. Character must be Liked by any Faction to obtain.
+Professional Hireling ¦ Broaden your Hireling's skill set, choosing another Lore and a Skill feat. Character must be Admired by any Faction to obtain.
+Master Hireling ¦ Improve a Hireling's skill modifier to 6 + your level. Character must be Revered by any Faction to purchase.
+Wayfinder ¦ Gain a free wayfinder. Character must have played 2 sessions to obtain.
+Iceferry Lodge Gear ¦ Access to snowshoes of the long trek. Must have played PFS(2ed) 1-10: Tarnbreaker's Trail to obtain.
+Lantern Lodge Gear ¦ Access to book of translation (Tien). Must have played PFS(2ed) 1-06: Lost on the Spirit Road OR 2-02 Mountain of Sea and Sky to obtain.
+Nexus House Gear ¦ Access to Ganjay book. Must have played PFS(2ed) 1-00: Origin of the Open Road to obtain.
+Open Road Lodge Gear ¦ Access to vermin repellent agent. Must have played PFS(2ed) 1-16: The Perennial Crown Part 1, Opal of Bhopan AND 1-17: The Perennial Crown Part 2, The Thorned Monarch to obtain.
+Woodsedge Lodge Gear ¦ Access to emergency disguise. Must have played PFS(2ed) 1-21: Mistress of the Maze to obtain.
+## Chronicle Boons - SFS
+AbadarCorp Endorsement (SFS 3-00: The Last Bite) ¦ Must have played SFS 3-00: The Last Bite to obtain.
+Friend to the Ghorans (Frozen Ambitions) ¦ Must have credit for at least one scenario in the Frozen Ambitions series to download; must complete all four scenarios with any character to fully unlock.
+Field Upgrades (Vast Experiment) ¦ Must have credit for at least one scenario in the Vast Experiment series to download; must complete all four scenarios with any character to fully unlock.
+Starfinder Forum Member (Fleeting Truth) ¦ Must have played all three scenarios in the Fleeting Truth series with the same character to obtain.
+SFS Special #3-99: Memories of the Past ¦ Must have played SFS Special 3-99: Perils of the Past to download.
+Society Subdermal Graft (SFS Intro #1: The First Test) ¦ Must have played SFS Intro #1: The First Test to download.
+Envar's Gift (SFS #4-02: Settling Accounts) ¦ Must have played SFS #4-02: Settling Accounts to download.
+Flower of Celebration (SFS #4-12: A Festive Operation) ¦ Must have played SFS 4-12: A Festive Operation to download.
+Data Scourge Savior (SFS #4-16: Hope for the Future) ¦ Must have played SFS 4-16: Hope for the Future to download.
+Drift Crasher (SFS 4-99: A Time of Crisis) ¦ Must have played SFS 4-99: A Time of Crisis to download.
+Klikharp Companion (SFS Intro: Year of Redemption's Rise) ¦ Must have played SFS Intro: Year of Redemption's Rise to download.
+Planar Preparations (SFS #5-06: Tarnished Legacy: Historia’s Holdout) ¦ Must have played Tarnished Legacy: Historia’s Holdout to download.
+First World Mutation (SFS #5-07: Planar Bloom) ¦ Must have played Planar Bloom to download.
+Tsuchi-ko’s Spectacular Gift (SFS #5-08: Star Sugar Superstar!!!) ¦ Must have played Tarnished Legacy: Star Sugar Superstar!!! to download.
+Call a Cognate (SFS #5-11: Archivist's Inquiry) ¦ Must have played Archivist's Inquiry to download.
+Near Space Tourist (SFS #5-12: Envar's Expeditions) ¦ Must have played Envar's Expeditions to download.
+Hexoglin Pup (SFS #5-14: Ghost Level Delve) ¦ Must have played Ghost Level Delve to download.
+Redemption’s Rise (SFS #5-16: To Catch a King) ¦ Must have played To Catch a King to download.
+Psychic Resilience (SFS #5-99: Battle for the Bulwark) ¦ Must have played Battle for the Bulwark to download.
+Enemy of the Organization (SFS Intro: Year of Fortune's Fall) ¦ Must have played Intro: Year of Fortune's Fall to download.
+Hero’s Commendation (The Death of Kortus IV) ¦ Must have played The Death of Kortus IV to download.
+Temporal Insight (Dawning Fate) ¦ Must have played SFS1 #6-16: Dawning Fate to download.
+Psychic Echoes of the Swarm (The End Awakens) ¦ Must have played SFS1 Special #6-99: The End Awakens to download.
+Allies in Eternity (Year of Era's End) ¦ Must have played Intro: Year of Era's End to download.
+Calamitous Corruption (Aucturn Asunder) ¦ Must have played SFS1 #7-03: Aucturn Asunder to download.
+Inheritance of Gadrathar (Inheritors of Gadrathar) ¦ Must have played SFS1 #7-04: Inheritors of Gadrathar to download.
+One With the Solar Stream (The Day the River Died) ¦ Must have played SFS1 #7-05: The Day the River Died to download.
+Salvation's Hero (Clutches of the Vault Lord) ¦ Must have played Clutches of the Vault Lord to download.
+Rasheen's Legacy (Rasheen's Requiem) ¦ Must have played Rasheen's Requiem to download.
+Tear-Gotten Divinity (Final Assessment) ¦ Must have played Final Assessment to download.
+Loaned Ship: Sunrise Maiden (Dead Suns Adventure Path) ¦ Must have played Incident at Absalom Station or Part 1 of the Dead Suns compilation to download.
+Street Cred: Absalom Station (Dead Suns Adventure Path) ¦ Must have played Incident at Absalom Station or Part 1 of the Dead Suns compilation to download.
+Enemy of the Devourer (Dead Suns Adventure Path) ¦ Must have played Temple of the Twelve or Part 2 of the Dead Suns compilation to download.
+Qabarat University Admittance (Dead Suns Adventure Path) ¦ Must have played Temple of the Twelve or Part 2 of the Dead Suns compilation to download.
+Corpse Fleet and Devourer Blueprints (Dead Suns Adventure Path) ¦ Must have played Splintered Worlds or part 3 of the Dead Suns compilation to download.
+Loaned Ship: Crypt Warden (Dead Suns Adventure Path) ¦ Must have played Splintered Worlds or part 3 of the Dead Suns compilation to download.
+Aeon Torpedo Launcher (Dead Suns Adventure Path) ¦ Must have played The Ruined Clouds or part 4 of the Dead Suns compilation to download.
+Welcome in Istamak (Dead Suns Adventure Path) ¦ Must have played The Ruined Clouds or part 4 of the Dead Suns compilation to download.
+Gate of Twelve Suns Veteran (Dead Suns Adventure Path) ¦ Must have played The Thirteenth Gate or part 5 of the Dead Suns compilation to download.
+Purveyor of Kishalee Relics (Dead Suns Adventure Path) ¦ Must have played The Thirteenth Gate or part 5 of the Dead Suns compilation to download.
+Legacy of Vanished Ages (Dead Suns Adventure Path) ¦ Must have played Empire of Bones or part 6 of the Dead Suns compilation to download.
+Trophies of Serovox (Dead Suns Adventure Path) ¦ Must have played Empire of Bones or part 6 of the Dead Suns compilation to download.
+Awakened from Rel-State ¦ Must have completed all 3 volumes of the Devastation Ark Adventure Path to download.
+Grifter ¦ Must have completed all 6 volumes of the Fly Free or Die Adventure Path to download.
+Pact Worlds Tour (SF One-Shot: Band on the Run) ¦ Must have played Band on the Run to download.
+Top of the Charts (SF One-Shot: Band on the Run) ¦ Must have played Band on the Run to download.
+The Starfinder Four vs. the Hardlight Harlequin: I Saw It In A Game ¦ Must have played The Starfinder Four vs. the Hardlight Harlequin to download.
+Ask Chat (SF One-Shot #3: System Takedown) ¦ Must have played System Takedown to download.
+Liberation of Azlanti Allies (The Liberation of Locus-1) ¦ Must have played The Liberation of Locus-1 to download.
+Planar Anomaly (SF Adventure: Skitter Warp) ¦ Must have played Skitter Warp to download.
+Silicanid Companion (Horizons of the Vast: Planetfall) ¦ Must have played SF AP: Planetfall to download.
+Drift Scholar (SF One-Shot #4: Before the Storm) ¦ Must have played SF One-Shot #4: Before the Storm to download.
+Absalom Run Victor (SF Adventure: Redshift Rally) ¦ Must have played Redshift Rally to download.
+Planar Conduit (Drift Crashers) ¦ Must have played Masters of Time and Space (Drift Crashers #3) to download.
+All Fun and Games (Operation Seaside Park) ¦ Must have played Operation Seaside Park to download.
+Drift Born (Drift Hackers Adventure Path) ¦ Must have played A Light in the Dark (Drift Hackers #1) to download.
+Blessing of Triune (Drift Hackers Adventure Path) ¦ Must have played Into the Dataverse (Drift Hackers #3) to download.
+Year of the Scoured Stars ¦ Must have played at least one part of the Scoured Stars Adventure Path to download.
+Marked Field Agent (Scoured Stars) ¦ Must have played Scoured Stars Part 1: The Commencement to download.
+Star Sugar Heartlove!!! (Scoured Stars) ¦ Must have played Scoured Stars Part 1: The Commencement to download.
+High Society Influence (Scoured Stars) ¦ Must have played Scoured Stars Part 2: The First Mandate to download.
+Honorary Spider (Scoured Stars) ¦ Must have played Scoured Stars Part 2: The First Mandate to download.
+Journey to the Scoured Stars: Segment 1 ¦ Must have played Scoured Stars Part 2: The First Mandate to download.
+Athaeum Insight (Scoured Stars) ¦ Must have played Scoured Stars Part 3: In Pursuit of the Scoured Past to download.
+Iteration-177's Attention ¦ Must have played Scoured Stars Part 3: In Pursuit of the Scoured Past to download.
+Journey to the Scoured Stars: Segment 2 ¦ Must have played Scoured Stars Part 3: In Pursuit of the Scoured Past to download.
+First Skirmish (Scoured Stars) ¦ Must have played Scoured Stars Part 4: On the Trail of History to download.
+Izalguun Profiteer (Scoured Stars) ¦ Must have played Scoured Stars Part 4: On the Trail of History to download.
+Journey to the Scoured Stars: Segment 3 ¦ Must have played Scoured Stars Part 4: On the Trail of History to download.
+Mutated DNA (Scoured Stars) ¦ Must have played Scoured Stars Part 5: Reclaiming the Time-Lost Tear to download.
+Journey to the Scoured Stars: Segment 4 ¦ Must have played Scoured Stars Part 5: Reclaiming the Time-Lost Tear to download.
+Ralveen's Visor (Scoured Stars) ¦ Must have played Scoured Stars Part 5: Reclaiming the Time-Lost Tear to download.
+Defender of the Fleet (Scoured Stars) ¦ Must have played Scoured Stars Part 6: The Scoured Stars Invasion to download.
+Scoured Stars Survivor ¦ Must have played Scoured Stars Part 6: The Scoured Stars Invasion to download.
+Scoured Stars Veteran ¦ Must have played Scoured Stars Part 6: The Scoured Stars Invasion to download.
+First Seeker's Intuition (Scoured Stars) ¦ Must have played Scoured Stars Part 7: Truth of the Seeker to download.
+Journey to the Scoured Stars: Segment 5 ¦ Must have played Scoured Stars Part 8: Treading History's Folly to download.
+Spirits of a Doomed People (Scoured Stars) ¦ Must have played Scoured Stars Part 8: Treading History's Folly to download.
+Jinsul Witness (Scoured Stars) ¦ Must have played Scoured Stars Part 9: Heart of the Foe to download.
+Journey to the Scoured Stars: Segment 6 ¦ Must have played Scoured Stars Part 9: Heart of the Foe to download.
+Journey to the Scoured Stars: Segment 7 ¦ Must have played Scoured Stars Part 10: Honorbound Emissaries to download.
+Journey to the Scoured Stars: Segment 8 ¦ Must have played Scoured Stars Part 11: The Herald's War to download.
+Tip of the Spear (Scoured Stars) ¦ Must have played Scoured Stars Part 11: The Herald's War to download.
+United Society (Scoured Stars) ¦ Must have played Scoured Stars Part 11: The Herald's War to download.
+Kadrical Rises (Scoured Stars) ¦ Must have played Scoured Stars Part 12: Fate of the Scoured God to download.
+Overcome the Past (Scoured Stars) ¦ Must have played Scoured Stars Part 12: Fate of the Scoured God to download.
+Savior of the Scoured Stars ¦ Must have played Scoured Stars Part 12: Fate of the Scoured God to download.
+Slayer of Godspawn (Scoured Stars) ¦ Must have played Scoured Stars Part 12: Fate of the Scoured God to download.
+Friendly Tumbleweed (Mechageddon!) ¦ Must have played Colossus Clash (part 1 of Mechageddon!) to download.
+Fiendblood Corruption: Phase 1 (Mechageddon!) ¦ Must have played Colossus Clash (part 1 of Mechageddon!) to download.
+Fiendblood Corruption: Phase 2 (Mechageddon!) ¦ Must have played Chains of Fame (part 2 of Mechageddon!) to download.
+Fiendblood Corruption: Phase 3 (Mechageddon!) ¦ Must have played The Thirteenth Hour (part 3 of Mechageddon!) to download.
+Cleansed Blood (Mechageddon!) ¦ Must have played The Thirteenth Hour (part 3 of Mechageddon!) to download.
+## Game Rewards - SFS
+Purveyor of Fortunes (Acquisitives) ¦ Gain extra Reputation for participating in the Retail Incentive Program. Must have at least 5 Reputation with the Acquisitives to obtain.
+Acquisitives Champion ¦ Recover Resolve for succeeding at certain skill checks. Must have 15 or more Reputation with the Acquisitives to download.
+Digital Presence (Dataphiles) ¦ Gain extra Reputation for participating in an online game. Must have at least 5 Reputation with the Dataphiles to obtain.
+Dataphiles Champion ¦ Recover Resolve for succeeding at certain skill checks. Must have 15 or more Reputation with the Dataphiles to download.
+Theoretical Historian (Exo-Guardians) ¦ Gain extra Reputation for GMing a scenario you have already run. Must have at least 5 Reputation with the Exo-Guardians to obtain.
+Exo-Guardians Champion ¦ Recover Resolve for succeeding at certain skill checks or scoring critical hits. Must have 15 or more Reputation with the Exo-Guardians to download.
+Seeker of Knowledge (Second Seekers: Ehu Hadif) ¦ Replay a scenario you have already played, once per Reputation Tier. Must have at least 5 Reputation with the Second Seekers (Ehu) to obtain.
+Second Seekers (Ehu Hadif) Champion ¦ Recover Resolve for succeeding at certain skill checks. Must have 15 or more Reputation with the Second Seekers (Ehu Hadif) to download.
+Seeker of Knowledge (Second Seekers: Jadnura) ¦ Replay a scenario you have already played, once per Reputation Tier. Must have at least 5 Reputation with the Second Seekers (Jadnura) to obtain.
+Second Seekers (Jadnura) Champion ¦ Recover Resolve for succeeding at certain skill checks. Must have 15 or more Reputation with the Second Seekers (Jadnura) to download.
+Society Shepherd (Second Seekers: Luwazi Elsebo) ¦ Gain extra Reputation for bringing a new player to an event. Must have at least 5 Reputation with the Second Seekers (Luwazi) to obtain.
+Second Seekers (Luwazi Elsebo) Champion ¦ Recover Resolve for succeeding at certain skill checks or aiding another. Must have 15 or more Reputation with the Second Seekers (Luwazi Elsebo) to download.
+Worldwide Explorer (Wayfinders) ¦ Gain extra Reputation for playing a game in a region other than your home region (excepting the Online region). Must have at least 5 Reputation with the Wayfinders to obtain.
+Wayfinders Champion ¦ Recover Resolve for succeeding at certain skill checks. Must have 15 or more Reputation with the Wayfinders to download.
+Avid Volunteer (Advocates) ¦ Slotless boon; gain extra Reputation for assisting with setup or teardown at a game day or convention. Must have at least 5 Reputation with the Advocates to download.
+Advocates Champion ¦ Faction boon; recover Resolve for healing allies or succeeding at Diplomacy checks. Must have at least 15 Reputation with the Advocates to download.
+Society Diversification (Cognates) ¦ Slotless boon; gain extra Reputation for completing a scenario with at least 4 different character classes. Must have at least 5 Reputation with the Cognates to download.
+Cognates Champion ¦ Faction boon; recover Resolve for identifying creatures or succeeding at a Mysticism check. Must have at least 15 Reputation with the Cognates to download.
+Ardent Diversification (Manifold Host) ¦ Slotless boon; gain extra Reputation for completing a scenario with a character whose species does not appear in the Core Rulebook. Must have at least 5 Reputation with the Manifold Host to download.
+Manifold Host Champion ¦ Faction boon; recover Resolve for succeeding at a Culture or Diplomacy check. Must have at least 15 Reputation with the Manifold Host to download.
