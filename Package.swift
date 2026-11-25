@@ -7,6 +7,7 @@ let package = Package(
     products: [
         .library(name: "ChronicleKeeperKit", targets: ["ChronicleKeeperKit"]),
         .library(name: "ChronicleKeeperUI", targets: ["ChronicleKeeperUI"]),
+        .executable(name: "ItemPrices", targets: ["ItemPrices"]),
         .executable(name: "ChronicleKeeper", targets: ["ChronicleKeeper"])
     ],
     dependencies: [
@@ -26,6 +27,14 @@ let package = Package(
         ),
         // The macOS entry point; the app itself lives in ChronicleKeeperUI so the iPad app can share it.
         .executableTarget(name: "ChronicleKeeper", dependencies: ["ChronicleKeeperUI"]),
+        // Reads the pf2e item data into the price list (`make items`).
+        .target(name: "ItemPriceImport", dependencies: [
+            "ChronicleKeeperKit",
+            .product(name: "CreatureImport", package: "tabletop-kit"),
+            .product(name: "Bestiary", package: "tabletop-kit")
+        ]),
+        .executableTarget(name: "ItemPrices", dependencies: ["ItemPriceImport"]),
+        .testTarget(name: "ItemPriceImportTests", dependencies: ["ItemPriceImport"]),
         .testTarget(
             name: "ChronicleKeeperKitTests",
             dependencies: ["ChronicleKeeperKit"],

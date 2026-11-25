@@ -28,6 +28,14 @@ EXECUTABLE="ChronicleKeeper"
 # The Rexard art, where this checkout has it (REXARD_PACKS makes it required).
 scripts/add-artwork.sh
 
+# The item prices the purchase ledger searches. A store build fails without them; others build without if the
+# import can't run (no network, say).
+if [ "${CHANNEL:-}" = "appstore" ]; then
+    scripts/import-items.sh
+else
+    scripts/import-items.sh || echo "Warning: no item price list; the ledger can't suggest items." >&2
+fi
+
 SWIFT_FLAGS=""
 [ "${CHANNEL:-}" = "appstore" ] && SWIFT_FLAGS="-Xswiftc -DAPP_STORE"
 

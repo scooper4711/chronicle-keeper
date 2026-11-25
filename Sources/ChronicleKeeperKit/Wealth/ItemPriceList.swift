@@ -80,6 +80,11 @@ public struct ItemPriceList: Sendable {
         return (firstName, first.level) < (secondName, second.level)
     }
 
+    /// The folder with the ORC and OGL license files `make items` copied beside the list, or nil without them.
+    public static var licensesFolder: URL? {
+        Bundle.module.url(forResource: "Licenses", withExtension: nil, subdirectory: "Items")
+    }
+
     private static func loadBundled() -> [PricedItem] {
         guard let url = Bundle.module.url(forResource: "items", withExtension: "json", subdirectory: "Items"),
               let data = try? Data(contentsOf: url) else { return [] }

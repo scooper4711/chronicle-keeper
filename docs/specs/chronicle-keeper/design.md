@@ -44,6 +44,11 @@ paizo.com is an old WebObjects site.
   into lines with a running balance; `PurchaseLegality` marks level and rarity. Sources: the Guide's Character
   Creation, Purchasing Guidelines and Selling Gear sections, and its Treasure Bundles table ("10 TB" column); for
   Starfinder, the sfs2guide's Credits Awarded table.
+- Item prices: `make items` (`scripts/import-items.sh`) runs the `ItemPrices` tool (`ItemPriceImport` target) on the
+  pf2e release pinned in `pf2e.release`. It reads both games' `equipment` packs (not `virtual-items` or
+  `bestiary-items`; weapons, armor, shields, gear, consumables, backpacks and kits that have a coin or credit price)
+  and writes `Resources/Items/items.json` and the ORC and OGL licenses, which git ignores. App and archive builds
+  run it; a `CHANNEL=appstore` build fails without it. `ItemPriceList.bundled` loads it through `Bundle.module`.
 - `Catalog/`: `AdventureCatalog`, `AdventureFinder`, and the search of the published adventures:
   `AdventureSearching`, `WarhornCatalog`, `WarhornScenario`, `CoverFinder`, `CoverTable` (see "Published adventures").
 - `Storage/`, `Store/`: `CharacterRepository` keeps site data apart from the user's data, keyed by character number
