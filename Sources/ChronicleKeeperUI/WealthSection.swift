@@ -21,6 +21,8 @@ struct WealthSection: View {
                 }
             }
         }
+        // Reads the item data (about 1 MB) off the main thread before the first purchase is added.
+        .task { await Task.detached(priority: .utility) { _ = ItemPriceList.bundled.items.count }.value }
     }
 
     /// Where each group's lines start when every line of the ledger is counted, so the stripes alternate across

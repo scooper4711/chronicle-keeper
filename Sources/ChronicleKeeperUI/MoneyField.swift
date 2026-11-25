@@ -1,17 +1,33 @@
 import ChronicleKeeperKit
 import SwiftUI
 
-/// An amount in the ledger, right-aligned digits, in red when it is negative: a purchase, or a balance below zero.
+/// An amount in the ledger, right-aligned digits, in red when it is negative: a balance below zero.
 struct MoneyText: View {
     let amount: Int
     let context: LedgerContext
-    var showsSign = false
 
     var body: some View {
-        Text(showsSign ? context.formatChange(amount) : context.format(amount))
-            .monospacedDigit()
-            .lineLimit(1)
-            .foregroundStyle(amount < 0 ? Color.red : Color.primary)
+        LedgerFigure(text: context.format(amount), isNegative: amount < 0)
+    }
+}
+
+/// What a line changed: "+0.5 gp" for a sale, "−1 gp" in red for a purchase.
+struct MoneyChangeText: View {
+    let amount: Int
+    let context: LedgerContext
+
+    var body: some View {
+        LedgerFigure(text: context.formatChange(amount), isNegative: amount < 0)
+    }
+}
+
+/// A figure as the ledger shows it.
+private struct LedgerFigure: View {
+    let text: String
+    let isNegative: Bool
+
+    var body: some View {
+        Text(text).monospacedDigit().lineLimit(1).foregroundStyle(isNegative ? Color.red : Color.primary)
     }
 }
 

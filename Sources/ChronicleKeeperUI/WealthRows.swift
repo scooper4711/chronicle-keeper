@@ -11,14 +11,19 @@ enum LedgerColumn {
     static let minimumLabel: CGFloat = 120
 }
 
+/// Which column a line's amount goes in: money coming in (treasure and earned income), or bought and sold.
+enum LedgerAmountColumn {
+    case income
+    case boughtAndSold
+}
+
 /// A ledger line's columns: what it is, money coming in (treasure and earned income), money spent or got back from
 /// a sale, the balance after it, and its menu. The label wraps inside its column, so the figures stay under their
 /// titles; only where even the columns don't fit (an iPhone) do the figures go on a second line, without the empty
 /// column.
 struct LedgerLineLayout<Label: View, Amount: View, Actions: View>: View {
     let balance: Int
-    /// Whether the amount goes in the income column rather than the bought-and-sold one.
-    let isIncome: Bool
+    let column: LedgerAmountColumn
     let context: LedgerContext
     @ViewBuilder let label: () -> Label
     @ViewBuilder let amount: () -> Amount
@@ -38,7 +43,7 @@ struct LedgerLineLayout<Label: View, Amount: View, Actions: View>: View {
                 label()
                 HStack(spacing: LedgerColumn.spacing) {
                     Spacer(minLength: 0)
-                    if isIncome { incomeCell } else { changeCell }
+                    if column == .income { incomeCell } else { changeCell }
                     balanceAndActions
                 }
             }
@@ -47,12 +52,12 @@ struct LedgerLineLayout<Label: View, Amount: View, Actions: View>: View {
     }
 
     private var incomeCell: some View {
-        Group { if isIncome { amount() } else { Text("") } }
+        Group { if column == .income { amount() } else { Text("") } }
             .frame(width: LedgerColumn.income, alignment: .trailing)
     }
 
     private var changeCell: some View {
-        Group { if isIncome { Text("") } else { amount() } }
+        Group { if column == .income { Text("") } else { amount() } }
             .frame(width: LedgerColumn.change, alignment: .trailing)
     }
 
@@ -100,7 +105,7 @@ struct OpeningLine: View {
     let context: LedgerContext
 
     var body: some View {
-        LedgerLineLayout(balance: line.balance, isIncome: true, context: context) {
+        LedgerLineLayout(balance: line.balance, column: .income, context: context) {
             Text(label)
         } amount: {
             field
@@ -151,10 +156,10 @@ struct PurchaseLine: View {
     let edit: () -> Void
 
     var body: some View {
-        LedgerLineLayout(balance: line.balance, isIncome: false, context: context) {
+        LedgerLineLayout(balance: line.balance, column: .boughtAndSold, context: context) {
             name
         } amount: {
-            MoneyText(amount: line.amount, context: context, showsSign: true)
+            MoneyChangeText(amount: line.amount, context: context)
         } actions: {
             Menu { menu } label: { Image(systemName: "ellipsis.circle") }
                 .menuStyle(.borderlessButton).fixedSize()
@@ -233,11 +238,11 @@ struct SaleLine: View {
     let context: LedgerContext
 
     var body: some View {
-        LedgerLineLayout(balance: line.balance, isIncome: false, context: context) {
+        LedgerLineLayout(balance: line.balance, column: .boughtAndSold, context: context) {
             Text("Sold: \(purchase.name)" + (purchase.quantity > 1 ? " ×\(purchase.quantity)" : ""))
                 .foregroundStyle(.secondary)
         } amount: {
-            MoneyText(amount: line.amount, context: context, showsSign: true)
+            MoneyChangeText(amount: line.amount, context: context)
         } actions: {
             Menu { menu } label: { Image(systemName: "ellipsis.circle") }
                 .menuStyle(.borderlessButton).fixedSize()
@@ -260,14 +265,20 @@ struct SaleLine: View {
     }
 }
 
-/// One button per place a line can go: starting funds and each adventure, from `from` on when given.
+/// One button per place a line can go: starting funds and each adventure, from `from` on when given. When there's
+/// none, says what to do instead of showing an empty menu.
 struct DestinationButtons: View {
     let context: LedgerContext
     let from: String?
     let choose: (String) -> Void
 
     var body: some View {
-        ForEach(context.destinations(from: from)) { group in
+        let groups = context.destinations(from: from)
+        if groups.isEmpty {
+            // A purchase whose adventure paizo.com no longer lists can't be placed against the others.
+            Text("Move the purchase to an adventure first")
+        }
+        ForEach(groups) { group in
             Button(group.title) { choose(group.id) }
         }
     }
