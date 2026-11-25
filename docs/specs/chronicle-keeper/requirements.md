@@ -26,6 +26,11 @@ adventures played, faction reputation, XP and level.
   iPad, replacing what was there before. Before a scan is saved, the user sees each page as it will be saved and
   can rotate, crop or rescan it; the PDF shows each page the way up the user left it. Chronicle PDFs are never fetched from paizo.com: they are the
   user's own files, kept and synced the same way as boon PDFs (R4.2).
+- **R1.9** The Boons tab's free reward lists are read too: Chronicle Boons and Game Rewards, for Pathfinder Society
+  (second edition) and Starfinder Society (first edition). They are the same for every player and change rarely, so
+  they are read once and then again only when the copy is older than 30 days, after a refresh and without holding it
+  up. Opening a list is a request to read it, with no character chosen: nothing is bought, and R9.1 holds. A list
+  that can't be read leaves the saved copy and shows no message.
 
 ## 2. Progress
 
@@ -90,6 +95,24 @@ adventures played, faction reputation, XP and level.
   table the app ships with, and is never asked for. A catalog that can't be reached leaves the account as it is,
   without a message. Warhorn is sent the text typed into "Who can play...?" and the numbers of the adventures in
   the sessions, and nothing that says whose they are: no title, and never the event a session was played at.
+- **R3.9** The app signals each free reward a character may claim on paizo.com and hasn't yet.
+  - A Chronicle Boon is one when the character has a session of the adventure it names (as player or as Game
+    Master with credit), by its number or else by its title. A Game Reward is one when the character has the
+    reputation it asks for (a status such as Liked, R2.10, or a number) with the named faction or with any faction,
+    has played the number of sessions it asks for, or has played the adventures it names (one of them for "OR",
+    each of them for "AND").
+  - A reward the character already has, by the name the Boons tab lists, is never signaled.
+  - An adventure's "Boon A", "Boon B" and "Boon C" are alternatives: the Chronicle Sheet says which one was earned.
+    A character who has one of them isn't eligible for the others, so nothing is signaled; a character who has
+    none gets one signal that names the choices.
+  - A condition the app can't check from the account (every part of a series, a compilation, a Chronicle Sheet
+    count) is never signaled, nor is a reward for a character whose name another character shares, as the Boons
+    tab names only the character. A missed reward is better than a false one.
+  - The signal is a sparkle, moving unless the device reduces motion: beside the adventure in the character's
+    table and in the session's details, on the faction's tile, on the Boons section's title and beside the
+    character in the sidebar. It says which reward and why, and opens a list with a button to the Boons tab on
+    paizo.com, where the user claims it. "Ready to Claim" at the top of the Boons section lists them all. After
+    the next refresh a claimed reward is among the character's boons and its signal is gone.
 
 ## 4. Data
 
