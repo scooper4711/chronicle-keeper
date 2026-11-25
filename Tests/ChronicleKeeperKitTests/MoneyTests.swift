@@ -23,21 +23,44 @@ struct MoneyTests {
         ("0.05", 5), (" 14 ", 1_400), ("14 GP", 1_400)
     ])
     func parsesGold(text: String, copper: Int) {
-        #expect(Money.parse(text, in: .gold) == copper)
+        #expect(Money.parse(text, in: .gold, locale: english) == copper)
     }
 
-    @Test(arguments: ["", "abc", "-5", "1.234", "5 gold", "5 gp 3", ".", "1.2.3"])
+    @Test(arguments: ["", "abc", "-5", "1.234", "5 gold", "5 gp 3", ".", "1.2.3", "11,5", "1,50"])
     func rejectsWhatIsNotGold(text: String) {
-        #expect(Money.parse(text, in: .gold) == nil)
+        #expect(Money.parse(text, in: .gold, locale: english) == nil)
     }
 
     @Test(arguments: [("112", 1_120), ("2,700 credits", 27_000), ("12.5", 125), ("150 cr", 1_500)])
     func parsesCredits(text: String, copper: Int) {
-        #expect(Money.parse(text, in: .credits) == copper)
+        #expect(Money.parse(text, in: .credits, locale: english) == copper)
     }
 
     @Test func rejectsAFractionOfACopperInCredits() {
-        #expect(Money.parse("1.25", in: .credits) == nil)
+        #expect(Money.parse("1.25", in: .credits, locale: english) == nil)
+    }
+
+    @Test(arguments: [
+        ("11,5", 1_150), ("11.5", 1_150), ("1 500", 150_000), ("1\u{00A0}500 gp", 150_000), ("11 gp, 2 sp", 1_120)
+    ])
+    func parsesGoldWithACommaDecimalMark(text: String, copper: Int) {
+        #expect(Money.parse(text, in: .gold, locale: Locale(identifier: "nb_NO")) == copper)
+    }
+
+    @Test(arguments: [("11,5", 1_150), ("11.5", 1_150), ("1.500", 150_000), ("2.700 credits", 27_000)])
+    func parsesWithAPointForThousands(text: String, copper: Int) {
+        let german = Locale(identifier: "de_DE")
+        let currency: Currency = text.contains("credits") ? .credits : .gold
+        #expect(Money.parse(text, in: currency, locale: german) == copper)
+    }
+
+    @Test(arguments: ["nb_NO", "de_DE", "en_US", "fr_FR"], [150_000, 1_120, 125, 27_000])
+    func readsBackWhatItFormats(identifier: String, copper: Int) {
+        let locale = Locale(identifier: identifier)
+        for currency in [Currency.gold, .credits] {
+            let text = Money.format(copper, in: currency, locale: locale)
+            #expect(Money.parse(text, in: currency, locale: locale) == copper, "\(text)")
+        }
     }
 }
 

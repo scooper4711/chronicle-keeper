@@ -24,9 +24,13 @@ public enum Money {
     }
 
     /// Reads what the user typed: "11.2" (gold pieces) or "11 gp 2 sp" in gold, a number of credits otherwise.
-    /// Thousands separators are allowed. Nil for anything else, including a negative amount.
-    public static func parse(_ text: String, in currency: Currency) -> Int? {
-        let cleaned = text.lowercased().replacingOccurrences(of: ",", with: "")
+    /// Numbers follow the locale: its decimal mark ("11,5" in Norwegian is 11.5) and its thousands separator,
+    /// which counts only before exactly three digits. A comma between digits that is neither is refused rather
+    /// than guessed at. Nil for anything else, including a negative amount.
+    public static func parse(_ text: String, in currency: Currency, locale: Locale = .autoupdatingCurrent) -> Int? {
+        let numbers = plainNumbers(in: text.lowercased(), locale: locale)
+        guard numbers.firstMatch(of: /\d,\d/) == nil else { return nil }
+        let cleaned = numbers.replacingOccurrences(of: ",", with: "")
             .replacingOccurrences(of: "credits", with: "").replacingOccurrences(of: "credit", with: "")
             .replacingOccurrences(of: "cr", with: "").trimmingCharacters(in: .whitespaces)
         guard !cleaned.isEmpty else { return nil }
@@ -34,6 +38,27 @@ public enum Money {
         case .gold: return parseGold(cleaned)
         case .credits: return copper(fromDecimal: cleaned, unit: copperPerCredit)
         }
+    }
+
+    /// The text with thousands separators dropped and the locale's decimal mark made a point, both only between
+    /// digits, so the comma between "11 gp, 2 sp" stays a separator.
+    private static func plainNumbers(in text: String, locale: Locale) -> String {
+        let decimal = locale.decimalSeparator ?? "."
+        let grouping = Set([locale.groupingSeparator ?? ",", ",", " ", "\u{00A0}", "\u{202F}"]).subtracting([decimal])
+        var result = text
+        for separator in grouping {
+            result = replace(separator, beforeDigits: "\\d{3}(?!\\d)", with: "", in: result)
+        }
+        return replace(decimal, beforeDigits: "\\d", with: ".", in: result)
+    }
+
+    /// Replaces `separator` where a digit comes before it and `digits` (a pattern) after it.
+    private static func replace(_ separator: String, beforeDigits digits: String, with replacement: String,
+                                in text: String) -> String {
+        let pattern = "(?<=\\d)" + NSRegularExpression.escapedPattern(for: separator) + "(?=" + digits + ")"
+        guard let expression = try? NSRegularExpression(pattern: pattern) else { return text }
+        return expression.stringByReplacingMatches(
+            in: text, range: NSRange(text.startIndex..., in: text), withTemplate: replacement)
     }
 
     private static func goldParts(of amount: Int, locale: Locale) -> String {
