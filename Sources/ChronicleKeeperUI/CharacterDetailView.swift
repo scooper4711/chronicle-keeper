@@ -16,6 +16,9 @@ struct CharacterDetailView: View {
                     ReputationGrid(summary: record.summary)
                 }
                 AdventuresTable(record: record, store: store)
+                if CampaignRules(campaign: record.campaign).hasLedger {
+                    WealthSection(record: record, store: store)
+                }
                 BoonsSection(boons: store.roster.boons(for: record.id), store: store)
                 CharacterSettingsForm(record: record, store: store)
             }

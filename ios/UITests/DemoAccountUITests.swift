@@ -82,6 +82,33 @@ final class DemoAccountUITests: XCTestCase {
     }
 
     @MainActor
+    func testTheLedgerShowsPurchasesAndTakesANewOne() {
+        app.staticTexts["Valeria Stonebrook"].firstMatch.tap()
+        let ledger = app.staticTexts["Gold & Purchases"]
+        scrollIntoView(ledger)
+        XCTAssertTrue(ledger.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.staticTexts["Before the First Adventure"].exists, app.debugDescription)
+        saveScreenshots("ledger-start")
+        let sale = app.staticTexts["Sold: Leather Armor"]
+        scrollIntoView(sale)
+        XCTAssertTrue(sale.exists, app.debugDescription)
+        saveScreenshots("ledger")
+        let add = app.buttons["Add Purchase"].firstMatch
+        scrollIntoView(add)
+        add.tap()
+        let name = app.textFields["purchase-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5), app.debugDescription)
+        name.tap()
+        name.typeText("Rope")
+        saveScreenshots("purchase-editor")
+        let price = app.textFields["Price of one"]
+        price.tap()
+        price.typeText("5 sp")
+        app.buttons["Add"].tap()
+        XCTAssertTrue(app.staticTexts["Rope"].waitForExistence(timeout: 5), app.debugDescription)
+    }
+
+    @MainActor
     func testTheAccountMenuOpensAbout() {
         app.buttons["Account"].firstMatch.tap()
         XCTAssertTrue(app.buttons["Leave the Demo"].waitForExistence(timeout: 5), app.debugDescription)

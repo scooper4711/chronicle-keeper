@@ -68,6 +68,18 @@ struct WealthLedgerTests {
         #expect(lines.map(\.id) == ["earned", "sale-old", "purchase-new"])
     }
 
+    @Test func anItemBoughtAndSoldAfterTheSameAdventureIsBoughtFirst() {
+        var wealth = CharacterWealth(earned: [Factory.key(1): 0])
+        wealth.add(Factory.purchase("old", price: 1_000))
+        wealth.add(Factory.purchase("rope", price: 10, after: Factory.key(1)))
+        let order = LedgerOrder(keys: [Factory.key(1)])
+        wealth.sell("old", after: Factory.key(1), in: order)
+        wealth.sell("rope", after: Factory.key(1), in: order)
+        let lines = WealthLedger(record: Factory.record(sessions: 1, wealth: wealth)).groups[1].lines
+        #expect(lines.map(\.id) == ["earned", "sale-old", "purchase-rope", "sale-rope"])
+        #expect(lines.map(\.balance) == [500, 1_000, 990, 995])
+    }
+
     @Test func overspendingIsShownAndMovingThePurchaseLaterClearsIt() {
         var wealth = CharacterWealth(earned: [Factory.key(1): 1_400])
         wealth.add(Factory.purchase("armor", price: 2_000))

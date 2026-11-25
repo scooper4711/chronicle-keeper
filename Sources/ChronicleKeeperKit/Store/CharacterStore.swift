@@ -8,14 +8,14 @@ public final class CharacterStore {
     public private(set) var roster = CharacterRoster(summaries: [], sessions: [])
     public private(set) var lastRefresh: Date?
     public private(set) var isRefreshing = false
-    public private(set) var errorMessage: String?
+    public internal(set) var errorMessage: String?
     /// Each boon's PDF that is in the boon library.
-    public private(set) var boonFiles: [Boon.ID: URL] = [:]
+    public internal(set) var boonFiles: [Boon.ID: URL] = [:]
     /// Boons paizo.com wouldn't hand over as a PDF yet.
-    public private(set) var unavailableBoons: Set<Boon.ID> = []
-    public private(set) var isDownloadingBoons = false
+    public internal(set) var unavailableBoons: Set<Boon.ID> = []
+    public internal(set) var isDownloadingBoons = false
     /// Where boon PDFs are kept and where they come from; nil until the app has looked up iCloud.
-    public private(set) var boonDownloads: BoonDownloads?
+    public internal(set) var boonDownloads: BoonDownloads?
     /// Each session's chronicle PDF that is in the chronicle library, keyed by the session's own ID.
     public private(set) var chronicleFiles: [String: URL] = [:]
     /// Where chronicle PDFs are kept; nil until the app has looked up iCloud.
@@ -28,8 +28,17 @@ public final class CharacterStore {
 
     private let repository: CharacterRepository
     private let fetchAccount: @Sendable () async throws -> AccountSnapshot
-    private var snapshot: AccountSnapshot?
+    var snapshot: AccountSnapshot?
     private var settings: [String: CharacterSettings] = [:]
+    /// Why the user's settings couldn't be read, or nil when they were (see `loadSettings`).
+    private var unreadableSettings: String?
+
+    /// Whether the user's settings were read, so changes to them can be saved and synced.
+    public var canSaveSettings: Bool { unreadableSettings == nil }
+
+    private var unsavedMessage: String {
+        "\(unreadableSettings ?? "") Changes to notes, corrections and the ledger aren't saved until it can be read."
+    }
     /// Told the character number of each change the user makes, for syncing to send it.
     public var onLocalChange: @MainActor (String) -> Void = { _ in }
 
@@ -40,17 +49,33 @@ public final class CharacterStore {
 
     /// Shows what was saved last time, without touching the network.
     public func load() {
+        errorMessage = nil
+        loadSnapshot()
+        loadSettings()
+        rebuild()
+        locateChronicleFiles()
+    }
+
+    private func loadSnapshot() {
         do {
             snapshot = try repository.loadSnapshot()
-            settings = try repository.loadSettings()
             lastRefresh = snapshot?.fetchedAt
-            errorMessage = nil
             locateBoonFiles()
         } catch {
             errorMessage = error.localizedDescription
         }
-        rebuild()
-        locateChronicleFiles()
+    }
+
+    /// Reads the user's settings. When they can't be read, nothing is saved or synced until they can: saving the
+    /// little that was read would overwrite the files, and syncing would spread the loss.
+    private func loadSettings() {
+        do {
+            settings = try repository.loadSettings()
+            unreadableSettings = nil
+        } catch {
+            unreadableSettings = error.localizedDescription
+            errorMessage = unsavedMessage
+        }
     }
 
     /// Reads the account again, then starts looking up the covers of any adventures that are new, without waiting
@@ -177,54 +202,6 @@ public final class CharacterStore {
         chronicleFiles = files
     }
 
-    /// Starts keeping boon PDFs, and finds the ones already in the library.
-    public func useBoonDownloads(_ downloads: BoonDownloads) async {
-        boonDownloads = downloads
-        locateBoonFiles()
-        if lastRefresh != nil { await downloadMissingBoons() }
-    }
-
-    /// Downloads each boon whose PDF isn't in the library yet: one another device already saved to iCloud Drive
-    /// counts as there.
-    public func downloadMissingBoons() async {
-        guard let downloads = boonDownloads, !isDownloadingBoons else { return }
-        isDownloadingBoons = true
-        defer { isDownloadingBoons = false }
-        let boons = snapshot?.boons ?? []
-        for (boon, url) in missingBoons(boons, in: downloads.library) {
-            do {
-                try await download(boon, to: url, with: downloads)
-            } catch {
-                errorMessage = FailureMessage.text(for: error)
-                return
-            }
-        }
-    }
-
-    private func download(_ boon: Boon, to url: URL, with downloads: BoonDownloads) async throws {
-        guard let data = try await downloads.source.pdf(for: boon) else {
-            unavailableBoons.insert(boon.id)
-            return
-        }
-        try downloads.library.save(data, to: url)
-        boonFiles[boon.id] = url
-        unavailableBoons.remove(boon.id)
-    }
-
-    private func missingBoons(_ boons: [Boon], in library: BoonLibrary) -> [(Boon, URL)] {
-        locateBoonFiles()
-        let urls = library.fileURLs(for: boons)
-        return boons.compactMap { boon in
-            guard boonFiles[boon.id] == nil, let url = urls[boon.id] else { return nil }
-            return (boon, url)
-        }
-    }
-
-    private func locateBoonFiles() {
-        guard let library = boonDownloads?.library else { return }
-        boonFiles = library.fileURLs(for: snapshot?.boons ?? []).filter { library.hasFile(at: $0.value) }
-    }
-
     /// Forgets the site data (the user's settings stay).
     public func signOut() {
         coverPass?.cancel()
@@ -244,6 +221,10 @@ public final class CharacterStore {
 
     /// Changes one character's settings and saves them.
     public func update(_ number: String, _ change: (inout CharacterSettings) -> Void) {
+        guard unreadableSettings == nil else {
+            errorMessage = unsavedMessage
+            return
+        }
         var changed = settings(for: number)
         change(&changed)
         settings[number] = changed
@@ -256,7 +237,7 @@ public final class CharacterStore {
 
     /// Takes settings merged from another device. Unlike `update`, this isn't reported as a local change.
     public func applyRemote(_ changes: [String: CharacterSettings]) {
-        guard !changes.isEmpty else { return }
+        guard !changes.isEmpty, unreadableSettings == nil else { return }
         settings.merge(changes) { _, remote in remote }
         saveSettings()
     }

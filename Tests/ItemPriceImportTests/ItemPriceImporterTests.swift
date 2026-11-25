@@ -14,6 +14,17 @@ struct ItemPriceImporterTests {
         #expect(ItemPrice.copper(price, game: .pathfinder) == 1234)
     }
 
+    /// Prices below a gold piece, as the Core Rulebook has them: a torch, flint and steel, rations, a candle (per 10).
+    @Test("prices below a gold piece stay exact", arguments: [
+        (["cp": 1], 1, "0.01 gp"), (["cp": 5], 5, "0.05 gp"), (["sp": 4], 40, "0.4 gp"),
+        (["sp": 3, "cp": 2], 32, "0.32 gp")
+    ])
+    func priceBelowAGoldPiece(coins: [String: Int], copper: Int, shown: String) throws {
+        let price = try ItemPrice.copper(json(["value": coins]), game: .pathfinder)
+        #expect(price == copper)
+        #expect(Money.format(copper, in: .gold, locale: Locale(identifier: "en_US")) == shown)
+    }
+
     @Test("a Starfinder credit is a silver piece, and UPBs are no coin")
     func creditPrice() throws {
         #expect(ItemPrice.copper(try json(["value": ["sp": 6500]]), game: .starfinder) == 65_000)

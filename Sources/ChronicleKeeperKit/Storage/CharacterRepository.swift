@@ -109,9 +109,12 @@ public struct FileCharacterRepository: CharacterRepository {
 public final class InMemoryCharacterRepository: CharacterRepository, @unchecked Sendable {
     private let lock = NSLock()
     private var snapshot: AccountSnapshot?
-    private var settings: [String: CharacterSettings] = [:]
+    private var settings: [String: CharacterSettings]
 
-    public init() {}
+    /// A repository holding these settings to start with, as the demo account's ledgers.
+    public init(settings: [String: CharacterSettings] = [:]) {
+        self.settings = settings
+    }
 
     public func loadSnapshot() throws -> AccountSnapshot? { lock.withLock { snapshot } }
     public func saveSnapshot(_ snapshot: AccountSnapshot) throws { lock.withLock { self.snapshot = snapshot } }

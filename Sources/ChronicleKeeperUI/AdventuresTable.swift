@@ -78,10 +78,8 @@ struct AdventuresTable: View {
             Text("Date")
             Text("Lv").help("The character's level when they played it")
             Text("Adventure")
-            Text("Kind")
             Text("Rep")
             Text("Track")
-            Text("XP Awarded").gridColumnAlignment(.trailing)
             Text("Progress")
         }
         .font(.caption.bold())
@@ -89,8 +87,8 @@ struct AdventuresTable: View {
     }
 }
 
-/// One session as a grid row: when and at what level it was played, what it was, how it counted, and a menu to
-/// correct its track.
+/// One session as a grid row: when and at what level it was played, what it was (its kind and XP in small gray text
+/// under the title, which gets the room), how it counted, and a menu to correct its track.
 struct AdventureRow: View {
     let cells: AdventureCells
 
@@ -98,11 +96,13 @@ struct AdventureRow: View {
         GridRow {
             cells.date
             cells.level
-            cells.title
-            Text(cells.progress.kind.displayName)
+            VStack(alignment: .leading, spacing: 2) {
+                cells.title
+                cells.kindAndXP
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
             cells.reputation
             cells.trackMenu
-            cells.xpAwarded
             cells.progressCell
         }
         .font(.callout)
@@ -193,6 +193,14 @@ struct AdventureCells {
 
     var reputation: some View {
         Text(session.reputation.map(XPText.of) ?? "—").monospacedDigit()
+    }
+
+    /// "Scenario · 4 XP", or "Scenario · 4 XP (4 lost)", small and gray under the title in the grid.
+    var kindAndXP: some View {
+        let lost = progress.xpLost > 0 ? " (\(XPText.of(progress.xpLost)) lost)" : ""
+        return Text("\(progress.kind.displayName) · \(XPText.of(progress.xp)) XP\(lost)")
+            .font(.caption).foregroundStyle(.secondary).monospacedDigit()
+            .help(SessionExplanation.xp(progress))
     }
 
     /// The XP the Chronicle awards, as the Guide's rules give it (slow track already applied). "Progress" (see

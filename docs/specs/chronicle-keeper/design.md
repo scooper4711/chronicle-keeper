@@ -38,12 +38,15 @@ paizo.com is an old WebObjects site.
   `SessionProgress.date`, a `SessionDate` that says whether it was inferred; `PlayedSession.date` stays what
   paizo.com said, so nothing saved or synced passes a guess off as the site's.
 - `Wealth/`: the ledger (R5). Amounts are `Int` copper pieces (`Money`; a credit is 10). `CharacterWealth` holds the
-  starting funds override, the gold entered per session key and the purchases by ID; a `Purchase` places itself
-  and its sale with `boughtAfter` and `soldAfter`, both session keys (empty for starting gold). `RewardTables`
-  extends `CampaignRules` with starting funds and the placeholder amount; `WealthLedger` turns a `CharacterRecord`
-  into lines with a running balance; `PurchaseLegality` marks level and rarity. Sources: the Guide's Character
-  Creation, Purchasing Guidelines and Selling Gear sections, and its Treasure Bundles table ("10 TB" column); for
-  Starfinder, the sfs2guide's Credits Awarded table.
+  starting funds override, the gold entered per session key and the purchases by ID; a `Purchase` places itself and its
+  sale with `boughtAfter` and `soldAfter`, both session keys (empty for starting gold). `RewardTables` extends
+  `CampaignRules` with starting funds and the placeholder amount; `WealthLedger` turns a `CharacterRecord` into lines
+  with a running balance; `PurchaseLegality` marks level and rarity. Sources: the Guide's Character Creation, Purchasing
+  Guidelines and Selling Gear sections, and its Treasure Bundles table ("10 TB" column); for Starfinder, the sfs2guide's
+  Credits Awarded table. `Money.format` always gives gold pieces ("0.05 gp", "11.2 gp") or credits, as chronicles do;
+  `parse` still takes "5 cp" or "2 sp". `Money.parse` follows the device's locale, as `format` does: its decimal mark
+  ("11,5" is 11.5 gp in Norwegian) and its thousands separator, which counts only before exactly three digits; any other
+  comma between digits is refused rather than guessed at, so a typo never multiplies an amount.
 - Item prices: `make items` (`scripts/import-items.sh`) runs the `ItemPrices` tool (`ItemPriceImport` target) on the
   pf2e release pinned in `pf2e.release`. It reads both games' `equipment` packs (not `virtual-items` or
   `bestiary-items`; weapons, armor, shields, gear, consumables, backpacks and kits that have a coin or credit price)
@@ -100,6 +103,15 @@ merges entered gold and purchases per key, three ways, as overrides are; the sta
 The same risk lives inside the ledger: a later version may add fields to a purchase (Access, crafting). So
 `CharacterWealth` and `Purchase` keep any field they don't know (`UnknownFields`) and write it back as it was,
 and an older version moving or selling a purchase keeps what a newer one added.
+
+Data this build can't read is never written over. When `settings.json` or `wealth.json` won't decode,
+`CharacterStore` keeps nothing it read, says so, and refuses to save or merge settings until it can read them:
+saving what little was read would overwrite both files, and syncing would spread the loss. A `Character` record on
+the server whose ledger won't decode (saved by a newer version) is held back by `SettingsSync`: this device stops
+sending that character, so its copy doesn't overwrite the newer one, and the user is told to update.
+
+An item the item data sells in batches (candles, 1 cp for 10) is bought by the batch: the purchase is named
+"Candle (10)" (`PricedItem.purchaseName`), its price is the batch's, and its quantity counts batches.
 
 ## App Store builds
 
@@ -228,6 +240,21 @@ meanwhile, and after `ICloudDownload.longest` (a minute) offers to try again. Bo
 doesn't arrive. Both libraries get this, and `hasFile` and the coordinated write, from `ICloudDocumentLibrary`.
 Share hands over the file as it is, since `ShareLink` gives nothing to wait in. The demo account attaches a
 made-up sheet to its newest session (`DemoChronicles`), so the demo and the UI tests show one.
+
+The ledger (`WealthSection`) sits between the adventures and the boons, for second edition campaigns only. Each group
+has its name in bold across the columns (`GroupTitle`; "Before the First Adventure" for starting gear) and opens with a
+`MoneyField` for the starting funds or what the adventure gave, labeled as the chronicle has it ("Gold earned", "Credits
+earned"; the hint is only a placeholder), then its sales and purchases with the running balance. It reads like a
+spreadsheet: column titles ("Treasure & Earned Income", or "Credits & Earned Income" in Starfinder; "Bought & Sold";
+"Balance"), fixed-width number columns (`LedgerColumn`) so the amounts line up, stripes that alternate across the whole
+ledger, and red for any negative amount (`MoneyText`). An item that may not be Society legal has an orange warning sign
+(`LegalityWarning`) whose reasons show on hover and, for touch, in a popover when tapped. A purchase's menu edits,
+sells, moves or removes it; a sale's menu moves or undoes it. Both lines are also `.draggable` onto any group's
+`.dropDestination`; the menu is the way in for the keyboard, VoiceOver and the iPhone. `PurchaseEditor` lists up to
+eight matches from `ItemPriceList` right under its field, as plain rows rather than a popover, so focus behaves on the
+Mac and the iPad. A picked item's price stays editable; `PriceNote` shows the item data's price when it is overridden,
+or says that an unmatched name is a custom item. A line falls to two rows (`ViewThatFits`) where one doesn't fit. The
+demo gives Valeria and Zix-7 ledgers (`DemoWealth`) through the in-memory repository's starting settings.
 
 A paper sheet is scanned with VisionKit's document scanner (`DocumentScanner`), which finds the sheet's edges,
 straightens it, and has its own review screen to rotate, crop or rescan each page. Its pages are drawn upright
