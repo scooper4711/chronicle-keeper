@@ -36,10 +36,15 @@ public enum SettingsRecord {
         record[Field.portrait] = portraitFile.map { CKAsset(fileURL: $0) }
     }
 
+    /// Whether a record is a character's, whether or not this build can read what it holds.
+    public static func isCharacterRecord(_ record: CKRecord) -> Bool {
+        record.recordType == recordType && record.recordID.zoneID == zoneID
+    }
+
     /// The content of a record of this type; nil for any other record, or one whose settings or ledger can't be
     /// read (taking an unreadable ledger as empty would delete it here in the merge).
     public static func content(of record: CKRecord) -> Content? {
-        guard record.recordType == recordType, record.recordID.zoneID == zoneID,
+        guard isCharacterRecord(record),
               let data = record[Field.settings] as? Data,
               var settings = try? JSONDecoder().decode(CharacterSettings.self, from: data) else { return nil }
         let wealthData = record[Field.wealth] as? Data

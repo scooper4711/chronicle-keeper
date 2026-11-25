@@ -66,6 +66,16 @@ struct SettingsRecordTests {
         let unreadable = CKRecord(recordType: "Character", recordID: SettingsRecord.recordID(for: number))
         unreadable["settings"] = Data("not json".utf8) as NSData
         #expect(SettingsRecord.content(of: unreadable) == nil)
+        #expect(SettingsRecord.isCharacterRecord(unreadable))
+        #expect(!SettingsRecord.isCharacterRecord(other))
+    }
+
+    @Test func aLedgerThisBuildCantReadLeavesTheRecordUnread() throws {
+        let record = CKRecord(recordType: "Character", recordID: SettingsRecord.recordID(for: number))
+        try SettingsRecord.fill(record, with: CharacterSettings(), portraitFile: nil)
+        record["wealth"] = Data(#"{"earned":"not a dictionary"}"#.utf8) as NSData
+        #expect(SettingsRecord.content(of: record) == nil)
+        #expect(SettingsRecord.isCharacterRecord(record))
     }
 
     @Test func settingsFromAnOlderVersionStillOpen() throws {

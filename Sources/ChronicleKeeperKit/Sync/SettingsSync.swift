@@ -13,6 +13,9 @@ public actor SettingsSync: CKSyncEngineDelegate {
     private let ledgerFile: URL
     private var core: SettingsSyncCore
     private var engine: CKSyncEngine?
+    /// Characters whose record on the server this build can't read, such as a ledger saved by a newer version.
+    /// Sending this device's copy would overwrite it, so they aren't sent until the app is updated.
+    private var unreadable: Set<String> = []
 
     init(store: CharacterStore, portraits: PortraitStore, ledgerFile: URL) {
         self.store = store
@@ -40,6 +43,7 @@ public actor SettingsSync: CKSyncEngineDelegate {
 
     /// Queues a character's settings to go up.
     public func changed(_ number: String) {
+        guard !unreadable.contains(number) else { return }
         engine?.state.add(pendingRecordZoneChanges: [.saveRecord(SettingsRecord.recordID(for: number))])
     }
 
@@ -118,12 +122,16 @@ public actor SettingsSync: CKSyncEngineDelegate {
 
     /// Merges records other devices saved, keeps their portraits, and sends back what the merge changed.
     private func merge(_ records: [CKRecord]) async {
-        guard !records.isEmpty else { return }
+        // Merging into settings the store couldn't read would record changes the store then refuses.
+        guard !records.isEmpty, await MainActor.run(body: { store.canSaveSettings }) else { return }
         let local = await MainActor.run { store.allSettings }
         var changes: [String: CharacterSettings] = [:]
         for record in records {
-            guard let content = SettingsRecord.content(of: record),
-                  let merged = core.received(record, local: local[content.number]) else { continue }
+            guard let content = SettingsRecord.content(of: record) else {
+                await holdBack(record)
+                continue
+            }
+            guard let merged = core.received(record, local: local[content.number]) else { continue }
             keepPortrait(of: content, merged: merged.settings, previous: local[content.number])
             if merged.settings != local[content.number] { changes[content.number] = merged.settings }
             if merged.needsUpload { changed(content.number) }
@@ -131,6 +139,16 @@ public actor SettingsSync: CKSyncEngineDelegate {
         saveLedger()
         let toApply = changes
         await MainActor.run { store.applyRemote(toApply) }
+    }
+
+    /// Stops sending a character whose server record this build can't read, and says so once. Without this, each
+    /// save conflicts, can't be merged and is sent again, forever.
+    private func holdBack(_ record: CKRecord) async {
+        let number = record.recordID.recordName
+        guard SettingsRecord.isCharacterRecord(record), unreadable.insert(number).inserted else { return }
+        engine?.state.remove(pendingRecordZoneChanges: [.saveRecord(record.recordID)])
+        await report("A newer version of Chronicle Keeper on another device saved character \(number). Update "
+            + "this device to sync that character again.")
     }
 
     private func keepPortrait(of content: SettingsRecord.Content, merged: CharacterSettings,
