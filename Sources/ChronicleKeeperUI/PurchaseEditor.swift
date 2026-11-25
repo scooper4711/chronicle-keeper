@@ -34,17 +34,15 @@ struct PurchaseEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            TextField("Item", text: $name, prompt: Text("Item name"))
-                .textFieldStyle(.roundedBorder)
-                .focused($isNameFocused)
-                .onSubmit { suggestions.first.map(pick) }
-                .onChange(of: name) { _, typed in
-                    if typed != draft.name { draft.itemID = "" }
-                    refreshSuggestions()
+            // Item, quantity and price on one line; the price drops below when the pane is too narrow.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 12) { nameField.frame(minWidth: 160); quantityField; priceField }
+                VStack(alignment: .leading, spacing: 8) {
+                    nameField
+                    HStack(spacing: 12) { quantityField; priceField }
                 }
-                .accessibilityIdentifier("purchase-name")
+            }
             ItemSuggestions(items: suggestions, currency: currency, pick: pick)
-            details
             PriceNote(catalogPrice: catalogItem?.price, price: price, isCustom: isUnmatched,
                       currency: currency) { catalogPrice in
                 priceText = Money.format(catalogPrice, in: currency)
@@ -83,14 +81,39 @@ struct PurchaseEditor: View {
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespaces) }
 
-    private var details: some View {
-        HStack(spacing: 12) {
-            Text("Price each")
-            TextField("Price each", text: $priceText, prompt: Text("e.g. 0.05 gp"))
-                .textFieldStyle(.roundedBorder).monospacedDigit().frame(maxWidth: 150)
-                .accessibilityLabel("Price of one")
-            Stepper("Quantity: \(draft.quantity)", value: $draft.quantity, in: 1...999).fixedSize()
+    private var nameField: some View {
+        TextField("Item", text: $name, prompt: Text("Item name"))
+            .textFieldStyle(.roundedBorder)
+            .focused($isNameFocused)
+            .onSubmit { suggestions.first.map(pick) }
+            .onChange(of: name) { _, typed in
+                if typed != draft.name { draft.itemID = "" }
+                refreshSuggestions()
+            }
+            .accessibilityIdentifier("purchase-name")
+    }
+
+    /// "Qty", a short field and a stepper: typing suits 50 arrows, the stepper a second potion.
+    private var quantityField: some View {
+        HStack(spacing: 4) {
+            Text("Qty").foregroundStyle(.secondary)
+            TextField("Quantity", value: $draft.quantity, format: .number)
+                .textFieldStyle(.roundedBorder).monospacedDigit().multilineTextAlignment(.trailing)
+                .frame(width: 48)
+                .onChange(of: draft.quantity) { _, typed in draft.quantity = Self.allowedQuantities.clamp(typed) }
+                .accessibilityLabel("Quantity")
+            Stepper("Quantity", value: $draft.quantity, in: Self.allowedQuantities).labelsHidden()
         }
+        .fixedSize()
+    }
+
+    private static let allowedQuantities = 1...999
+
+    private var priceField: some View {
+        TextField("Price each", text: $priceText, prompt: Text("Price each, e.g. 0.05 gp"))
+            .textFieldStyle(.roundedBorder).monospacedDigit()
+            .frame(minWidth: 110, maxWidth: 170)
+            .accessibilityLabel("Price of one")
     }
 
     private var buttons: some View {
@@ -166,6 +189,7 @@ struct ItemSuggestions: View {
 
     private func row(_ item: PricedItem) -> some View {
         HStack {
+            ItemIcon(itemID: item.id)
             Text(item.name)
             if item.rarity != .common {
                 Text(item.rarity.rawValue.capitalized).font(.caption).foregroundStyle(.orange)
@@ -195,4 +219,8 @@ struct CustomItemFields: View {
         }
         .font(.callout)
     }
+}
+
+private extension ClosedRange where Bound == Int {
+    func clamp(_ value: Int) -> Int { Swift.min(Swift.max(value, lowerBound), upperBound) }
 }

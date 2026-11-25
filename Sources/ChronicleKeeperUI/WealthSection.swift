@@ -9,8 +9,10 @@ struct WealthSection: View {
 
     var body: some View {
         let context = LedgerContext(record: record, store: store)
-        VStack(alignment: .leading, spacing: 8) {
-            header(context)
+        CollapsibleSection(context.currency == .credits ? "Credits & Purchases" : "Gold & Purchases",
+                           id: "wealth") {
+            balance(context)
+        } content: {
             LedgerNotes(ledger: context.ledger, currency: context.currency)
             VStack(alignment: .leading, spacing: 0) {
                 LedgerHeader(currency: context.currency).padding(.bottom, 4)
@@ -35,15 +37,11 @@ struct WealthSection: View {
         }
     }
 
-    private func header(_ context: LedgerContext) -> some View {
-        HStack {
-            Text(context.currency == .credits ? "Credits & Purchases" : "Gold & Purchases").font(.headline)
-            Spacer()
-            Text(context.format(context.ledger.balance))
-                .font(.headline).monospacedDigit()
-                .foregroundStyle(context.ledger.balance < 0 ? Color.red : Color.primary)
-                .accessibilityLabel("Balance: \(context.format(context.ledger.balance))")
-        }
+    private func balance(_ context: LedgerContext) -> some View {
+        Text(context.format(context.ledger.balance))
+            .font(.headline).monospacedDigit()
+            .foregroundStyle(context.ledger.balance < 0 ? Color.red : Color.primary)
+            .accessibilityLabel("Balance: \(context.format(context.ledger.balance))")
     }
 }
 

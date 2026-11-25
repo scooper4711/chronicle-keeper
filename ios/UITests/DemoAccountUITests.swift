@@ -32,15 +32,32 @@ final class DemoAccountUITests: XCTestCase {
     func testChoosingACharacterShowsTheirReputationAndAdventures() {
         app.staticTexts["Valeria Stonebrook"].firstMatch.tap()
         XCTAssertTrue(app.staticTexts["Reputation"].waitForExistence(timeout: 5), app.debugDescription)
-        let adventures = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Adventures ('")).firstMatch
+        let adventures = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Adventures ('")).firstMatch
         XCTAssertTrue(adventures.exists, app.debugDescription)
         saveScreenshots("character")
     }
 
     @MainActor
+    func testASectionFoldsAwayAndBack() {
+        app.staticTexts["Valeria Stonebrook"].firstMatch.tap()
+        let boons = app.buttons["Boons (2)"]
+        scrollIntoView(boons)
+        XCTAssertTrue(boons.waitForExistence(timeout: 5), app.debugDescription)
+        let open = app.buttons["Open"].firstMatch
+        XCTAssertTrue(open.waitForExistence(timeout: 10), app.debugDescription)
+        boons.tap()
+        XCTAssertEqual(boons.value as? String, "Collapsed")
+        XCTAssertTrue(open.waitForNonExistence(timeout: 5), app.debugDescription)
+        saveScreenshots("boons-collapsed")
+        boons.tap()
+        XCTAssertEqual(boons.value as? String, "Expanded")
+        XCTAssertTrue(open.waitForExistence(timeout: 5), app.debugDescription)
+    }
+
+    @MainActor
     func testACharactersBoonsCanBeOpened() {
         app.staticTexts["Valeria Stonebrook"].firstMatch.tap()
-        let boons = app.staticTexts["Boons (2)"]
+        let boons = app.buttons["Boons (2)"]
         XCTAssertTrue(boons.waitForExistence(timeout: 5), app.debugDescription)
         let open = app.buttons["Open"].firstMatch
         XCTAssertTrue(open.waitForExistence(timeout: 10),
@@ -84,7 +101,7 @@ final class DemoAccountUITests: XCTestCase {
     @MainActor
     func testTheLedgerShowsPurchasesAndTakesANewOne() {
         app.staticTexts["Valeria Stonebrook"].firstMatch.tap()
-        let ledger = app.staticTexts["Gold & Purchases"]
+        let ledger = app.buttons["Gold & Purchases"]
         scrollIntoView(ledger)
         XCTAssertTrue(ledger.waitForExistence(timeout: 5), app.debugDescription)
         XCTAssertTrue(app.staticTexts["Before the First Adventure"].exists, app.debugDescription)
@@ -104,8 +121,10 @@ final class DemoAccountUITests: XCTestCase {
         let price = app.textFields["Price of one"]
         price.tap()
         price.typeText("5 sp")
+        app.steppers.firstMatch.buttons.element(boundBy: 1).tap()
+        saveScreenshots("purchase-editor-filled")
         app.buttons["Add"].tap()
-        XCTAssertTrue(app.staticTexts["Rope"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.staticTexts["Rope, 2 of them"].waitForExistence(timeout: 5), app.debugDescription)
     }
 
     @MainActor

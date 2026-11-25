@@ -23,7 +23,7 @@ let package = Package(
         .target(
             name: "ChronicleKeeperUI",
             dependencies: ["ChronicleKeeperKit", .product(name: "AppNotices", package: "tabletop-kit")],
-            resources: [.copy("Resources/Factions")]
+            resources: [.copy("Resources/Factions"), .copy("Resources/ItemIcons")]
         ),
         // The macOS entry point; the app itself lives in ChronicleKeeperUI so the iPad app can share it.
         .executableTarget(name: "ChronicleKeeper", dependencies: ["ChronicleKeeperUI"]),

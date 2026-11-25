@@ -10,8 +10,7 @@ struct BoonsSection: View {
     @State private var preview: URL?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Boons (\(boons.count))").font(.headline)
+        CollapsibleSection("Boons (\(boons.count))", id: "boons") {
             if boons.isEmpty {
                 Text("No boons on paizo.com for this character.").foregroundStyle(.secondary)
             }

@@ -10,8 +10,7 @@ struct CharacterSettingsForm: View {
     @State private var isReadingPortrait = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Your Notes and Corrections").font(.headline)
+        CollapsibleSection("Your Notes and Corrections", id: "notes", spacing: 10) {
             // Labeled outside the picker: a menu picker on iOS shows only its value.
             LabeledContent("Default track") {
                 Picker("Default track", selection: binding(\.defaultTrack)) {

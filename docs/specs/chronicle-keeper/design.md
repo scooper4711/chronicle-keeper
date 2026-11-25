@@ -221,7 +221,11 @@ for every session.
 ## Interface
 
 A `NavigationSplitView`: campaigns, then characters (portrait, level, XP bar), then a detail view (header,
-reputation grid, adventures table with a track override menu, boons, settings). "Who Can Play..." is a sheet: a
+reputation grid, adventures table with a track override menu, boons, settings). The table's title cell carries a
+small gray caption, "Scenario · 4 XP (4 lost) · 2 Rep" (`SessionCaption`), instead of kind, XP and reputation columns.
+Adventures, Gold/Credits & Purchases, Boons and Your Notes and Corrections each fold away under their title
+(`CollapsibleSection`); whether each is folded is kept in the user defaults (`section.<id>.collapsed`), for every
+character and across launches. The ledger's balance stays on the title line while it is folded. "Who Can Play..." is a sheet: a
 search field, a campaign picker when the roster has more than one, a line saying what the list holds when that
 isn't every match, and the adventures with their covers (`CoverArt`, an `AsyncImage`). A session's details show
 the cover beside the title once it is known.
@@ -251,8 +255,9 @@ spreadsheet: column titles ("Treasure & Earned Income", or "Credits & Earned Inc
 ledger, and red for any negative amount (`MoneyText`). An item that may not be Society legal has an orange warning sign
 (`LegalityWarning`) whose reasons show on hover and, for touch, in a popover when tapped. A purchase's menu edits,
 sells, moves or removes it; a sale's menu moves or undoes it. Both lines are also `.draggable` onto any group's
-`.dropDestination`; the menu is the way in for the keyboard, VoiceOver and the iPhone. `PurchaseEditor` lists up to
-eight matches from `ItemPriceList` right under its field, as plain rows rather than a popover, so focus behaves on the
+`.dropDestination`; the menu is the way in for the keyboard, VoiceOver and the iPhone. `PurchaseEditor` takes the item,
+its quantity (a short field with a stepper) and the price of one on one line, the price dropping below when the pane is
+too narrow, and lists up to eight matches from `ItemPriceList` right under its field, as plain rows rather than a popover, so focus behaves on the
 Mac and the iPad. A picked item's price stays editable; `PriceNote` shows the item data's price when it is overridden,
 or says that an unmatched name is a custom item. A line falls to two rows (`ViewThatFits`) where one doesn't fit. The
 demo gives Valeria and Zix-7 ledgers (`DemoWealth`) through the in-memory repository's starting settings.
@@ -274,3 +279,12 @@ gitignored file, from `Artwork/rexard` or the full packs beside the checkout. Th
 first. With `REXARD_PACKS` named the art is required, which is how the release workflow builds: it fetches the
 submodule with the `ARTWORK_SSH_KEY` secret, a read-only deploy key, and fails without the art. CI fetches it when
 the secret is there, so pull requests from forks build with the symbol.
+
+Purchases, sales and the editor's suggestions show each item's Rexard icon (`ItemIcon`), the one Field Guide shows
+before any item cards are read. `scripts/item-icons.py` writes the committed table
+`ChronicleKeeperUI/Resources/ItemIcons/item-icons.tsv` (item id, Rexard picture, icon file) from the equipment rows of
+Field Guide's `icon-map.tsv`; run it after a Field Guide import. `toolkit-artwork` keeps every picture that map names,
+so the submodule holds them all. `add-artwork.sh` makes a 64-pixel HEIC of each picture once (about 1,400, some 3 MB),
+gitignored beside the table; a picture missing from the packs only leaves its items without an icon. Items without
+an icon, custom items and builds without the art show Field Guide's equipment symbol. The demo's purchases carry
+the item data's ids so they show theirs.
