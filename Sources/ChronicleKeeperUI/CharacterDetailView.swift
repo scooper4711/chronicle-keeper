@@ -192,12 +192,22 @@ struct PortraitButton<Choices: View>: View {
 struct ReputationGrid: View {
     let summary: CharacterSummary
 
+    /// The statuses reputation earns in the character's campaign (R2.10); Fame and Total Reputation earn none.
+    private var ladder: ReputationLadder { CampaignRules(campaign: summary.campaign).reputationLadder }
+    /// Room for the status line where the campaign has statuses, on every tile so the grid stays even.
+    private var tileHeight: CGFloat { ladder.isEmpty ? 120 : 136 }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Reputation").font(.headline)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), alignment: .leading)], spacing: 12) {
-                ForEach(summary.factions + summary.standing, id: \.name) { value in
-                    ReputationTile(value: value)
+                ForEach(summary.factions, id: \.name) { value in
+                    ReputationTile(value: value, height: tileHeight, status: ladder.status(for: value.value))
+                        .help(ladder.distanceToNextStatus(from: value.value))
+                        .accessibilityHint(ladder.distanceToNextStatus(from: value.value))
+                }
+                ForEach(summary.standing, id: \.name) { value in
+                    ReputationTile(value: value, height: tileHeight)
                 }
             }
             if summary.factions.isEmpty && summary.standing.isEmpty {
@@ -207,17 +217,25 @@ struct ReputationGrid: View {
     }
 }
 
-/// A narrow tile: the faction's symbol, faded, fills its middle, and the number and name sit centered over it.
+/// A narrow tile: the faction's symbol, faded, fills its middle, and the number, the name and the status the
+/// reputation has earned ("Liked"; empty where there is none) sit centered over it.
 struct ReputationTile: View {
     let value: NamedValue
+    let height: CGFloat
+    var status = ""
 
     var body: some View {
-        VStack {
+        VStack(spacing: 2) {
             Text("\(value.value)").font(.largeTitle.bold()).monospacedDigit()
             Text(value.name).font(.callout).multilineTextAlignment(.center)
+            if !status.isEmpty {
+                // Bold and in the text color: gray is lost over the symbol.
+                Text(status).font(.footnote.bold())
+            }
         }
         .padding(.horizontal, 6)
-        .frame(width: 140, height: 120)
+        .frame(width: 140, height: height)
+        .accessibilityElement(children: .combine)
         .background { FactionSymbol(faction: value.name, size: 100).opacity(0.3) }
         .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
         .clipShape(RoundedRectangle(cornerRadius: 10))
