@@ -10,17 +10,12 @@ public struct PageRange: Hashable, Sendable {
     public var isLastPage: Bool { last >= total }
 }
 
-/// The "next >" link of a Sessions page: an Ajax component URL and the update container it refreshes.
-public struct NextPageLink: Hashable, Sendable {
-    public let path: String
-    public let containerID: String
-}
-
 /// One page of the Sessions tab, or the Ajax fragment that replaces it.
 public struct SessionsPage: Sendable {
     public let sessions: [PlayedSession]
     public let range: PageRange?
-    public let nextPage: NextPageLink?
+    /// The "next >" link, which is session-bound and comes from the page just loaded.
+    public let nextPage: AjaxLink?
 }
 
 /// Reads the Sessions tab of My Organized Play.
@@ -48,13 +43,12 @@ public enum SessionsPageParser {
         return PageRange(first: Int(match.1) ?? 0, last: Int(match.2) ?? 0, total: Int(match.3) ?? 0)
     }
 
-    private static func nextPage(in document: Document) throws -> NextPageLink? {
+    private static func nextPage(in document: Document) throws -> AjaxLink? {
         let links = try document.select("a").array()
         guard let link = try links.first(where: { try $0.text() == "next >" }) else { return nil }
-        let onclick = try link.attr("onclick")
-        guard let match = onclick.firstMatch(of: /AUL\.update\('([^']+)'/) else {
+        guard let next = AjaxLink(link) else {
             throw ParsingError(operation: "Reading a Sessions page", reason: "the next-page link has no Ajax target")
         }
-        return NextPageLink(path: try link.attr("href"), containerID: String(match.1))
+        return next
     }
 }
