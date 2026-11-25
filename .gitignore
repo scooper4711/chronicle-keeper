@@ -12,3 +12,7 @@ ios/Version.xcconfig
 # Rexard art, licensed for use inside the app only: scripts/add-artwork.sh writes it from the private Artwork
 # submodule.
 Sources/ChronicleKeeperUI/Resources/Factions/fame.png
+
+# Item prices made by `make items` (the README stays).
+Sources/ChronicleKeeperKit/Resources/Items/*
+!Sources/ChronicleKeeperKit/Resources/Items/README.md

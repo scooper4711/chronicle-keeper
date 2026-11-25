@@ -15,6 +15,7 @@ public enum SettingsMerge {
         merged.characterSheetLink =
             pick(local.characterSheetLink, remote.characterSheetLink, ancestor.characterSheetLink)
         merged.overrides = mergeOverrides(local.overrides, remote.overrides, ancestor.overrides)
+        merged.wealth = WealthMerge.merge(local: local.wealth, remote: remote.wealth, ancestor: ancestor.wealth)
         return merged
     }
 

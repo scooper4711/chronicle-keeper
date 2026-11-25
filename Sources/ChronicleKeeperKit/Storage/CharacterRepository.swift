@@ -22,8 +22,9 @@ public struct RepositoryError: Error, Equatable, LocalizedError {
     public var errorDescription: String? { "\(operation) failed: \(failure)" }
 }
 
-/// Keeps two JSON files in one folder: `account.json` (site data, replaced on every refresh) and
-/// `settings.json` (user data), so a refresh never touches the user's edits.
+/// Keeps JSON files in one folder: `account.json` (site data, replaced on every refresh), and `settings.json` and
+/// `wealth.json` (user data), so a refresh never touches the user's edits. The ledger has a file of its own so an
+/// older version, which rewrites `settings.json` with only the fields it knows, leaves it alone.
 public struct FileCharacterRepository: CharacterRepository {
     public let directory: URL
     public var folder: URL? { directory }
@@ -48,10 +49,17 @@ public struct FileCharacterRepository: CharacterRepository {
     }
 
     public func loadSettings() throws -> [String: CharacterSettings] {
-        try read([String: CharacterSettings].self, from: "settings.json", operation: "Loading your settings") ?? [:]
+        var settings = try read([String: CharacterSettings].self, from: "settings.json",
+                                operation: "Loading your settings") ?? [:]
+        let wealth = try read([String: CharacterWealth].self, from: "wealth.json",
+                              operation: "Loading your gold and purchases") ?? [:]
+        for (number, ledger) in wealth { settings[number, default: CharacterSettings()].wealth = ledger }
+        return settings
     }
 
     public func saveSettings(_ settings: [String: CharacterSettings]) throws {
+        let wealth = settings.compactMapValues { $0.wealth.isEmpty ? nil : $0.wealth }
+        try write(wealth, to: "wealth.json", operation: "Saving your gold and purchases")
         try write(settings, to: "settings.json", operation: "Saving your settings")
     }
 

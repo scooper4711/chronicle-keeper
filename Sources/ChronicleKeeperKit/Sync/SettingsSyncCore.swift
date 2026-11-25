@@ -10,7 +10,24 @@ public struct SyncLedger: Codable, Sendable {
 
     public struct Entry: Codable, Sendable, Equatable {
         public var systemFields: Data?
+        /// The agreed settings. Their ledger isn't encoded with them (see `CharacterSettings.wealth`), so it is
+        /// kept in `ancestorWealth` too; read both through `agreed`.
         public var ancestor: CharacterSettings
+        /// The agreed ledger; nil in a file written before the ledger existed.
+        public var ancestorWealth: CharacterWealth?
+
+        public init(systemFields: Data?, ancestor: CharacterSettings) {
+            self.systemFields = systemFields
+            self.ancestor = ancestor
+            ancestorWealth = ancestor.wealth
+        }
+
+        /// The settings both sides agreed on, with their ledger.
+        public var agreed: CharacterSettings {
+            var settings = ancestor
+            settings.wealth = ancestorWealth ?? CharacterWealth()
+            return settings
+        }
     }
 
     public init() {}
@@ -41,10 +58,13 @@ public struct SettingsSyncCore: Sendable {
     /// Merges a record another device saved, or the server's copy after a conflict, into `local`.
     public mutating func received(_ record: CKRecord, local: CharacterSettings?) -> Merged? {
         guard let content = SettingsRecord.content(of: record) else { return nil }
-        let ancestor = ledger.entries[content.number]?.ancestor ?? CharacterSettings()
-        let merged = SettingsMerge.merge(local: local ?? ancestor, remote: content.settings, ancestor: ancestor)
-        ledger.entries[content.number] = SyncLedger.Entry(
-            systemFields: record.archivedSystemFields, ancestor: content.settings)
+        let ancestor = ledger.entries[content.number]?.agreed ?? CharacterSettings()
+        var remote = content.settings
+        // A record saved only by an older build has no ledger: that says nothing about the ledger, so it is taken
+        // as unchanged rather than as deleted.
+        if !content.hasWealth { remote.wealth = ancestor.wealth }
+        let merged = SettingsMerge.merge(local: local ?? ancestor, remote: remote, ancestor: ancestor)
+        ledger.entries[content.number] = SyncLedger.Entry(systemFields: record.archivedSystemFields, ancestor: remote)
         return Merged(settings: merged, needsUpload: merged != content.settings)
     }
 
@@ -67,7 +87,7 @@ public struct SettingsSyncCore: Sendable {
     /// that were never changed have nothing to send.
     public func unsynced(in settings: [String: CharacterSettings]) -> [String] {
         settings.compactMap { number, value in
-            let agreed = ledger.entries[number]?.ancestor ?? CharacterSettings()
+            let agreed = ledger.entries[number]?.agreed ?? CharacterSettings()
             return value == agreed ? nil : number
         }
     }

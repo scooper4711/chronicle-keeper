@@ -14,6 +14,10 @@ public struct CharacterSettings: Hashable, Codable, Sendable {
     public var portraitFileName: String
     /// A link to the character's sheet (Pathbuilder, Demiplane, Foundry, a PDF…), or empty.
     public var characterSheetLink: String
+    /// The gold and purchases ledger (R5). Kept out of the settings JSON on purpose (it isn't in `CodingKeys`): an
+    /// older build rewrites that JSON with only the fields it knows, which would erase the ledger. It is saved in
+    /// `wealth.json` and in the record's own `wealth` field instead (design.md, "The ledger's storage").
+    public var wealth = CharacterWealth()
 
     public init(
         defaultTrack: Track = .normal, startingLevel: Int = 1,
@@ -57,6 +61,7 @@ extension CharacterSettings {
 }
 
 extension CharacterSettings {
+    /// `wealth` is left out on purpose; see its comment.
     private enum CodingKeys: String, CodingKey {
         case defaultTrack, startingLevel, overrides, notes, portraitFileName, characterSheetLink
     }

@@ -94,6 +94,35 @@ adventures played, faction reputation, XP and level.
 - **R4.2** The user's own data syncs between their devices through iCloud when the build has iCloud turned on, with
   edits on two devices both surviving. Site data doesn't sync.
 
+## 5. Gold and purchases
+
+The Guide asks that "all purchases must be recorded on a Chronicle Sheet or on a separate record tracker". Each
+Pathfinder Society and Starfinder Society (second edition) character has such a ledger; first edition campaigns
+have none.
+
+- **R5.1** The ledger starts with the starting gold (or credits) for the character's starting level: 15, 75, 270 or
+  720 gp in Pathfinder Society, 150, 750, 2,700 or 7,200 credits in Starfinder Society (the lump-sum option). The
+  user can change it.
+- **R5.2** Each adventure has one field for the gold or credits it gave, typed from the chronicle (Earn Income
+  included). No formula feeds the balance: an empty field counts as nothing, and the ledger says how many
+  adventures have none entered. As a placeholder only, the field shows the 10-Treasure-Bundle amount at the level
+  the character played it at (Pathfinder) or the Credits Awarded at that level (Starfinder).
+- **R5.3** A purchase records the item (from the item data, or typed by hand), its level, rarity, unit price and
+  quantity, and the adventure it was bought after (or starting gold). Name, level, rarity and price are copied
+  into the purchase, so it reads the same without the item data.
+- **R5.4** A purchase can be sold, for half the price paid, after any adventure from the one it was bought after
+  on. The sale is its own line under that adventure.
+- **R5.5** A purchase or sale can be moved to after any other adventure. A purchase moved past its sale takes the
+  sale along; a sale is never placed before its purchase.
+- **R5.6** The balance runs oldest first, in the order credit was banked (R2.8): starting gold, then for each
+  adventure its gold, its purchases and its sales. A negative balance is shown in red with a note; nothing is
+  blocked.
+- **R5.7** A purchase is marked, with the reason in words, when its item level is above the character's level at
+  that point (minimum 2) or its rarity isn't common. Moving the purchase re-checks it.
+- **R5.8** Purchases tied to a session paizo.com no longer lists are kept and shown in a last group, never dropped.
+- **R5.9** The ledger is the user's own data (R4.1, R4.2): a refresh never touches it, and it syncs. A device on an
+  older version that saves the character's other settings never erases it.
+
 ## 9. Conduct
 
 - **R9.1** The app only reads the signed-in user's own account.
