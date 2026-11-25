@@ -92,6 +92,10 @@ beside `settings.json` and joins the two when loading. In CloudKit it is the `we
 ledger stores the agreed wealth beside the agreed settings (`SyncLedger.Entry.ancestorWealth`). `WealthMerge`
 merges entered gold and purchases per key, three ways, as overrides are; the starting funds pick as a field.
 
+The same risk lives inside the ledger: a later version may add fields to a purchase (Access, crafting). So
+`CharacterWealth` and `Purchase` keep any field they don't know (`UnknownFields`) and write it back as it was,
+and an older version moving or selling a purchase keeps what a newer one added.
+
 ## App Store builds
 
 TestFlight and the App Store get two builds under one bundle ID, uploaded from `main`:

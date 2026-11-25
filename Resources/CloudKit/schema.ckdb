@@ -9,6 +9,7 @@ DEFINE SCHEMA
         "___recordID"   REFERENCE,
         portrait        ASSET,
         settings        BYTES,
+        wealth          BYTES,
         GRANT WRITE TO "_creator",
         GRANT CREATE TO "_icloud",
         GRANT READ TO "_world"
