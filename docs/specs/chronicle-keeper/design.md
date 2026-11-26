@@ -115,9 +115,20 @@ beside `settings.json` and joins the two when loading. In CloudKit it is the `we
 ledger stores the agreed wealth beside the agreed settings (`SyncLedger.Entry.ancestorWealth`). `WealthMerge`
 merges entered gold and purchases per key, three ways, as overrides are; the starting funds pick as a field.
 
-The same risk lives inside the ledger: a later version may add fields to a purchase (Access, crafting). So
-`CharacterWealth` and `Purchase` keep any field they don't know (`UnknownFields`) and write it back as it was,
-and an older version moving or selling a purchase keeps what a newer one added.
+The same risk lives inside the ledger: a later version may add fields to a purchase (crafting). So
+`CharacterWealth`, `Purchase` and `AccessLink` keep any field they don't know (`UnknownFields`) and write it back
+as it was, and an older version moving or selling a purchase keeps what a newer one added.
+
+A purchase's link to the boon or Chronicle Sheet that makes it legal (R5.10) is such a field: `Purchase.accessLink`,
+an `AccessLink` holding the kind, the source's ID and, copied in so the row reads the same offline, the source's
+name and its character's. A boon's ID is `Boon.id` (paizo.com's own character and reward keys, the same across
+refreshes); a Chronicle Sheet's is the character number and the session's `keyWithinCharacter`, as a character can
+be renamed. It rides in `wealth`, so it syncs with no change to the CloudKit schema, and a build from before it
+keeps it. Nothing stores the other direction: `AccessLinkIndex` reads every character's purchases and answers
+where a boon or sheet is used, for the picker, the Boons section and the rule that a boon covers one purchase.
+`CharacterStore.link` enforces that rule by unlinking the boon's other purchases first, on whichever character.
+Merging can't: purchases merge one at a time (`WealthMerge`), so two devices that each linked a boon leave it on two
+purchases, and `AccessLinkIndex.conflictNote` says so under both.
 
 Data this build can't read is never written over. When `settings.json` or `wealth.json` won't decode,
 `CharacterStore` keeps nothing it read, says so, and refuses to save or merge settings until it can read them:
@@ -272,14 +283,19 @@ earned"; the hint is only a placeholder), then its sales and purchases with the 
 spreadsheet: column titles ("Treasure & Earned Income", or "Credits & Earned Income" in Starfinder; "Bought & Sold";
 "Balance"), fixed-width number columns (`LedgerColumn`) so the amounts line up, stripes that alternate across the whole
 ledger, and red for any negative amount (`MoneyText`). An item that may not be Society legal has an orange warning sign
-(`LegalityWarning`) whose reasons show on hover and, for touch, in a popover when tapped. A purchase's menu edits,
+(`LegalityWarning`) whose reasons show on hover and, for touch, in a popover when tapped. The popover and the
+purchase's menu open `AccessLinkPicker` (R5.10), a sheet listing the boons or, on its second tab, the Chronicle Sheets
+that `AccessLinkOptions` offers, by character, with a search field; a boon that covers another purchase is dimmed and
+asks before it moves. A linked purchase has a green check instead (`AccessCheck`), whose popover says what is waived
+and unlinks it, and `BoonRow` says what a boon is used for. A purchase's menu edits, links or unlinks,
 sells, moves or removes it; a sale's menu moves or undoes it. Both lines are also `.draggable` onto any group's
 `.dropDestination`; the menu is the way in for the keyboard, VoiceOver and the iPhone. `PurchaseEditor` takes the item,
 its quantity (a short field with a stepper) and the price of one on one line, the price dropping below when the pane is
 too narrow, and lists up to eight matches from `ItemPriceList` right under its field, as plain rows rather than a popover, so focus behaves on the
 Mac and the iPad. A picked item's price stays editable; `PriceNote` shows the item data's price when it is overridden,
 or says that an unmatched name is a custom item. A line falls to two rows (`ViewThatFits`) where one doesn't fit. The
-demo gives Valeria and Zix-7 ledgers (`DemoWealth`) through the in-memory repository's starting settings.
+demo gives Valeria and Zix-7 ledgers (`DemoWealth`) through the in-memory repository's starting settings; Zix-7's
+uncommon drone is linked to his boon.
 
 A paper sheet is scanned with VisionKit's document scanner (`DocumentScanner`), which finds the sheet's edges,
 straightens it, and has its own review screen to rotate, crop or rescan each page. Its pages are drawn upright
