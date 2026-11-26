@@ -47,6 +47,6 @@ struct DemoWealthTests {
 
     @Test func theRepositoryStartsWithTheSettingsItWasGiven() throws {
         let repository = InMemoryCharacterRepository(settings: DemoWealth.settings)
-        #expect(try repository.loadSettings().keys.sorted() == ["123456-2001", "123456-701"])
+        #expect(try repository.loadSettings().keys.sorted() == ["123456-2001", "123456-2002", "123456-701"])
     }
 }

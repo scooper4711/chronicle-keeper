@@ -1,12 +1,14 @@
 import Foundation
 
 /// Made-up ledgers for the demo characters (R5): gold entered for some adventures and left empty for others, a
-/// purchase above the character's level, one sold and one linked to a boon, so every kind of ledger line shows.
+/// purchase above the character's level, one sold and one linked to a boon, and the gold of a session paizo.com
+/// doesn't list yet, so every kind of ledger line shows.
 public enum DemoWealth {
     /// The demo characters' settings, holding their ledgers.
     public static var settings: [String: CharacterSettings] {
         [
             "\(DemoAccount.playerNumber)-2001": settings(with: valeria),
+            "\(DemoAccount.playerNumber)-2002": settings(with: pip),
             "\(DemoAccount.playerNumber)-701": settings(with: zix)
         ]
     }
@@ -36,6 +38,14 @@ public enum DemoWealth {
                 item("Chain Mail", level: 1, price: 6 * gold, after: "9004#4")
             ])
         wealth.sheetReadings[DemoChronicles.sessionKey] = DemoChronicles.reading
+        return wealth
+    }
+
+    /// Only the chronicle sheet of a session paizo.com doesn't list yet, with its gold (R1.14).
+    private static var pip: CharacterWealth {
+        var wealth = CharacterWealth(
+            earned: [DemoChronicles.unreportedKey: DemoChronicles.unreportedReading.funds ?? 0])
+        wealth.sheetReadings[DemoChronicles.unreportedKey] = DemoChronicles.unreportedReading
         return wealth
     }
 
