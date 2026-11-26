@@ -155,7 +155,11 @@ A sheet is read in three steps (R1.10), all on the device:
    online play (rpgchronicles.net and the like) hold their values as page text, so they are read exactly and at
    once. `VisionTextRecognizer` (the only Vision code, behind the `TextRecognizer` protocol) reads a picture of the
    page, handwriting included: a scan has no text of its own, as the document scanner hands over pictures.
-   `SheetReader` asks the PDF first and recognition when that gives no code or no reward.
+   `SheetReader` asks the PDF first, and recognition when the PDF's text gives no reward: a scan, or a printed
+   sheet filled in by hand. Recognition gets a picture 2,400 pixels wide (`SheetPage`): at 1,600 it missed a lone
+   handwritten "4" on a real sheet. PDFKit's `characterBounds(at:)` doesn't count characters the way
+   `PDFPage.string` does, so `PDFTextLines` asks a selection of each word where it is, and joins the words of a
+   line that have no wide gap between them: PDFKit's own lines run the width of the page.
 2. **Format.** `SheetLabel` knows each box's label in every season's wording; `SheetPrinting` knows the rest of the
    sheet's own printing (the names along the reward column, the signs between its boxes, the "FOR GM ONLY" banner
    right above the event code), which is never taken for writing. `SheetFormat` works out where the reward boxes
