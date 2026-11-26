@@ -77,28 +77,10 @@ struct CharacterBrowser: View {
                 Label { Text("Who Can Play…") } icon: { Image("who.can.play", bundle: .module) }
             }
             .help("Find the characters who can still play an adventure")
-            .id(windowActivity)
             Button { Task { await store.refresh() } } label: { Label("Refresh", systemImage: "arrow.clockwise") }
                 .help("Read your characters and sessions from paizo.com again")
                 .disabled(!session.canRefresh)
-                .id(windowActivity)
         }
-    }
-
-    #if os(macOS)
-    @Environment(\.controlActiveState) private var controlActiveState
-    #endif
-
-    /// Changes when the window comes to the front or goes to the background, which makes the toolbar's buttons
-    /// anew. The Mac draws a toolbar button dimmed while its window is in the background, and one made then,
-    /// as every button is when the app starts, kept that look in front too, as if disabled, until something
-    /// else redrew it.
-    private var windowActivity: Int {
-        #if os(macOS)
-        controlActiveState == .inactive ? 0 : 1
-        #else
-        0
-        #endif
     }
 
     private func refreshIfNeverRead() async {

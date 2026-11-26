@@ -38,7 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A character whose ledger this version can't read is held back from syncing, with a prompt to update, and never
   overwrites the newer copy
 - Settings that can't be read are never saved over
-- On the Mac, the toolbar's buttons no longer look disabled after the app opens
 
 ## [1.1.0] - 2026-11-24
 

@@ -424,12 +424,20 @@ this", and the one used before (`person.2.badge.gearshape`) read as account sett
   `who.can.play`, and is loaded with `Image("who.can.play", bundle: .module)`. Both builds compile the catalog:
   Xcode for the iPhone and iPad, and `swift build` for the Mac, whose resource bundle `scripts/build-app.sh`
   copies into the app.
-- **The Mac's dimmed buttons.** macOS draws a toolbar button dimmed while its window is in the background. A
-  button made then, as every button is when the app starts, kept that look once the window was in front, as if
-  disabled, until something else redrew it (Refresh came right after the first refresh, "Who Can Play…" never).
-  So each button's identity includes whether the window is active (`MainWindow.windowActivity`, from
-  `controlActiveState`), which makes it anew when that changes. Measured on a capture of the window: gray 172
-  before, 108 after, beside the system's own sidebar button at 99.
+- **The Mac's dimmed buttons were the build, not the toolbar.** On a Mac build made on this machine both buttons
+  looked disabled: gray 172 in a window in front, beside the system's own sidebar button at 99. The cause was the
+  number the build writes into the binary for the SDK it was built with. Swift Build, the default engine of
+  `swift build` from Xcode 27 on, writes the deployment target (14.0) there. macOS reads it to choose how an app
+  looks, and takes 14.0 to mean an app from before the current design: the old flat toolbar, whose buttons keep
+  the dimmed look of a background window once the app is in front. `scripts/stamp-sdk.sh`, which
+  `scripts/build-app.sh` runs before signing, writes the SDK's real version back, and does nothing to a binary
+  that already has it.
+  - Checked by re-marking one build both ways and launching each several times: marked 14.0, pale every time;
+    marked 27.2, the current toolbar and dark buttons every time.
+  - The TestFlight and App Store builds so far were made with Xcode 26.5, whose `swift build` writes the SDK's
+    version (26.5), so they never showed this. They would from the first release built with Xcode 27.
+  - Redrawing the buttons when the window becomes active also hid the symptom. It was tried and taken out: it
+    left the app in the old design.
 
 ## Artwork
 
