@@ -30,11 +30,12 @@ struct AdventuresTable: View {
     }
 
     var body: some View {
-        CollapsibleSection("Adventures (\(record.sessions.count))", id: "adventures") {
+        CollapsibleSection(UnreportedText.adventuresTitle(of: record), id: "adventures") {
+            AddChronicleMenu(record: record, store: store, isCompact: isCompact)
             Picker("Sort", selection: $sort) {
                 ForEach(AdventureSort.allCases) { Text($0.displayName).tag($0) }
             }
-            .pickerStyle(.segmented).labelsHidden().frame(width: 160)
+            .pickerStyle(.segmented).labelsHidden().frame(width: isCompact ? 120 : 160)
         } content: {
             if sessions.isEmpty {
                 Text("No sessions on paizo.com yet.").foregroundStyle(.secondary)
@@ -172,14 +173,17 @@ struct AdventureCells {
     }
 
     /// The adventure's title, which opens the session's details (`SessionDetailView`), and its chronicle sheet.
+    /// A session paizo.com doesn't list yet is in another color, says so under its title and has a badge (R1.14).
     var title: some View {
         HStack(alignment: .top, spacing: 4) {
             NavigationLink(value: SessionRoute(sessionID: progress.id)) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(session.adventure.titleWithLevels)
-                        .lineLimit(2).multilineTextAlignment(.leading).foregroundStyle(.tint)
-                    if session.isGameMaster {
-                        Text("GM credit").font(.caption).foregroundStyle(.secondary)
+                        .lineLimit(2).multilineTextAlignment(.leading)
+                        .foregroundStyle(session.isReported ? AnyShapeStyle(.tint) : AnyShapeStyle(Color.unreported))
+                    if let status {
+                        Text(status).font(.caption).foregroundStyle(.secondary)
+                            .accessibilityIdentifier("session-status")
                     }
                 }
             }
@@ -187,9 +191,16 @@ struct AdventureCells {
             .help("Show everything about this session")
             .accessibilityHint("Shows the session's details")
             .accessibilityIdentifier("session-details")
+            if !session.isReported { UnreportedBadge() }
             ChronicleButton(sheet: sheet)
             ClaimSparkle(rewards: claimable)
         }
+    }
+
+    /// The small line right under the title: "GM credit", or that paizo.com doesn't list the session yet.
+    private var status: String? {
+        if !session.isReported { return UnreportedText.caption(added: sheet.reading?.addedAt) }
+        return session.isGameMaster ? "GM credit" : nil
     }
 
     /// The free rewards this session earned that the character hasn't claimed (R3.9).

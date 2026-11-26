@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   disagree (another character, another adventure, other XP or gold), a warning says so, and you can clear it
 - Drop a chronicle PDF on an adventure's row or its Chronicle Sheet section to attach it
 - "Read Sheet…" in a sheet's menu reads one you attached earlier
+- "Add Chronicle…" takes a chronicle sheet before paizo.com lists its session. It counts right away, for XP,
+  level and gold, as a row marked "Unreported", and becomes the reported session when the GM reports it
 
 ### Changed
 - "Who Can Play…" has its own icon: a chronicle sheet under a magnifying glass

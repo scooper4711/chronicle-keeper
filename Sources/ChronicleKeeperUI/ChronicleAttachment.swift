@@ -8,7 +8,7 @@ struct ChronicleButton: View {
     let sheet: SessionSheet
 
     var body: some View {
-        let state = State(isAttached: sheet.file != nil, hasWarnings: !sheet.warnings.isEmpty)
+        let state = State(isAttached: sheet.file != nil, hasWarnings: sheet.needsAttention)
         // No label style here: the menu's own label is a symbol already, and a style would reach the items too.
         ChronicleMenu(sheet: sheet) { _ in
             if state.hasWarnings {
@@ -38,7 +38,7 @@ struct ChronicleButton: View {
         }
 
         var help: String {
-            if hasWarnings { return "This adventure's chronicle sheet disagrees with paizo.com's record" }
+            if hasWarnings { return "This adventure's chronicle sheet has a warning: see the adventure's details" }
             return isAttached ? "This adventure's chronicle sheet" : "Attach this adventure's chronicle sheet"
         }
     }
@@ -56,6 +56,8 @@ struct ChronicleMenu<MenuLabel: View>: View {
     @State private var scanned: Data?
     @State private var candidate: SheetCandidate?
     @State private var preview: URL?
+    /// Whether the user is asked what to do with an unreported sheet they remove.
+    @State private var asksRemoval = false
 
     var body: some View {
         Menu {
@@ -63,7 +65,9 @@ struct ChronicleMenu<MenuLabel: View>: View {
                 Button { open(file) } label: { Label("Open", systemImage: "doc.text.magnifyingglass") }
                 ShareLink(item: file) { Label("Share", systemImage: "square.and.arrow.up") }
                 Button { readAttached() } label: { Label(readTitle, systemImage: "text.viewfinder") }
-                Button(role: .destructive) { sheet.remove() } label: { Label("Remove", systemImage: "trash") }
+                if sheet.session.isReported {
+                    Button(role: .destructive) { sheet.remove() } label: { Label("Remove", systemImage: "trash") }
+                }
             } else {
                 Button { choosesFile = true } label: { Label("Attach PDF…", systemImage: "doc.badge.plus") }
                 #if os(iOS)
@@ -72,9 +76,15 @@ struct ChronicleMenu<MenuLabel: View>: View {
                 }
                 #endif
             }
+            // An unreported sheet is its session, so removing it asks first; one whose PDF is on another device
+            // can be removed too.
+            if !sheet.session.isReported, !sheet.isNew {
+                Button(role: .destructive) { asksRemoval = true } label: { Label("Remove…", systemImage: "trash") }
+            }
         } label: {
             label(sheet.file != nil)
         }
+        .unreportedRemoval(of: sheet, isAsking: $asksRemoval)
         .fileImporter(isPresented: $choosesFile, allowedContentTypes: [.pdf]) { result in
             if case .success(let url) = result { confirm(PDFFile.data(at: url)) }
         }

@@ -120,7 +120,8 @@ extension LedgerGroup {
     var title: String {
         switch place {
         case .start: "Before the First Adventure"
-        case .session(let progress): progress.session.adventure.titleWithLevels
+        case .session(let progress):
+            progress.session.adventure.titleWithLevels + (progress.isReported ? "" : " · not reported")
         case .unlisted: "Adventures paizo.com no longer lists"
         }
     }
