@@ -41,6 +41,12 @@ public struct LevelRange: Hashable, Codable, Sendable {
         lowest == highest ? "Level \(lowest)" : "Levels \(lowest)–\(highest)"
     }
 
+    /// The levels worded as a product description words them, so `AdventureClassifier.levelRange` reads them back:
+    /// the description of an adventure the app knows only from a catalog.
+    public var summaryText: String {
+        lowest == highest ? "Designed for level \(lowest)" : "Designed for levels \(lowest)–\(highest)"
+    }
+
     /// The bare numbers, for after a title: "3–7", or "1" for a single level.
     public var shortText: String {
         lowest == highest ? "\(lowest)" : "\(lowest)–\(highest)"
