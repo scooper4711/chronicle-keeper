@@ -50,6 +50,39 @@ struct ChronicleLibraryTests {
         #expect(library.namedFiles() == ["1234#1": original])
     }
 
+    /// A sheet whose session paizo.com doesn't list yet waits in the pending folder (R1.14).
+    @Test func anUnreportedSheetGoesInThePendingFolder() {
+        let library = ChronicleLibrary(folder: URL(fileURLWithPath: "/Chronicles"))
+        let url = library.fileURL(characterNumber: "123456-2001", session: UnreportedFactory.newSheet("a-b"))
+        #expect(url.path == "/Chronicles/Pending/123456-2001/a-b.pdf")
+        #expect(library.pendingURL(ChronicleLibrary.pendingFile(characterNumber: "123456-2001", id: "a-b")) == url)
+    }
+
+    @Test func pendingSheetsAreNotTakenForSheetsFiledByName() throws {
+        let library = ChronicleLibrary(folder: temporaryChronicleFolder())
+        try library.save(chronicleBytes, to: library.pendingURL("123456-2001/a"))
+        try library.save(chronicleBytes, to: library.pendingURL("123456-2001/1234#1#Pip"))
+        #expect(library.namedFiles().isEmpty)
+    }
+
+    @Test func adoptingAPendingSheetMovesItToItsSessionAndTidiesItsFolder() throws {
+        let library = ChronicleLibrary(folder: temporaryChronicleFolder())
+        let pending = library.pendingURL("123456-2001/a")
+        try library.save(chronicleBytes, to: pending)
+        let url = sheet(in: library)
+        #expect(library.adopt(pending, to: url) == url)
+        #expect(try Data(contentsOf: url) == chronicleBytes)
+        #expect(!FileManager.default.fileExists(atPath: pending.deletingLastPathComponent().path))
+    }
+
+    @Test func aPendingSheetThatIsOnlyInICloudStaysPending() throws {
+        let library = ChronicleLibrary(folder: temporaryChronicleFolder(), isInICloud: true)
+        let pending = library.pendingURL("123456-2001/a")
+        try library.save(Data(), to: ChronicleLibrary.placeholder(of: pending))
+        #expect(library.adopt(pending, to: sheet(in: library)) == pending)
+        #expect(library.hasFile(at: pending))
+    }
+
     @Test func aMissingLibraryHasNoNamedSheets() {
         #expect(ChronicleLibrary(folder: temporaryChronicleFolder()).namedFiles().isEmpty)
     }
