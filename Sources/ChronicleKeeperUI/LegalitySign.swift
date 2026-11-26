@@ -44,7 +44,7 @@ struct AccessCheck: View {
         }
         .buttonStyle(.borderless)
         .help(explanation)
-        .accessibilityLabel(link.kind == .boon ? "Linked to a boon" : "Linked to a Chronicle Sheet")
+        .accessibilityLabel(link.linkedLabel)
         .accessibilityHint(explanation)
         .popover(isPresented: $isShowingWhy) {
             LegalityPopover(text: explanation, action: "Unlink") {

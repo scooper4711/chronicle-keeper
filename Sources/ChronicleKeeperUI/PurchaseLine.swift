@@ -90,7 +90,7 @@ struct PurchaseLine: View {
     /// The way to link and unlink for the keyboard and VoiceOver.
     @ViewBuilder private var linkButton: some View {
         if let link = purchase.accessLink {
-            Button(link.kind == .boon ? "Unlink Boon" : "Unlink Chronicle Sheet", action: unlink)
+            Button(link.unlinkTitle, action: unlink)
         } else if !marks.isEmpty {
             Button(LegalityWarning.linkTitle) { isLinking = true }
         }
