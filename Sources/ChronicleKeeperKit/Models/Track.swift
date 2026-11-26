@@ -15,6 +15,8 @@ public enum Track: String, Hashable, Codable, Sendable, CaseIterable {
 public enum TrackSource: String, Hashable, Codable, Sendable {
     /// The user chose it for this session.
     case override
+    /// The session's chronicle sheet gives the slow track's half XP, or the full amount (R2.11).
+    case chronicle
     /// Worked out from the reputation the session earned.
     case inferred
     /// The campaign didn't allow slow track yet.

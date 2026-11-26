@@ -8,6 +8,8 @@ public enum XPSource: String, Hashable, Codable, Sendable {
     case estimated
     /// The user entered it.
     case override
+    /// Read from the session's chronicle sheet (R2.11).
+    case chronicle
 }
 
 /// What a session contributed to a character: its kind, track and XP, with where each came from.

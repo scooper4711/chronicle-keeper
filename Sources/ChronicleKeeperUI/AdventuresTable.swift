@@ -248,6 +248,7 @@ enum TrackExplanation {
     static func of(_ source: TrackSource) -> String {
         switch source {
         case .override: "You set this track."
+        case .chronicle: "From the XP on the Chronicle Sheet."
         case .inferred: "Worked out from the reputation the session gave."
         case .campaignRule: "The campaign had no slow track when this was played."
         case .characterDefault: "The character's default track: the session doesn't show which track it was."
