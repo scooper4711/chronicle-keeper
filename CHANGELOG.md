@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - An adventure's kind and XP show under its title
 - Each faction shows the status the character's reputation has earned (Liked, Admired, Revered, or the Starfinder
   tier), and how much the next one still needs
+- A sparkle shows where a free Chronicle Boon or Game Reward is waiting to be claimed on paizo.com: beside the
+  adventure, on the faction, in the sidebar and in a "Ready to Claim" list at the top of Boons
 
 ### Fixed
 - Typed amounts are read with the device's decimal mark

@@ -258,7 +258,10 @@ Open, `waitUntilOnDevice` starts the download and checks every quarter second un
 there and its `ubiquitousItemDownloadingStatus` isn't `.notDownloaded`). The section says it is downloading
 meanwhile, and after `ICloudDownload.longest` (a minute) offers to try again. Boons work the same way:
 `BoonFileButtons` shows a spinner while it brings a PDF down for Open or Print, and a crossed-out cloud if it
-doesn't arrive. Both libraries get this, and `hasFile` and the coordinated write, from `ICloudDocumentLibrary`.
+doesn't arrive. Above the boons, "Ready to Claim" lists the free rewards that are waiting (R3.9,
+`ClaimableRewardsList`); `ClaimSparkle` is the same list behind a sparkle, in a popover (a sheet on the iPhone), on
+the adventure's row, the faction's tile and the Boons title, and the sidebar has a still one. The claims come from
+`CharacterStore.claimableRewards`, worked out when the account or the lists change. Both libraries get this, and `hasFile` and the coordinated write, from `ICloudDocumentLibrary`.
 Share hands over the file as it is, since `ShareLink` gives nothing to wait in. The demo account attaches a
 made-up sheet to its newest session (`DemoChronicles`), so the demo and the UI tests show one.
 

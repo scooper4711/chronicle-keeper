@@ -27,6 +27,8 @@ reputation and Fame, and XP and level. It is free and open source, and it reads 
 - "Who can play...?": search every Organized Play adventure Paizo has published, by code or title, in
   [Warhorn](https://warhorn.net)'s catalog, and see which characters haven't played it and are in its level range.
 - Boons: downloads the PDFs from the Boons tab for each character.
+- Free rewards: a sparkle shows where a Chronicle Boon or Game Reward is waiting for a character on paizo.com, with
+  why it is free and a button to the Boons tab to claim it. The app itself only reads your account.
 - Your own data syncs between your devices through iCloud (in builds that turn it on).
 - A demo account with fictional characters, for trying the app without signing in.
 

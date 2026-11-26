@@ -108,6 +108,9 @@ adventures played, faction reputation, XP and level.
   - A condition the app can't check from the account (every part of a series, a compilation, a Chronicle Sheet
     count) is never signaled, nor is a reward for a character whose name another character shares, as the Boons
     tab names only the character. A missed reward is better than a false one.
+  - Known limit: each character is checked on its own. A boon worded for the whole account ("One of your
+    characters…", "Your characters…") is signaled for every character with a session of its adventure until that
+    character has it, even after another character claimed it.
   - The signal is a sparkle, moving unless the device reduces motion: beside the adventure in the character's
     table and in the session's details, on the faction's tile, on the Boons section's title and beside the
     character in the sidebar. It says which reward and why, and opens a list with a button to the Boons tab on
