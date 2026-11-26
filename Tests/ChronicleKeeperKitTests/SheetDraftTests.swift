@@ -86,6 +86,37 @@ struct SheetDraftTests {
         #expect(draft(funds: "lots").reading(correcting: SheetReading(), currency: .gold).funds == nil)
     }
 
+    // MARK: - A sheet added ahead of its report (R1.14)
+
+    @Test func theScenarioNumberShowsAsReadAndIsCorrectedAsTyped() {
+        var draft = SheetDraft(reading: reading(), currency: .gold)
+        #expect(draft.code == "6-04")
+        #expect(draft.hasCode)
+        draft.code = "#6-5"
+        #expect(draft.reading(correcting: reading(), currency: .gold).code == "6-05")
+        draft[.code] = "quest 14"
+        #expect(draft[.code] == "quest 14")
+        #expect(draft.reading(correcting: reading(), currency: .gold).code == "Quest 14")
+    }
+
+    @Test func aScenarioNumberThatIsNoneIsNamedAndAnEmptyOneIsMissing() {
+        var draft = draft()
+        #expect(!draft.hasCode)
+        #expect(draft.unreadableFields(in: .gold).isEmpty)
+        draft.code = "the one with the carnival"
+        #expect(!draft.hasCode)
+        #expect(draft.unreadableFields(in: .gold) == [.code])
+        // The number is the sheet's own on a reported session, where the field isn't shown.
+        #expect(draft.reading(correcting: reading(), currency: .gold).code == "6-04")
+    }
+
+    @Test func theDayPlayedIsKeptOnlyForASheetThatHasOne() throws {
+        var draft = draft()
+        #expect(draft.reading(correcting: reading(), currency: .gold).playedOn == nil)
+        draft.day = try #require(SheetDay.localDate(of: "2026-11-21"))
+        #expect(draft.reading(correcting: reading(), currency: .gold).playedOn == "2026-11-21")
+    }
+
     @Test func aReadingIsSummedUpOnOneLine() {
         let read = reading { $0.playerNumber = "123456"; $0.characterPart = "2001"; $0.xp = 4; $0.funds = 22_000 }
         #expect(read.summary(in: .credits) == "4 XP · \(Money.format(22_000, in: .credits)) · character 123456-2001")

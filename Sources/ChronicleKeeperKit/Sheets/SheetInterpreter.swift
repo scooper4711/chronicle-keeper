@@ -28,6 +28,8 @@ public enum SheetInterpreter {
 /// A value of a sheet that the user confirms (R1.11).
 public enum SheetField: String, Hashable, Sendable, CaseIterable {
     case characterNumber, xp, funds
+    /// The scenario number, which the user confirms only for a sheet added ahead of its report (R1.14).
+    case code
 }
 
 /// What was read from a sheet, and where on its page each confirmed value was found.
