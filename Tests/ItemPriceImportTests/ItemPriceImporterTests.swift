@@ -2,6 +2,7 @@ import CreatureImport
 import ChronicleKeeperKit
 
 import Foundation
+import SourceAttribution
 import Testing
 
 @testable import ItemPriceImport
@@ -43,7 +44,7 @@ struct ItemPriceImporterTests {
         let sword = Self.document("Longsword", type: "weapon", price: ["gp": 1, "sp": 5])
         #expect(ItemPriceImporter.item(from: try json(sword), game: .pathfinder)
             == PricedItem(id: "pf2e/Longsword", game: .pathfinder, name: "Longsword", level: 2, price: 150,
-                          rarity: .uncommon, source: "Core"))
+                          rarity: .uncommon, source: "Pathfinder Player Core"))
         let gem = Self.document("Ruby", type: "treasure", price: ["gp": 5])
         #expect(ItemPriceImporter.item(from: try json(gem), game: .pathfinder) == nil)
         let free = Self.document("Rock", type: "equipment", price: [:])
@@ -52,7 +53,7 @@ struct ItemPriceImporterTests {
         #expect(ItemPriceImporter.item(from: try json(unnamed), game: .pathfinder) == nil)
     }
 
-    @Test("writes both games' sorted items and the licenses, skipping virtual items")
+    @Test("writes both games' sorted items and their sources' notices, skipping virtual items")
     func writesList() throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("prices-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: root) }
@@ -68,14 +69,54 @@ struct ItemPriceImporterTests {
         #expect(report.itemCount == 2)
         #expect(report.games == [.pathfinder: 1, .starfinder: 1])
         let licenseFolder = output.appendingPathComponent("Licenses")
-        let licenses = try FileManager.default.contentsOfDirectory(atPath: licenseFolder.path)
-        #expect(licenses.sorted() == ["ORC License.md", "Open Game License.md"])
+        // Both fixture books are under the ORC License, so no OGL notice is written.
+        #expect(try FileManager.default.contentsOfDirectory(atPath: licenseFolder.path) == ["ORC License.md"])
+        let notice = try String(contentsOf: licenseFolder.appendingPathComponent("ORC License.md"), encoding: .utf8)
+        #expect(notice.contains("Pathfinder Player Core ©") && notice.contains("Starfinder Player Core ©"))
+        #expect(!notice.hasPrefix("/static"))
     }
 
-    private static func document(_ name: String, type: String, price: [String: Int]) -> [String: Any] {
+    @Test("an item from a book the catalog doesn't know stops the import, naming the book")
+    func unknownSourceFails() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("prices-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        try Self.fixtureRepository(at: root)
+        let rope = Self.document("Rope", type: "equipment", price: ["sp": 5], source: "A Book Nobody Wrote")
+        try Self.write(rope, to: root.appendingPathComponent("packs/pf2e/equipment/rope.json"))
+        let output = root.appendingPathComponent("out")
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        let error = #expect(throws: AttributionError.self) {
+            try ItemPriceImporter(repository: root, outputDirectory: output).run()
+        }
+        #expect(error?.description.contains("A Book Nobody Wrote: not in the catalog") == true)
+    }
+
+    /// The item data the app ships is made by `make items` and isn't in the repository, so this runs wherever the
+    /// import has run: on a developer's Mac and in the release builds.
+    @Test("every source of the bundled items is named in exactly one notice",
+          .enabled(if: !ItemPriceList.bundled.items.isEmpty, "needs the item data that make items writes"))
+    func bundledSourcesAreAttributed() throws {
+        let folder = try #require(ItemPriceList.licensesFolder)
+        let catalog = try SourceCatalog.bundled()
+        let notices = try [NoticeWriter.orcFileName, NoticeWriter.oglFileName].compactMap { name in
+            try? String(contentsOf: folder.appendingPathComponent(name), encoding: .utf8)
+        }
+        #expect(!notices.isEmpty)
+        for source in Set(ItemPriceList.bundled.items.map(\.source)).sorted() {
+            let entry = try #require(catalog.entry(for: source), "\(source) isn't in the catalog")
+            // A collection, such as the Pathfinder Blog, is named by the notices of its parts.
+            let lines = entry.isCollection ? entry.includes : [entry.noticeLine]
+            let naming = notices.filter { notice in lines.allSatisfy(notice.contains) }
+            #expect(naming.count == 1, "\(source) is named in \(naming.count) notices")
+        }
+    }
+
+    private static func document(
+        _ name: String, type: String, price: [String: Int], source: String = "Pathfinder Player Core"
+    ) -> [String: Any] {
         ["_id": name.filter(\.isLetter), "name": name, "type": type, "system": [
             "level": ["value": 2], "price": ["value": price], "traits": ["rarity": "uncommon"],
-            "publication": ["title": "Core"]
+            "publication": ["title": source]
         ]]
     }
 
@@ -85,10 +126,8 @@ struct ItemPriceImporterTests {
             let manifest = #"{"packs": [\#(pack)]}"#
             try write(manifest, to: root.appendingPathComponent("system.\(game).json"))
         }
-        try write("ORC", to: root.appendingPathComponent("static/licenses/ORCLicense.md"))
-        try write("OGL", to: root.appendingPathComponent("static/licenses/OpenGameLicense.md"))
         let sword = document("Longsword", type: "weapon", price: ["gp": 1, "sp": 5])
-        let laser = document("Laser Pistol", type: "weapon", price: ["sp": 6500])
+        let laser = document("Laser Pistol", type: "weapon", price: ["sp": 6500], source: "Starfinder Player Core")
         let virtual = document("Virtual", type: "equipment", price: ["gp": 1])
         try write(sword, to: root.appendingPathComponent("packs/pf2e/equipment/longsword.json"))
         try write(laser, to: root.appendingPathComponent("packs/sf2e/equipment/laser-pistol.json"))

@@ -31,10 +31,13 @@ let package = Package(
         .target(name: "ItemPriceImport", dependencies: [
             "ChronicleKeeperKit",
             .product(name: "CreatureImport", package: "tabletop-kit"),
-            .product(name: "Bestiary", package: "tabletop-kit")
+            .product(name: "Bestiary", package: "tabletop-kit"),
+            .product(name: "SourceAttribution", package: "tabletop-kit")
         ]),
         .executableTarget(name: "ItemPrices", dependencies: ["ItemPriceImport"]),
-        .testTarget(name: "ItemPriceImportTests", dependencies: ["ItemPriceImport"]),
+        .testTarget(name: "ItemPriceImportTests", dependencies: [
+            "ItemPriceImport", .product(name: "SourceAttribution", package: "tabletop-kit")
+        ]),
         .testTarget(
             name: "ChronicleKeeperKitTests",
             dependencies: ["ChronicleKeeperKit"],

@@ -2,6 +2,7 @@ import Bestiary
 import ChronicleKeeperKit
 import CreatureImport
 import Foundation
+import SourceAttribution
 
 /// What the item price import found.
 public struct ItemPriceImportReport: Sendable {
@@ -11,16 +12,14 @@ public struct ItemPriceImportReport: Sendable {
 }
 
 /// Reads every priced item of both games' equipment packs in the pf2e system repository and writes
-/// `<output>/items.json`, with the licenses the item data is used under in `<output>/Licenses`.
+/// `<output>/items.json`, with the licenses the item data is used under in `<output>/Licenses`: the ORC and OGL
+/// notices that name every source book an item came from (tabletop-kit's `SourceAttribution`). The import fails,
+/// listing them, when a source can't be attributed, so no item ships without its book's notice.
 public struct ItemPriceImporter {
     /// Folders of the equipment packs whose items no player buys.
     static let skippedFolders: Set<String> = ["virtual-items", "bestiary-items"]
     /// What a character can buy. Treasure (gems, art objects) and effects are left out.
     static let itemTypes: Set<String> = ["weapon", "armor", "shield", "equipment", "consumable", "backpack", "kit"]
-    /// The licenses of the game data: each file in the repository's `static/licenses`, and the name the About
-    /// panel titles it by.
-    static let licenses = ["ORCLicense.md": "ORC License.md", "OpenGameLicense.md": "Open Game License.md"]
-
     public var repository: URL
     public var outputDirectory: URL
 
@@ -79,9 +78,13 @@ public struct ItemPriceImporter {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         try encoder.encode(items).write(to: outputDirectory.appendingPathComponent("items.json"), options: .atomic)
-        for (license, title) in Self.licenses.sorted(by: { $0.key < $1.key }) {
-            let source = repository.appendingPathComponent("static/licenses/\(license)")
-            try FileManager.default.copyItem(at: source, to: licenses.appendingPathComponent(title))
-        }
+        try NoticeWriter.write(for: Self.sources(of: items), catalog: try SourceCatalog.bundled(), to: licenses)
+    }
+
+    /// The source books the items came from, with how many items each gave.
+    static func sources(of items: [PricedItem]) -> SourceTally {
+        var tally = SourceTally()
+        items.forEach { tally.add($0.source) }
+        return tally
     }
 }

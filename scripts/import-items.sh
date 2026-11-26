@@ -1,6 +1,7 @@
 #!/bin/sh
 # Writes the item price list the purchase ledger searches, Resources/Items/items.json, with the ORC and OGL
-# licenses it is used under. The repository leaves them out; a store build fails without them.
+# notices it is used under, which name every source book of the items. The import fails when a book isn't in
+# tabletop-kit's source catalog: add it there. The repository leaves them out; a store build fails without them.
 #
 # PF2E_REPO  a pf2e system repository to read instead of the release in pf2e.release, which is fetched into
 #            build/pf2e (scripts/fetch-pf2e.sh); release builds always use that release
