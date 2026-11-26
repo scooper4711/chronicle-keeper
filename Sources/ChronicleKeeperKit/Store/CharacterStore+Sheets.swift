@@ -15,19 +15,23 @@ extension CharacterStore {
 
     /// Keeps the reading the user confirmed (R1.11), in place of an earlier one, whose cleared warnings stay
     /// cleared. The sheet's gold fills the ledger's field when that is empty, or still holds what the earlier
-    /// reading put there; gold the user typed is never replaced (R5.11).
+    /// reading put there; gold the user typed is never replaced (R5.11). A sheet kept for a session paizo.com
+    /// doesn't list yet is what makes that session (R1.14).
     public func keep(_ reading: SheetReading, for session: PlayedSession, characterNumber: String) {
         let key = session.keyWithinCharacter
         update(characterNumber) { settings in
             let earlier = settings.wealth.sheetReadings[key]
             var kept = reading
             kept.clearedWarnings.formUnion(earlier?.clearedWarnings ?? [])
+            kept.pendingFile = earlier?.pendingFile
+            if !session.isReported { kept.completeUnreported(after: earlier) }
             settings.wealth.sheetReadings[key] = kept
             let entered = settings.wealth.earned[key]
             if let funds = reading.funds, entered == nil || entered == earlier?.funds {
                 settings.wealth.earned[key] = funds
             }
         }
+        if !session.isReported { unreportedSheetWasKept() }
     }
 
     /// The warnings about a session's sheet that the user hasn't cleared (R1.12).

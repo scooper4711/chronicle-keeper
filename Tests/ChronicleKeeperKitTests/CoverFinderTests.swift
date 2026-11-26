@@ -26,6 +26,18 @@ struct CoverFinderTests {
         #expect(CoverFinder.searchText(for: adventure) == text)
     }
 
+    /// For a chronicle sheet added ahead of its report, which knows only its adventure's number (R1.14).
+    @Test func findsThePublishedAdventureWithANumber() async throws {
+        let search = StubSearch(Covers.catalog)
+        let finder = CoverFinder(search: search, table: Covers.table)
+        let found = try await finder.adventure(code: "6-04", in: .pathfinder2)
+        #expect(found?.title == "#6-04: An Enkindled Carnival")
+        #expect(found?.coverArt == Covers.carnival)
+        #expect(try await finder.adventure(code: "9-99", in: .pathfinder2) == nil)
+        #expect(try await finder.adventure(code: "Special", in: .pathfinder2) == nil)
+        #expect(search.questions == ["6-04", "9-99"])
+    }
+
     @Test func anAdventureWithoutANumberGetsItsCoverFromTheTableAndAsksNobody() async throws {
         let search = StubSearch(Covers.catalog)
         let finder = CoverFinder(search: search, table: Covers.table)
