@@ -18,10 +18,14 @@ app:
 run: app
 	open "build/Chronicle Keeper.app"
 
-# Copies the built app into /Applications, replacing an earlier copy.
+# Moves the built app into /Applications, replacing an earlier copy. The build copy is unregistered and
+# removed so Finder and Spotlight launch the installed one.
+LSREGISTER = /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 install: app
 	rm -rf "/Applications/Chronicle Keeper.app"
 	ditto "build/Chronicle Keeper.app" "/Applications/Chronicle Keeper.app"
+	-$(LSREGISTER) -u "build/Chronicle Keeper.app" 2>/dev/null  # Fails when it was never registered, which is fine.
+	rm -rf "build/Chronicle Keeper.app"
 
 dmg: app
 	scripts/make-dmg.sh
