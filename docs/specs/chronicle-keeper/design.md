@@ -304,6 +304,8 @@ before any item cards are read. `scripts/item-icons.py` writes the committed tab
 `ChronicleKeeperUI/Resources/ItemIcons/item-icons.tsv` (item id, Rexard picture, icon file) from the equipment rows of
 Field Guide's `icon-map.tsv`; run it after a Field Guide import. `toolkit-artwork` keeps every picture that map names,
 so the submodule holds them all. `add-artwork.sh` makes a 64-pixel HEIC of each picture once (about 1,400, some 3 MB),
-gitignored beside the table; a picture missing from the packs only leaves its items without an icon. Items without
+gitignored beside the table; a picture missing from the packs only leaves its items without an icon. It converts
+them a few hundred to a `sips` process: on GitHub's runners every `sips` process started after the first thousand
+waits 15 seconds, which once made the store build two hours longer. Items without
 an icon, custom items and builds without the art show Field Guide's equipment symbol. The demo's purchases carry
 the item data's ids so they show theirs.

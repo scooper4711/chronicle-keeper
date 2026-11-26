@@ -36,18 +36,33 @@ sips -Z 128 "$PACKS/$FAME" --out "$FACTIONS/fame.png" >/dev/null
 echo "Added the Fame rosette from $PACKS"
 
 # Each item icon once, skipping those already made. A picture missing from the packs leaves its items a symbol.
+# The pictures are staged under their icons' names and converted a few hundred to a sips process. One process for
+# each picture made the store build two hours longer: on GitHub's runners every sips process started after the
+# first thousand waits 15 seconds.
 ICONS="Sources/ChronicleKeeperUI/Resources/ItemIcons"
+STAGE="$(mktemp -d)"
+trap 'rm -rf "$STAGE"' EXIT
+mkdir "$STAGE/pictures"
 made=0
 missing=0
-tail -n +2 "$ICONS/item-icons.tsv" | cut -f 2,3 | sort -u > "${TMPDIR:-/tmp}/chronicle-keeper-icons.$$"
+tail -n +2 "$ICONS/item-icons.tsv" | cut -f 2,3 | sort -u > "$STAGE/list"
 while IFS="$(printf '\t')" read -r picture icon; do
     [ -f "$ICONS/$icon" ] && continue
     if [ -f "$PACKS/$picture" ]; then
-        sips -Z 64 -s format heic "$PACKS/$picture" --out "$ICONS/$icon" >/dev/null
+        cp "$PACKS/$picture" "$STAGE/pictures/${icon%.heic}.${picture##*.}"
         made=$((made + 1))
     else
         missing=$((missing + 1))
     fi
-done < "${TMPDIR:-/tmp}/chronicle-keeper-icons.$$"
-rm -f "${TMPDIR:-/tmp}/chronicle-keeper-icons.$$"
+done < "$STAGE/list"
+if [ "$made" -gt 0 ]; then
+    # sips warns about every file's new suffix, so what it says is shown only when it fails.
+    find "$STAGE/pictures" -type f -print0 | xargs -0 -n 400 sips -Z 64 -s format heic --out "$ICONS" \
+        > "$STAGE/sips.log" 2>&1 || { cat "$STAGE/sips.log" >&2; exit 1; }
+fi
+for staged in "$STAGE"/pictures/*; do
+    [ -e "$staged" ] || continue
+    icon="$(basename "${staged%.*}").heic"
+    [ -f "$ICONS/$icon" ] || { echo "Adding the artwork failed: $icon wasn't made." >&2; exit 1; }
+done
 echo "Made $made item icons from $PACKS ($missing pictures not in the packs)."
