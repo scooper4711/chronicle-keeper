@@ -71,8 +71,12 @@ struct CharacterBrowser: View {
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
-            Button { showsFinder = true } label: { Label("Who Can Play…", systemImage: "person.2.badge.gearshape") }
-                .help("Find the characters who can still play an adventure")
+            Button { showsFinder = true } label: {
+                // The app's own symbol (Resources/Symbols.xcassets): a chronicle sheet beside a magnifying glass
+                // with a person in it.
+                Label { Text("Who Can Play…") } icon: { Image("who.can.play", bundle: .module) }
+            }
+            .help("Find the characters who can still play an adventure")
             Button { Task { await store.refresh() } } label: { Label("Refresh", systemImage: "arrow.clockwise") }
                 .help("Read your characters and sessions from paizo.com again")
                 .disabled(!session.canRefresh)

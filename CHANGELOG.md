@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Drop a chronicle PDF on an adventure's row or its Chronicle Sheet section to attach it
 - "Read Sheet…" in a sheet's menu reads one you attached earlier
 
+### Changed
+- "Who Can Play…" has its own icon: a chronicle sheet under a magnifying glass
+
 ### Fixed
 - Typed amounts are read with the device's decimal mark
 - Items sold in batches are bought by the batch
