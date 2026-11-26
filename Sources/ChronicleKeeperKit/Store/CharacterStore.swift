@@ -177,15 +177,18 @@ public final class CharacterStore {
         locateChronicleFiles()
     }
 
-    /// Attaches a PDF to one session as its chronicle sheet, replacing any it already had.
-    public func attachChronicle(_ data: Data, to session: PlayedSession, characterNumber: String) {
-        guard let library = chronicleLibrary else { return }
+    /// Attaches a PDF to one session as its chronicle sheet, replacing any it already had. False when it couldn't
+    /// be saved, which shows as an error.
+    @discardableResult
+    public func attachChronicle(_ data: Data, to session: PlayedSession, characterNumber: String) -> Bool {
+        guard let library = chronicleLibrary else { return false }
         let url = library.fileURL(characterNumber: characterNumber, session: session)
         // This call's own outcome: an error left from an earlier failure mustn't stop the sheet showing.
-        guard attempt({ try library.save(data, to: url) }) != nil else { return }
+        guard attempt({ try library.save(data, to: url) }) != nil else { return false }
         // A sheet 1.0.0 filed by name, that it replaces.
         if let replaced = chronicleFiles[session.id], replaced != url { attempt { try library.remove(at: replaced) } }
         chronicleFiles[session.id] = url
+        return true
     }
 
     /// Removes a session's chronicle PDF, and what was read from it.

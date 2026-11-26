@@ -32,7 +32,9 @@ extension CharacterStore {
 
     /// The warnings about a session's sheet that the user hasn't cleared (R1.12).
     public func sheetWarnings(for session: PlayedSession, record: CharacterRecord) -> [SheetMismatch] {
-        SheetChecker(record: record, roster: roster).warnings(for: session)
+        // Asked for every row of the adventures table, most of which have no reading.
+        guard record.settings.wealth.sheetReadings[session.keyWithinCharacter] != nil else { return [] }
+        return SheetChecker(record: record, roster: roster).warnings(for: session)
     }
 
     /// Clears one warning about a session's sheet. It comes back when the sheet is read again with another value.

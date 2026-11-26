@@ -95,3 +95,15 @@ public struct SheetDraft: Hashable, Sendable {
         text.trimmingCharacters(in: .whitespaces).isEmpty
     }
 }
+
+extension SheetReading {
+    /// What was read, on one line: "4 XP · 11.2 gp · character 123456-2001", with only the values that were read.
+    public func summary(in currency: Currency) -> String {
+        let number = [playerNumber, characterPart].compactMap { $0 }.joined(separator: "-")
+        let parts = [
+            xp.map { "\(XPText.of($0)) XP" }, funds.map { Money.format($0, in: currency) },
+            number.isEmpty ? nil : "character \(number)"
+        ].compactMap { $0 }
+        return parts.isEmpty ? "nothing could be read for certain" : parts.joined(separator: " · ")
+    }
+}

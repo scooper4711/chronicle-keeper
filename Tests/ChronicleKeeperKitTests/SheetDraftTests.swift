@@ -86,6 +86,13 @@ struct SheetDraftTests {
         #expect(draft(funds: "lots").reading(correcting: SheetReading(), currency: .gold).funds == nil)
     }
 
+    @Test func aReadingIsSummedUpOnOneLine() {
+        let read = reading { $0.playerNumber = "123456"; $0.characterPart = "2001"; $0.xp = 4; $0.funds = 22_000 }
+        #expect(read.summary(in: .credits) == "4 XP · \(Money.format(22_000, in: .credits)) · character 123456-2001")
+        #expect(reading { $0.characterPart = "2001" }.summary(in: .gold) == "character 2001")
+        #expect(SheetReading().summary(in: .gold) == "nothing could be read for certain")
+    }
+
     /// Turning a sideways page reads it again: the fields take the new values, except one the user typed.
     @Test func aSheetReadAgainRefillsOnlyTheFieldsTheUserLeftAlone() {
         let earlier = draft()
