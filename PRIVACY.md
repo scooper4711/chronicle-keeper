@@ -38,8 +38,9 @@ Chronicle Keeper contacts paizo.com to sign in and read your account.
 Chronicle Keeper looks adventures up in the catalog of published adventures at [Warhorn](https://warhorn.net), a
 website for organizing games that the developer of Chronicle Keeper also runs. Two things are sent to Warhorn: the
 text you type into "Who can play...?", and, after your account is read, the number of each numbered adventure in your
-sessions (such as "6-04"), to find its cover. The addresses of the covers of adventures without a number come with the
-app. Each request carries the app's name and project page and, as any request does, your internet address. Nothing
+sessions and in the chronicle sheets you add (such as "6-04"), to find its cover and, for a sheet whose session
+paizo.com doesn't list yet, its name and levels. The addresses of the covers of adventures without a number come with
+the app. Each request carries the app's name and project page and, as any request does, your internet address. Nothing
 else from your Paizo account goes with it: no email address, player number, character, date or event. The covers are
 loaded from Paizo's image servers, which see your internet address, or from Warhorn's; a cover kept anywhere else is
 left out. The demo account does none of this.

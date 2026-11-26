@@ -138,6 +138,32 @@ final class DemoAccountUITests: XCTestCase {
         XCTAssertTrue(clear.waitForNonExistence(timeout: 5), app.debugDescription)
     }
 
+    /// Pip has a chronicle sheet for a session paizo.com doesn't list yet: the adventures' title counts it, its row
+    /// says so in words and with a badge, the level says it is counted, and its details say where its numbers
+    /// come from.
+    @MainActor
+    func testAnUnreportedChronicleIsMarkedAsNotReported() {
+        app.staticTexts["Pip Underbough"].firstMatch.tap()
+        XCTAssertTrue(element("unreported-totals").waitForExistence(timeout: 5), app.debugDescription)
+        let adventures = app.buttons["Adventures (3 · 1 not reported)"]
+        scrollIntoView(adventures)
+        XCTAssertTrue(adventures.waitForExistence(timeout: 5), app.debugDescription)
+        let row = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Not reported yet'")).firstMatch
+        scrollIntoView(row)
+        XCTAssertTrue(row.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(element("unreported-badge").exists, app.debugDescription)
+        saveScreenshots("unreported")
+        row.tap()
+        XCTAssertTrue(element("unreported-banner").waitForExistence(timeout: 5), app.debugDescription)
+        saveScreenshots("unreported-session")
+    }
+
+    /// An element by its identifier, whatever kind the system makes of it.
+    @MainActor
+    private func element(_ identifier: String) -> XCUIElement {
+        app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+    }
+
     @MainActor
     func testTheLedgerShowsPurchasesAndTakesANewOne() {
         app.staticTexts["Valeria Stonebrook"].firstMatch.tap()

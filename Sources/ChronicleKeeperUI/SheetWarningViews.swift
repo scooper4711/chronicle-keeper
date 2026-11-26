@@ -22,6 +22,7 @@ struct SheetReadingSummary: View {
                 ForEach(sheet.warnings) { warning in
                     SheetWarningRow(warning: warning, sheet: sheet)
                 }
+                if let match = sheet.elsewhere { SheetElsewhereRow(match: match, sheet: sheet) }
             }
         }
     }

@@ -13,6 +13,7 @@ struct SheetCandidate: Identifiable {
 /// user can zoom and turn, beside the character number, the XP and the gold, filled with what was read. Text
 /// recognition misreads handwriting with full confidence, so nothing read is used before the user has seen it
 /// here; a value that disagrees with paizo.com's record says so, so a misread is corrected before it is a warning.
+/// A sheet added ahead of its report (R1.14) also asks for its scenario number and the day it was played.
 struct SheetConfirmation: View {
     let candidate: SheetCandidate
     let sheet: SessionSheet
@@ -103,9 +104,10 @@ struct SheetConfirmation: View {
 
     private var fieldsState: SheetFields.State {
         SheetFields.State(
-            adventure: session.adventure.title, currency: currency, read: located?.reading,
-            showsKeptValues: candidate.isAttached && sheet.reading != nil,
-            mismatches: located == nil ? [] : mismatches, unreadable: draft.unreadableFields(in: currency))
+            adventure: sheet.isNew ? "New Chronicle Sheet" : session.adventure.title, currency: currency,
+            read: located?.reading, showsKeptValues: candidate.isAttached && sheet.reading != nil,
+            mismatches: located == nil ? [] : mismatches, unreadable: draft.unreadableFields(in: currency),
+            isReported: session.isReported)
     }
 
     /// How the values as they stand in the fields disagree with the session and the ledger. Gold that an earlier
@@ -133,14 +135,17 @@ struct SheetConfirmation: View {
         } else {
             let kept = candidate.isAttached ? sheet.reading : nil
             draft = SheetDraft(reading: kept ?? fresh.reading, currency: currency)
+            // The day the user chose earlier; a new sheet starts on today, as few are added later than that.
+            if !session.isReported { draft.day = kept?.playedOn.flatMap { SheetDay.localDate(of: $0) } ?? Date() }
         }
         located = fresh
     }
 
     // MARK: - Keep
 
+    /// A sheet added ahead of its report needs its scenario number, which is what its session is found by.
     private var canKeep: Bool {
-        located != nil && draft.unreadableFields(in: currency).isEmpty
+        located != nil && draft.unreadableFields(in: currency).isEmpty && (session.isReported || draft.hasCode)
     }
 
     /// Saves the PDF as shown and the values as they stand. A sheet that couldn't be saved keeps no reading.
@@ -149,115 +154,6 @@ struct SheetConfirmation: View {
         if isNewFile, !store.attachChronicle(pdf, to: session, characterNumber: record.id) { return dismiss() }
         store.keep(corrected, for: session, characterNumber: record.id)
         dismiss()
-    }
-}
-
-/// The confirmation's fields: where the values came from, then the character number, the XP and the gold, each
-/// with what is wrong with it underneath.
-struct SheetFields: View {
-    /// What the fields show besides their text.
-    struct State {
-        let adventure: String
-        let currency: Currency
-        /// What was read from the sheet; nil while it is being read.
-        let read: SheetReading?
-        /// Whether the fields began with what the user kept for this sheet earlier, not with what was just read.
-        let showsKeptValues: Bool
-        let mismatches: [SheetMismatch]
-        let unreadable: Set<SheetField>
-    }
-
-    @Binding var draft: SheetDraft
-    let state: State
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(state.adventure).font(.headline).fixedSize(horizontal: false, vertical: true)
-                if let warning = warning(.adventure) { SheetWarningText(text: warning) }
-            }
-            source
-            field(.characterNumber, title: "Character Number", prompt: "123456-2001")
-            field(.xp, title: "XP", prompt: "4")
-            field(.funds, title: money, prompt: state.currency == .credits ? "220" : "11.2")
-            Text("\(money) includes Earn Income only where the GM wrote it in. Empty a value you'd rather the app "
-                + "worked out as it does without a sheet.")
-                .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .disabled(state.read == nil)
-    }
-
-    private var money: String { state.currency == .credits ? "Credits" : "Gold" }
-
-    /// Text from the PDF can't be misread; recognized handwriting can.
-    @ViewBuilder private var source: some View {
-        if let read = state.read {
-            Text(state.showsKeptValues ? Self.keptNote : Self.sourceNote(for: read))
-                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-        } else {
-            ProgressView { Text("Reading the sheet…").foregroundStyle(.secondary) }
-        }
-    }
-
-    private static let keptNote = "These are the values you kept for this sheet. Correct them here, or empty one "
-        + "to have the app work it out as it does without a sheet."
-
-    private static func sourceNote(for read: SheetReading) -> String {
-        if read.playerNumber == nil && read.characterPart == nil && read.xp == nil && read.funds == nil {
-            return "Nothing could be read from this sheet for certain. Type its values, or leave them empty."
-        }
-        switch read.source {
-        case .pdfText: return "Read from the PDF's own text. Anything left empty couldn't be read for certain."
-        case .recognized:
-            return "Read from the picture of the sheet. Handwriting is easy to misread, so check each value "
-                + "against the sheet. Anything left empty couldn't be read for certain."
-        }
-    }
-
-    private func field(_ field: SheetField, title: String, prompt: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary).textCase(.uppercase)
-            TextField(title, text: $draft[field], prompt: Text(prompt))
-                .textFieldStyle(.roundedBorder).monospacedDigit().labelsHidden()
-                #if os(iOS)
-                .keyboardType(.numbersAndPunctuation)
-                #endif
-                .accessibilityLabel(title)
-                .accessibilityIdentifier("sheet-field-\(field.rawValue)")
-            if state.unreadable.contains(field) {
-                Text("This isn't a number the app can read. Correct it, or empty the field.")
-                    .font(.caption).foregroundStyle(.red).fixedSize(horizontal: false, vertical: true)
-            } else if let warning = warning(Self.kind(of: field)) {
-                SheetWarningText(text: warning)
-            }
-        }
-    }
-
-    private func warning(_ kind: SheetMismatch.Kind) -> String? {
-        state.mismatches.first { $0.kind == kind }?.message
-    }
-
-    private static func kind(of field: SheetField) -> SheetMismatch.Kind {
-        switch field {
-        case .characterNumber: .character
-        case .xp: .xp
-        case .funds: .funds
-        }
-    }
-}
-
-/// A disagreement between the sheet and the record, in words, with the warning's sign.
-struct SheetWarningText: View {
-    let text: String
-
-    var body: some View {
-        Label {
-            Text(text).fixedSize(horizontal: false, vertical: true)
-        } icon: {
-            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-        }
-        .font(.callout)
     }
 }
 

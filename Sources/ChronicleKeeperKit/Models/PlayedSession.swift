@@ -59,13 +59,21 @@ public struct PlayedSession: Hashable, Codable, Sendable, Identifiable {
     /// True when the player ran this session and applied the credit to the character.
     public let isGameMaster: Bool
     public let notes: String
+    /// Set for a session paizo.com doesn't list yet, which the app made from a chronicle sheet the user added
+    /// (R1.14); nil for every session from paizo.com.
+    public let unreportedID: String?
 
-    public var id: String { "\(eventCode)#\(sessionNumber)#\(characterName)" }
+    public var id: String { unreportedKey ?? "\(eventCode)#\(sessionNumber)#\(characterName)" }
 
     /// Names the session among its own character's sessions, without the character's name: the player can rename
     /// a character on paizo.com, so anything the user keeps for a session (a chronicle sheet, a correction) is
     /// filed under this and the character number.
-    public var keyWithinCharacter: String { "\(eventCode)#\(sessionNumber)" }
+    public var keyWithinCharacter: String { unreportedKey ?? "\(eventCode)#\(sessionNumber)" }
+
+    /// Whether paizo.com lists the session.
+    public var isReported: Bool { unreportedID == nil }
+
+    private var unreportedKey: String? { unreportedID.map(UnreportedSheet.key) }
 
     /// The character number when the row names one (played sessions only).
     public var characterNumber: String? {
@@ -88,6 +96,7 @@ public struct PlayedSession: Hashable, Codable, Sendable, Identifiable {
         reputation = fields.reputation
         isGameMaster = fields.isGameMaster
         notes = fields.notes
+        unreportedID = fields.unreportedID
     }
 }
 
@@ -106,6 +115,7 @@ public struct PlayedSessionFields: Sendable {
     public var reputation: Double?
     public var isGameMaster = false
     public var notes = ""
+    public var unreportedID: String?
 
     public init() {}
 }

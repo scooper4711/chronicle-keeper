@@ -1,13 +1,19 @@
 import Foundation
 
-/// The confirmation's three fields as the user sees and edits them (R1.11): text, filled with what was read and
-/// empty where nothing was. An empty field is a value left unread, which changes nothing in the app.
+/// The confirmation's fields as the user sees and edits them (R1.11): text, filled with what was read and empty
+/// where nothing was. An empty field is a value left unread, which changes nothing in the app. A sheet added ahead
+/// of its report also has its scenario number and the day it was played, which make its session (R1.14).
 public struct SheetDraft: Hashable, Sendable {
     /// "123456-2001", or only the part after the dash.
     public var characterNumber: String
     public var xp: String
     /// Gold or credits, written as the ledger writes them.
     public var funds: String
+    /// The scenario number: "6-04", "Quest 14", "Bounty 19".
+    public var code: String
+    /// The day played, for a sheet added ahead of its report; nil for a reported session's sheet, whose day
+    /// paizo.com gives.
+    public var day: Date?
 
     public init(reading: SheetReading, currency: Currency) {
         let player = reading.playerNumber ?? ""
@@ -15,6 +21,7 @@ public struct SheetDraft: Hashable, Sendable {
         characterNumber = player.isEmpty ? part : "\(player)-\(part)"
         xp = reading.xp.map(XPText.of) ?? ""
         funds = reading.funds.map { Money.format($0, in: currency) } ?? ""
+        code = reading.code ?? ""
     }
 
     public subscript(field: SheetField) -> String {
@@ -23,6 +30,7 @@ public struct SheetDraft: Hashable, Sendable {
             case .characterNumber: characterNumber
             case .xp: xp
             case .funds: funds
+            case .code: code
             }
         }
         set {
@@ -30,6 +38,7 @@ public struct SheetDraft: Hashable, Sendable {
             case .characterNumber: characterNumber = newValue
             case .xp: xp = newValue
             case .funds: funds = newValue
+            case .code: code = newValue
             }
         }
     }
@@ -40,15 +49,22 @@ public struct SheetDraft: Hashable, Sendable {
         if numberParts == nil { fields.insert(.characterNumber) }
         if !Self.isEmpty(xp), xpValue == nil { fields.insert(.xp) }
         if !Self.isEmpty(funds), fundsValue(in: currency) == nil { fields.insert(.funds) }
+        if !Self.isEmpty(code), codeValue == nil { fields.insert(.code) }
         return fields
     }
 
-    /// What was read, with the three fields as the user left them. A field that can't be read counts as empty.
+    /// Whether the scenario number is filled in, which a sheet added ahead of its report can't do without.
+    public var hasCode: Bool { codeValue != nil }
+
+    /// What was read, with the fields as the user left them. A field that can't be read counts as empty.
     public func reading(correcting read: SheetReading, currency: Currency) -> SheetReading {
         var reading = read
         (reading.playerNumber, reading.characterPart) = numberParts ?? (nil, nil)
         reading.xp = xpValue
         reading.funds = fundsValue(in: currency)
+        // The number is asked for only on a sheet added ahead of its report; an empty field leaves what was read.
+        if let codeValue { reading.code = codeValue }
+        if let day { reading.playedOn = SheetDay.text(of: day) }
         return reading
     }
 
@@ -63,6 +79,8 @@ public struct SheetDraft: Hashable, Sendable {
     // MARK: - Values
 
     private var xpValue: Double? { SheetNumber.xp(xp) }
+
+    private var codeValue: String? { AdventureClassifier.code(typed: code) }
 
     private func fundsValue(in currency: Currency) -> Int? {
         Money.parse(funds, in: currency)

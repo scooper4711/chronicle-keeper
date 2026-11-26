@@ -56,6 +56,10 @@ struct CharacterRow: View {
                             .help(ClaimText.summary(of: claimable))
                             .accessibilityLabel(ClaimText.summary(of: claimable))
                     }
+                    if record.unreportedCount > 0 {
+                        UnreportedBadge(
+                            isCompact: true, help: UnreportedText.totalsNote(count: record.unreportedCount))
+                    }
                 }
                 Text(record.id).font(.caption).foregroundStyle(.secondary).monospacedDigit()
                 LevelSummary(level: record.level, compact: true)

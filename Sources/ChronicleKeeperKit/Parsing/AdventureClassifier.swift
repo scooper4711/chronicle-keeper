@@ -54,6 +54,27 @@ public enum AdventureClassifier {
         return nil
     }
 
+    /// The code in what the user typed as a scenario number: "6-04", "#6-4", "quest 14" or "Bounty #19", and
+    /// anything `code(inText:)` reads. A scenario's number gets its two digits, as paizo.com writes it.
+    public static func code(typed text: String) -> String? {
+        let plain = text.trimmingCharacters(in: .whitespaces).replacing(/[–—]/, with: "-")
+        if let match = plain.wholeMatch(of: typedSeasonPattern), let number = Int(match.2) {
+            return "\(match.1)-" + (number < 10 ? "0\(number)" : "\(number)")
+        }
+        if let match = plain.wholeMatch(of: typedSeriesPattern) {
+            return "\(match.1.capitalized) \(match.2)"
+        }
+        return code(inText: plain)
+    }
+
+    /// A title that carries a code and nothing else, for an adventure known only by its number: "#6-04",
+    /// "Quest #14", "Bounty #19". `code(of:)` and `kind(of:)` read it like paizo.com's own titles.
+    public static func title(forCode code: String) -> String {
+        if code.wholeMatch(of: typedSeasonPattern) != nil { return "#\(code)" }
+        guard let match = code.wholeMatch(of: typedSeriesPattern) else { return code }
+        return "\(match.1.capitalized) #\(match.2)"
+    }
+
     // MARK: - Kind
 
     private static func kindFromSummary(_ adventure: AdventureReference) -> AdventureKind? {
@@ -104,6 +125,10 @@ public enum AdventureClassifier {
     /// for Perfection—Part I - [Some Con] PFS #3-09: …", whose later "#3" would otherwise read as the quest's number.
     nonisolated(unsafe) static let questPattern = /Quest(?: \(Series \d+\))? #(\d+)/
     nonisolated(unsafe) private static let bountyPattern = /Bounty #(\d+)/
+    /// "6-04" or "#6-4", alone.
+    nonisolated(unsafe) private static let typedSeasonPattern = /#?\s*(\d+)\s*-\s*(\d+)/
+    /// "Quest 14" or "bounty #19", alone.
+    nonisolated(unsafe) private static let typedSeriesPattern = /(?i)(quest|bounty)\s*#?\s*(\d+)/
     /// How Warhorn starts the name of a standalone adventure, an Adventure Path volume and a first edition module.
     nonisolated(unsafe) private static let longAdventurePattern = /^(?:Adventure|AP|Mod)\b/
 }

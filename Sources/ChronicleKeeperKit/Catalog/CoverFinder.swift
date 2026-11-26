@@ -20,6 +20,18 @@ public struct CoverFinder: Sendable {
         return found.adventures.first(where: adventure.isSameAdventure)?.coverArt
     }
 
+    /// The published adventure with this number, as the catalog names it, with its levels and cover; nothing when
+    /// the catalog doesn't list it. For a chronicle sheet whose session paizo.com doesn't list yet (R1.14).
+    public func adventure(code: String, in campaign: Campaign) async throws -> AdventureEntry? {
+        let title = AdventureClassifier.title(forCode: code)
+        let wanted = AdventureEntry(
+            reference: AdventureReference(productID: "", title: title, summary: ""), campaign: campaign)
+        let number = Self.searchText(for: wanted)
+        guard !number.isEmpty else { return nil }
+        return try await search.adventures(matching: number, in: [campaign]).adventures
+            .first(where: wanted.isSameAdventure)
+    }
+
     /// The covers of these adventures by ID, looked up one after another until the task is canceled or the catalog
     /// can't be reached. A cover is decoration: the ones not found wait for another time, and nobody is told.
     public func covers(of adventures: [AdventureEntry]) async -> [String: URL] {

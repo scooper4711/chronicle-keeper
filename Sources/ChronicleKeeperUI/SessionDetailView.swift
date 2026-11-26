@@ -12,6 +12,7 @@ struct SessionDetailView: View {
     let characterID: CharacterRecord.ID
     let route: SessionRoute
     let store: CharacterStore
+    @Environment(\.dismiss) private var dismiss
 
     /// Looked up on every update, so a changed track or a refresh shows here too.
     private var record: CharacterRecord? { store.roster.characters.first { $0.id == characterID } }
@@ -20,6 +21,7 @@ struct SessionDetailView: View {
         if let record, let progress = record.sessions.first(where: { $0.id == route.sessionID }) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    if !progress.isReported { UnreportedBanner() }
                     SessionHeader(
                         progress: progress, characterName: record.name, cover: store.cover(of: progress.session))
                     Divider()
@@ -36,6 +38,9 @@ struct SessionDetailView: View {
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
+        } else if UnreportedSheet.id(ofKey: route.sessionID) != nil {
+            // An unreported sheet that was deleted, or that went to its session: back to the character.
+            Color.clear.onAppear { dismiss() }
         } else {
             ContentUnavailableView(
                 "Session Not Found", systemImage: "envelope.open",
@@ -62,10 +67,16 @@ struct SessionHeader: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             HStack(alignment: .top, spacing: 12) {
-                InitialsBadge(name: session.gameMaster, color: session.campaign.color)
+                // Who ran an unreported session is paizo.com's to say: left out, not shown empty (R1.14).
+                if session.isReported {
+                    InitialsBadge(name: session.gameMaster, color: session.campaign.color)
+                }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(session.gameMaster.isEmpty ? "No Game Master listed" : session.gameMaster).font(.headline)
-                    Text(session.isGameMaster ? "Game Master · GM credit" : "Game Master")
+                    if session.isReported {
+                        Text(session.gameMaster.isEmpty ? "No Game Master listed" : session.gameMaster)
+                            .font(.headline)
+                        Text(session.isGameMaster ? "Game Master · GM credit" : "Game Master")
+                    }
                     Text("To: \(characterName)")
                 }
                 Spacer(minLength: 8)
@@ -105,7 +116,8 @@ struct SessionFacts: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if !session.adventure.summary.isEmpty {
+            // Paizo's description of the product; an adventure known only from a catalog has none.
+            if !session.adventure.summary.isEmpty, !session.adventure.productID.isEmpty {
                 Text(session.adventure.summary).fixedSize(horizontal: false, vertical: true)
             }
             SessionFact("Adventure", text: SessionFactText.adventure(progress))
@@ -118,8 +130,10 @@ struct SessionFacts: View {
             if !SessionFactText.reputation(session).isEmpty {
                 SessionFact("Reputation", text: SessionFactText.reputation(session))
             }
-            SessionFact("Points", text: SessionFactText.points(session.points))
-            SessionFact("Event", text: SessionFactText.event(session))
+            if session.isReported {
+                SessionFact("Points", text: SessionFactText.points(session.points))
+                SessionFact("Event", text: SessionFactText.event(session))
+            }
             if !session.notes.isEmpty {
                 SessionFact("Notes on paizo.com", text: session.notes)
             }

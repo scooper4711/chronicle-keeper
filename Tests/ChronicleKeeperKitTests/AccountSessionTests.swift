@@ -144,6 +144,28 @@ struct DemoChroniclesTests {
         #expect(try Data(contentsOf: sheet).starts(with: Data("%PDF".utf8)))
     }
 
+    /// Pip has a sheet for a session paizo.com doesn't list yet (R1.14), of an adventure Valeria has played.
+    @Test func theDemoHasASheetAheadOfItsReport() async throws {
+        let store = CharacterStore(repository: InMemoryCharacterRepository(settings: DemoWealth.settings)) {
+            DemoAccount.snapshot()
+        }
+        store.load()
+        await store.refresh()
+        let folder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("demo-chronicle-tests-\(UUID().uuidString)")
+        let library = ChronicleLibrary(folder: folder)
+        try DemoChronicles.addSheet(to: library)
+        store.useChronicleLibrary(library)
+        let pip = try #require(store.roster.characters.first { $0.name == "Pip Underbough" })
+        let unreported = try #require(pip.sessions.first { !$0.isReported })
+        #expect(pip.unreportedCount == 1)
+        #expect(unreported.session.adventure.titleWithLevels == "#6-05: Ashes Over Highhelm (1–4)")
+        #expect(pip.settings.wealth.earned[DemoChronicles.unreportedKey] == 1_400)
+        #expect(store.chronicleFiles[unreported.id] != nil)
+        #expect(store.chronicleFiles.count == 2)
+        #expect(store.sheetWarnings(for: unreported.session, record: pip).isEmpty)
+    }
+
     /// The demo's sheet names Pip's number on Valeria's session, and its gold is in her ledger.
     @Test func theDemosSheetHasAReadingWithAWarningToClear() async throws {
         let store = CharacterStore(repository: InMemoryCharacterRepository(settings: DemoWealth.settings)) {

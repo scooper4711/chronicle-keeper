@@ -63,6 +63,11 @@ struct CharacterHeader: View {
                 Text("\(record.campaign.displayName) · \(record.id)")
                     .foregroundStyle(.secondary).monospacedDigit()
                 LevelSummary(level: record.level)
+                if record.unreportedCount > 0 {
+                    Label(UnreportedText.totalsNote(count: record.unreportedCount), systemImage: "clock")
+                        .font(.caption).foregroundStyle(Color.unreported)
+                        .accessibilityIdentifier("unreported-totals")
+                }
                 if let sheet = record.settings.characterSheetURL {
                     Button("Open Character Sheet") { openURL(sheet) }
                 }

@@ -118,4 +118,35 @@ struct AdventureClassifierTests {
     func textWithoutACode(text: String) {
         #expect(AdventureClassifier.code(inText: text) == nil)
     }
+
+    /// A scenario number as the user types it for a sheet added ahead of its report (R1.14).
+    @Test(arguments: [
+        ("6-04", "6-04"), ("#6-4", "6-04"), (" 6 – 04 ", "6-04"), ("1-00", "1-00"), ("quest 14", "Quest 14"),
+        ("Quest #14", "Quest 14"), ("BOUNTY19", "Bounty 19"), ("Pathfinder Society Scenario #2-13:", "2-13")
+    ])
+    func codeAsTyped(text: String, code: String) {
+        #expect(AdventureClassifier.code(typed: text) == code)
+    }
+
+    @Test(arguments: ["", "six", "6", "6-04b", "Quest", "Module 3"])
+    func typedTextThatIsNoScenarioNumber(text: String) {
+        #expect(AdventureClassifier.code(typed: text) == nil)
+    }
+
+    /// The title made from a code reads back as that code and as the right kind, like one of paizo.com's own.
+    @Test(arguments: [
+        ("6-04", "#6-04", AdventureKind.scenario), ("Quest 14", "Quest #14", .questSeries2),
+        ("Quest 3", "Quest #3", .questSeries1), ("Bounty 19", "Bounty #19", .bounty)
+    ])
+    func aTitleFromACodeReadsBackAsTheCode(code: String, title: String, kind: AdventureKind) {
+        let adventure = adventure(AdventureClassifier.title(forCode: code))
+        #expect(adventure.title == title)
+        #expect(AdventureClassifier.code(of: adventure) == code)
+        #expect(AdventureClassifier.code(typed: code) == code)
+        #expect(AdventureClassifier.kind(of: adventure) == kind)
+    }
+
+    @Test func aCodeOfNoKnownShapeIsItsOwnTitle() {
+        #expect(AdventureClassifier.title(forCode: "Special") == "Special")
+    }
 }

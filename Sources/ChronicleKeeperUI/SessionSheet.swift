@@ -21,6 +21,36 @@ struct SessionSheet {
 
     var currency: Currency { CampaignRules(campaign: record.campaign).currency }
 
+    /// Whether this is a sheet being added for a session paizo.com doesn't list yet, before it is first kept.
+    var isNew: Bool { !session.isReported && reading == nil }
+
+    /// The session of another character that this unreported sheet seems to be for (R1.15).
+    var elsewhere: PendingSheetMatcher.Match? { store.sessionElsewhere(for: session, of: record) }
+
+    /// Whether the sheet's button shows the warning's sign.
+    var needsAttention: Bool { !warnings.isEmpty || elsewhere != nil }
+
+    /// The character's reported adventures without a sheet, where this unreported one could go instead.
+    var sessionsWithoutSheet: [SessionProgress] { store.sessionsWithoutSheet(of: record) }
+
+    /// How many purchases were made after this session.
+    var purchasesAfter: Int { record.settings.wealth.purchaseCount(after: session.keyWithinCharacter) }
+
+    /// Deletes an unreported sheet and everything it gave.
+    func delete() {
+        store.deleteUnreportedSheet(session, characterNumber: record.id)
+    }
+
+    /// Files an unreported sheet under one of the character's reported sessions.
+    func attach(to reported: PlayedSession) {
+        store.attach(PendingSheetMatcher.Match(sheet: session, from: record.id, session: reported, to: record.id))
+    }
+
+    /// Leaves an unreported sheet where it is, though another character has a session like it.
+    func keepWaiting(_ match: PendingSheetMatcher.Match) {
+        store.clearWarning(match.id, for: session, characterNumber: record.id)
+    }
+
     func remove() {
         store.removeChronicle(from: session, characterNumber: record.id)
     }

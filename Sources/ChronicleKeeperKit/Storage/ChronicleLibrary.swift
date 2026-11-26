@@ -28,12 +28,30 @@ public struct ChronicleLibrary: ICloudDocumentLibrary {
         return ChronicleLibrary(folder: chronicles, isInICloud: true)
     }
 
-    /// Where a session's chronicle PDF goes: "123456-2001/5235126#2.pdf".
+    /// Where a session's chronicle PDF goes: "123456-2001/5235126#2.pdf". The sheet of a session paizo.com
+    /// doesn't list yet waits in the pending folder (R1.14).
     public func fileURL(characterNumber: String, session: PlayedSession) -> URL {
-        folder
+        if let id = session.unreportedID {
+            return pendingURL(Self.pendingFile(characterNumber: characterNumber, id: id))
+        }
+        return folder
             .appendingPathComponent(DocumentFileName.of(characterNumber), isDirectory: true)
             .appendingPathComponent(DocumentFileName.of(session.keyWithinCharacter) + ".pdf")
     }
+
+    /// How an unreported sheet's PDF is named under the pending folder: "123456-2001/<id>". A reading keeps this
+    /// name (`SheetReading.pendingFile`), so the file is found after the reading moved to its session.
+    public static func pendingFile(characterNumber: String, id: String) -> String {
+        "\(DocumentFileName.of(characterNumber))/\(DocumentFileName.of(id))"
+    }
+
+    /// Where a pending sheet's PDF is: "Pending/123456-2001/<id>.pdf".
+    public func pendingURL(_ pendingFile: String) -> URL {
+        folder.appendingPathComponent(Self.pendingFolder, isDirectory: true)
+            .appendingPathComponent(pendingFile + ".pdf")
+    }
+
+    static let pendingFolder = "Pending"
 
     /// The sheets 1.0.0 filed by character name ("Name/5235126#2#Name.pdf"), by `PlayedSession.keyWithinCharacter`,
     /// so a sheet is found whatever the character was called when it was attached. One player has one character in
@@ -57,13 +75,24 @@ public struct ChronicleLibrary: ICloudDocumentLibrary {
     /// Moves a sheet 1.0.0 filed by name to where it goes now, and says where it is. One that isn't on this device
     /// yet stays where it is, as only iCloud can move it then; so does one that can't be moved.
     public func moveNamedFile(_ named: URL, to url: URL) -> URL {
-        guard isOnDevice(named) else { return named }
+        move(named, to: url)
+    }
+
+    /// Moves a pending sheet to its session's place once paizo.com lists the session (R1.15), and says where it
+    /// is. One that iCloud hasn't brought to this device yet is asked for and stays pending until it has come.
+    public func adopt(_ pending: URL, to url: URL) -> URL {
+        if !isOnDevice(pending) { download(pending) }
+        return move(pending, to: url)
+    }
+
+    private func move(_ file: URL, to url: URL) -> URL {
+        guard isOnDevice(file) else { return file }
         do {
-            try coordinatedMove(from: named, to: url)
+            try coordinatedMove(from: file, to: url)
         } catch {
-            return named
+            return file
         }
-        removeIfEmpty(named.deletingLastPathComponent())
+        removeIfEmpty(file.deletingLastPathComponent())
         return url
     }
 
@@ -115,7 +144,7 @@ public struct ChronicleLibrary: ICloudDocumentLibrary {
         if let failure = coordinationError ?? moveError { throw failure }
     }
 
-    /// Removes a folder 1.0.0 named after a character once nothing is left in it; one that can't be is left.
+    /// Removes a folder a sheet was moved out of once nothing is left in it; one that can't be is left.
     private func removeIfEmpty(_ oldFolder: URL) {
         guard contents(of: oldFolder).isEmpty else { return }
         var coordinationError: NSError?
