@@ -81,7 +81,8 @@ struct Claimant {
     let factions: [NamedValue]
 
     init(_ record: CharacterRecord) {
-        played = record.sessions.map(PlayedAdventure.init)
+        // paizo.com hands a reward out only for a session it has (R1.14).
+        played = record.sessions.filter(\.isReported).map(PlayedAdventure.init)
         factions = record.summary.factions
     }
 

@@ -50,6 +50,9 @@ public struct SessionProgress: Hashable, Sendable, Identifiable {
     public internal(set) var applyOrder = 0
 
     public var id: String { session.id }
+
+    /// Whether paizo.com lists the session; false for one made from a chronicle sheet added ahead of it (R1.14).
+    public var isReported: Bool { session.isReported }
 }
 
 /// The user's corrections for one session.

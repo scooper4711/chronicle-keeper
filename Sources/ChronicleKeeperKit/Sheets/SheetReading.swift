@@ -24,6 +24,18 @@ public struct SheetReading: Hashable, Codable, Sendable {
     public var source: Source
     /// The warnings about this sheet the user has cleared, by `SheetMismatch.id`.
     public var clearedWarnings: Set<String>
+    /// The adventure's name as a catalog gives it ("#6-04: An Enkindled Carnival"), for a sheet whose session
+    /// paizo.com doesn't list yet (R1.14); nil until it has been looked up, and for every other sheet.
+    public var title: String?
+    /// That adventure's levels, from the same catalog.
+    public var levels: LevelRange?
+    /// The day an unreported sheet's session was played, as `SheetDay` writes it ("2026-11-21").
+    public var playedOn: String?
+    /// When an unreported sheet was added.
+    public var addedAt: Date?
+    /// Where the PDF was filed while its session was unreported, under the library's pending folder
+    /// ("123456-2001/<id>"): the file follows the reading to its session when this device has it.
+    public var pendingFile: String?
     /// Fields a newer version saved that this one doesn't know; written back as they were.
     public var unknownFields = UnknownFields()
 
@@ -41,6 +53,7 @@ public struct SheetReading: Hashable, Codable, Sendable {
 extension SheetReading {
     private enum CodingKeys: String, CodingKey, CaseIterable {
         case code, playerNumber, characterPart, xp, funds, eventCode, source, clearedWarnings
+        case title, levels, playedOn, addedAt, pendingFile
     }
 
     public init(from decoder: Decoder) throws {
@@ -55,6 +68,11 @@ extension SheetReading {
         let sourceName = try values.decodeIfPresent(String.self, forKey: .source) ?? ""
         source = Source(rawValue: sourceName) ?? .recognized
         clearedWarnings = try values.decodeIfPresent(Set<String>.self, forKey: .clearedWarnings) ?? []
+        title = try values.decodeIfPresent(String.self, forKey: .title)
+        levels = try values.decodeIfPresent(LevelRange.self, forKey: .levels)
+        playedOn = try values.decodeIfPresent(String.self, forKey: .playedOn)
+        addedAt = try values.decodeIfPresent(Date.self, forKey: .addedAt)
+        pendingFile = try values.decodeIfPresent(String.self, forKey: .pendingFile)
         unknownFields = try UnknownFields(from: decoder, known: Set(CodingKeys.allCases.map(\.stringValue)))
     }
 
@@ -69,5 +87,10 @@ extension SheetReading {
         try values.encodeIfPresent(eventCode, forKey: .eventCode)
         try values.encode(source, forKey: .source)
         try values.encode(clearedWarnings.sorted(), forKey: .clearedWarnings)
+        try values.encodeIfPresent(title, forKey: .title)
+        try values.encodeIfPresent(levels, forKey: .levels)
+        try values.encodeIfPresent(playedOn, forKey: .playedOn)
+        try values.encodeIfPresent(addedAt, forKey: .addedAt)
+        try values.encodeIfPresent(pendingFile, forKey: .pendingFile)
     }
 }

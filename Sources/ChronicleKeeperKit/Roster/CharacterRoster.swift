@@ -11,6 +11,10 @@ public struct CharacterRecord: Hashable, Sendable, Identifiable {
     public var id: String { summary.number }
     public var campaign: Campaign { summary.campaign }
     public var name: String { summary.name }
+
+    /// How many of the sessions paizo.com doesn't list yet (R1.14): the level and the ledger count them, and
+    /// say so.
+    public var unreportedCount: Int { sessions.filter { !$0.isReported }.count }
 }
 
 /// Every character with the sessions that belong to it, and the sessions no character could be found for.
@@ -39,11 +43,13 @@ public struct CharacterRoster: Sendable {
         }
         // From every session, as another character's session can be the one that dates an event.
         let eventDates = EventDates(sessions: sessions)
+        let unreported = UnreportedSessions(sessions: sessions)
         characters = summaries.map { summary in
             let calculator = ProgressCalculator(campaign: summary.campaign, eventDates: eventDates)
             let settings = settings[summary.number] ?? CharacterSettings()
-            let progress = calculator.history(of: byNumber[summary.number] ?? [], settings: settings)
-            return Self.record(summary, progress, settings)
+            // The sheets added ahead of their report count as sessions (R1.14), newer than the rest of their day.
+            let played = unreported.sessions(of: summary, settings: settings) + (byNumber[summary.number] ?? [])
+            return Self.record(summary, calculator.history(of: played, settings: settings), settings)
         }
         unmatchedSessions = unmatched
         self.eventDates = eventDates
