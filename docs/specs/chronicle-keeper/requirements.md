@@ -148,10 +148,28 @@ have none.
   adventure its gold, its purchases and its sales. A negative balance is shown in red with a note; nothing is
   blocked.
 - **R5.7** A purchase is marked, with the reason in words, when its item level is above the character's level at
-  that point (minimum 2) or its rarity isn't common. Moving the purchase re-checks it.
+  that point (minimum 2) or its rarity isn't common. Moving the purchase re-checks it. Linking it clears the
+  marks (R5.10).
 - **R5.8** Purchases tied to a session paizo.com no longer lists are kept and shown in a last group, never dropped.
 - **R5.9** The ledger is the user's own data (R4.1, R4.2): a refresh never touches it, and it syncs. A device on an
   older version that saves the character's other settings never erases it.
+- **R5.10** The user can link a marked purchase to what makes it legal: a boon, or a Chronicle Sheet (a session).
+  - The app doesn't check that the boon or the Chronicle Sheet grants the item: the user vouches for it. Either
+    kind of link clears every mark, the level one too.
+  - A linked purchase shows a green check in place of the warning, and its name in the normal color. The check
+    says what the link waives, which boon or Chronicle Sheet it is and whose: "Uncommon: Access from Korbul
+    Thornbrook's boon Abendego's Cannon." Unlinking brings the marks back.
+  - The boons and Chronicle Sheets offered are those of the characters in the same campaign (the same game and
+    edition), the buyer's own first. A boon may belong to another character: one worded "One of your characters
+    gains access…" is claimed by one character and used by another. A boon whose character the app can't tell
+    (R3.9) isn't offered.
+  - A boon is linked to at most one purchase, across all characters. Choosing one that is linked already moves
+    the link, after saying what it is linked to now. A Chronicle Sheet usually lists several items, so it may be
+    linked to any number of purchases.
+  - Selling the purchase doesn't free the boon: the link stays with the purchase. Removing the purchase does.
+  - The Boons section shows the purchase a boon is used for, and whose.
+  - The link is part of the ledger (R5.9). Two devices can each link one boon before they sync: both purchases
+    then keep their link, and both say that the boon is linked twice, for the user to settle.
 
 ## 9. Conduct
 

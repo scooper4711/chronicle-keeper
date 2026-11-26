@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   tier), and how much the next one still needs
 - A sparkle shows where a free Chronicle Boon or Game Reward is waiting to be claimed on paizo.com: beside the
   adventure, on the faction, in the sidebar and in a "Ready to Claim" list at the top of Boons
+- A purchase marked as maybe not Society legal can be linked to the boon or the Chronicle Sheet that allows it,
+  yours or another character's, which turns its warning into a green check
 
 ### Fixed
 - Typed amounts are read with the device's decimal mark

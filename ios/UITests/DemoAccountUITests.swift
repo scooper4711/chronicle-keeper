@@ -142,6 +142,36 @@ final class DemoAccountUITests: XCTestCase {
     }
 
     @MainActor
+    func testAMarkedPurchaseIsLinkedToAnotherCharactersBoonAndUnlinked() {
+        app.staticTexts["Valeria Stonebrook"].firstMatch.tap()
+        let warning = app.buttons["May not be Society legal"].firstMatch
+        scrollIntoView(warning)
+        XCTAssertTrue(warning.waitForExistence(timeout: 5), app.debugDescription)
+        warning.tap()
+        let link = app.buttons["Link a Boon or Chronicle Sheet…"].firstMatch
+        XCTAssertTrue(link.waitForExistence(timeout: 5), app.debugDescription)
+        saveScreenshots("legality-warning")
+        // Turning the device can close the popover.
+        if !link.exists { warning.tap() }
+        link.tap()
+        let boon = app.buttons["Lantern Fair Keepsake"].firstMatch
+        XCTAssertTrue(boon.waitForExistence(timeout: 5), "Pip's boon was not offered: \(app.debugDescription)")
+        saveScreenshots("link-picker")
+        boon.tap()
+        let check = app.buttons["Linked to a boon"].firstMatch
+        XCTAssertTrue(check.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertFalse(warning.exists, app.debugDescription)
+        saveScreenshots("ledger-linked")
+        check.tap()
+        let unlink = app.buttons["Unlink"].firstMatch
+        XCTAssertTrue(unlink.waitForExistence(timeout: 5), app.debugDescription)
+        saveScreenshots("legality-check")
+        if !unlink.exists { check.tap() }
+        unlink.tap()
+        XCTAssertTrue(warning.waitForExistence(timeout: 5), app.debugDescription)
+    }
+
+    @MainActor
     func testTheAccountMenuOpensAbout() {
         app.buttons["Account"].firstMatch.tap()
         XCTAssertTrue(app.buttons["Leave the Demo"].waitForExistence(timeout: 5), app.debugDescription)

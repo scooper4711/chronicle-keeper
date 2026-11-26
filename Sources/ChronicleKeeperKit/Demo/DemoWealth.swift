@@ -1,7 +1,7 @@
 import Foundation
 
 /// Made-up ledgers for the demo characters (R5): gold entered for some adventures and left empty for others, a
-/// purchase above the character's level, and one sold, so every kind of ledger line shows.
+/// purchase above the character's level, one sold and one linked to a boon, so every kind of ledger line shows.
 public enum DemoWealth {
     /// The demo characters' settings, holding their ledgers.
     public static var settings: [String: CharacterSettings] {
@@ -34,13 +34,14 @@ public enum DemoWealth {
             ])
     }
 
-    /// Credits for his first adventure; an uncommon item is marked.
+    /// Credits for his first adventure; an uncommon item that his boon gives Access to, so it has a check (R5.10).
     private static var zix: CharacterWealth {
         let credit = Money.copperPerCredit
         var medpatches = item("Medpatch", level: 0, price: 5 * credit, after: "")
         medpatches.quantity = 3
         var drone = item("Holo-Skin Drone", level: 1, price: 120 * credit, after: "9009#9")
         drone.rarity = .uncommon
+        drone.accessLink = DemoBoons.boons.first { $0.name == "Drift Beacon" }.map(AccessLink.init(boon:))
         return ledger(
             earned: ["9009#9": 140 * credit],
             purchases: [item("Laser Pistol", level: 0, price: 50 * credit, after: ""), medpatches, drone])

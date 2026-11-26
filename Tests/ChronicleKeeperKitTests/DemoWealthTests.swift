@@ -32,14 +32,16 @@ struct DemoWealthTests {
         #expect(ledger.balance == 6_600)
     }
 
-    @Test func zixsLedgerIsInCreditsWithAnUncommonItem() async throws {
+    @Test func zixsLedgerIsInCreditsWithAnUncommonItemLinkedToHisBoon() async throws {
         let ledger = try await demoLedger(of: "123456-701")
-        let marks = lines(of: ledger).flatMap { line -> [LegalityMark] in
-            if case .purchase(_, let marks) = line.entry { return marks }
-            return []
+        let marked = lines(of: ledger).compactMap { line -> Purchase? in
+            if case let .purchase(purchase, marks) = line.entry, marks == [.notCommon(.uncommon)] { return purchase }
+            return nil
         }
         #expect(ledger.currency == .credits)
-        #expect(marks == [.notCommon(.uncommon)])
+        #expect(marked.map(\.name) == ["Holo-Skin Drone"])
+        #expect(marked.first?.accessLink?.sourceDescription == "Zix-7's boon Drift Beacon")
+        #expect(DemoBoons.boons.contains { $0.id == marked.first?.accessLink?.sourceID })
         #expect(!ledger.isOverspent)
     }
 
