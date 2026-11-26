@@ -57,6 +57,8 @@ fi
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BINARY" "$APP/Contents/MacOS/$EXECUTABLE"
+# Without this, macOS takes the app for one built before the current design (see the script).
+scripts/stamp-sdk.sh "$APP/Contents/MacOS/$EXECUTABLE"
 # The packages' resources are bundles beside the executable; Bundle.module looks for them in Resources.
 for bundle in "$(dirname "$BINARY")"/*.bundle; do
     # The test target's fixtures stay out of the app.

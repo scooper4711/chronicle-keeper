@@ -412,6 +412,33 @@ orientation tag, so a portrait photo would otherwise land sideways (as 1.0.0's c
 PDF as it is, on a page whose longer side is a letter sheet's 11 inches. The scanner is iOS only and isn't offered
 where `VNDocumentCameraViewController.isSupported` is false, such as the Simulator.
 
+### The toolbar and the app's own symbols
+
+The main window's toolbar has "Who Can Play…" and Refresh. "Who Can Play…" has the app's own symbol: a chronicle
+sheet beside a magnifying glass with a person in it. No system symbol says "which of my characters can play
+this", and the one used before (`person.2.badge.gearshape`) read as account settings.
+
+- The symbol is an SF Symbols template (Ultralight, Regular and Black, from which the system makes the other
+  weights), so a toolbar sizes and tints it like a system symbol on the Mac, the iPad and the iPhone.
+- It lives in `ChronicleKeeperUI/Resources/Symbols.xcassets`, the package's only asset catalog, as
+  `who.can.play`, and is loaded with `Image("who.can.play", bundle: .module)`. Both builds compile the catalog:
+  Xcode for the iPhone and iPad, and `swift build` for the Mac, whose resource bundle `scripts/build-app.sh`
+  copies into the app.
+- **The Mac's dimmed buttons were the build, not the toolbar.** On a Mac build made on this machine both buttons
+  looked disabled: gray 172 in a window in front, beside the system's own sidebar button at 99. The cause was the
+  number the build writes into the binary for the SDK it was built with. Swift Build, the default engine of
+  `swift build` from Xcode 27 on, writes the deployment target (14.0) there. macOS reads it to choose how an app
+  looks, and takes 14.0 to mean an app from before the current design: the old flat toolbar, whose buttons keep
+  the dimmed look of a background window once the app is in front. `scripts/stamp-sdk.sh`, which
+  `scripts/build-app.sh` runs before signing, writes the SDK's real version back, and does nothing to a binary
+  that already has it.
+  - Checked by re-marking one build both ways and launching each several times: marked 14.0, pale every time;
+    marked 27.2, the current toolbar and dark buttons every time.
+  - The TestFlight and App Store builds so far were made with Xcode 26.5, whose `swift build` writes the SDK's
+    version (26.5), so they never showed this. They would from the first release built with Xcode 27.
+  - Redrawing the buttons when the window becomes active also hid the symptom. It was tried and taken out: it
+    left the app in the old design.
+
 ## Artwork
 
 Rexard art may be used inside the app only through the private `toolkit-artwork` submodule (`Artwork/`), never
