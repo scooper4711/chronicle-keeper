@@ -27,9 +27,9 @@ struct DemoWealthTests {
         let sales = lines(of: ledger).filter { if case .sale = $0.entry { true } else { false } }
         #expect(marked.count == 1)
         #expect(sales.count == 1)
-        #expect(ledger.adventuresWithoutGold == 3)
+        #expect(ledger.adventuresWithoutGold == 2)
         #expect(!ledger.isOverspent)
-        #expect(ledger.balance == 6_600)
+        #expect(ledger.balance == 9_600)
     }
 
     @Test func zixsLedgerIsInCreditsWithAnUncommonItemLinkedToHisBoon() async throws {

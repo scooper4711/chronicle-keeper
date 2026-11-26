@@ -112,6 +112,32 @@ final class DemoAccountUITests: XCTestCase {
         saveScreenshots("session-sheet")
     }
 
+    /// The demo's sheet names another character: the warning shows, the confirmation has what was read, and the
+    /// warning can be cleared.
+    @MainActor
+    func testAChronicleSheetsWarningIsCheckedAndCleared() {
+        app.staticTexts["Valeria Stonebrook"].firstMatch.tap()
+        let adventure = app.buttons["session-details"].firstMatch
+        XCTAssertTrue(adventure.waitForExistence(timeout: 5), app.debugDescription)
+        scrollIntoView(adventure)
+        adventure.tap()
+        let clear = app.buttons["Clear Warning"].firstMatch
+        XCTAssertTrue(clear.waitForExistence(timeout: 5),
+                      "the demo sheet's warning did not show: \(app.debugDescription)")
+        saveScreenshots("sheet-warning")
+        app.buttons["sheet-reading-edit"].firstMatch.tap()
+        let number = app.textFields["sheet-field-characterNumber"]
+        XCTAssertTrue(number.waitForExistence(timeout: 10), app.debugDescription)
+        let filled = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == '123456-2002'"), object: number)
+        XCTAssertEqual(XCTWaiter.wait(for: [filled], timeout: 10), .completed, app.debugDescription)
+        saveScreenshots("sheet-confirmation")
+        app.buttons["sheet-keep"].firstMatch.tap()
+        XCTAssertTrue(clear.waitForExistence(timeout: 5), app.debugDescription)
+        clear.tap()
+        XCTAssertTrue(clear.waitForNonExistence(timeout: 5), app.debugDescription)
+    }
+
     @MainActor
     func testTheLedgerShowsPurchasesAndTakesANewOne() {
         app.staticTexts["Valeria Stonebrook"].firstMatch.tap()
