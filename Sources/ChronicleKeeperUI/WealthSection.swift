@@ -78,12 +78,15 @@ struct LedgerContext {
     let store: CharacterStore
     let ledger: WealthLedger
     let rules: CampaignRules
+    /// Where each boon and Chronicle Sheet is used, on every character (R5.10).
+    let links: AccessLinkIndex
 
     init(record: CharacterRecord, store: CharacterStore) {
         self.record = record
         self.store = store
         ledger = WealthLedger(record: record)
         rules = CampaignRules(campaign: record.campaign)
+        links = store.accessLinks
     }
 
     var currency: Currency { ledger.currency }

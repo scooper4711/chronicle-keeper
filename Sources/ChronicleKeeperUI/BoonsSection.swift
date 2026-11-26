@@ -22,10 +22,11 @@ struct BoonsSection: View {
             if boons.isEmpty {
                 Text("No boons on paizo.com for this character.").foregroundStyle(.secondary)
             }
+            let links = store.accessLinks
             ForEach(boons) { boon in
                 Divider()
                 BoonRow(boon: boon, file: store.boonFiles[boon.id], library: store.boonDownloads?.library,
-                        state: state(of: boon)) { preview = $0 }
+                        state: state(of: boon), uses: links.uses(of: AccessLink(boon: boon))) { preview = $0 }
             }
             if let library = store.boonDownloads?.library, !boons.isEmpty {
                 Text(library.isInICloud
@@ -44,7 +45,8 @@ struct BoonsSection: View {
     }
 }
 
-/// One boon: its name, what it does and how many uses are left, and its PDF's buttons.
+/// One boon: its name, what it does and how many uses are left, the purchase it is linked to (R5.10), and its PDF's
+/// buttons.
 struct BoonRow: View {
     enum State { case saved, downloading, notDownloaded, unavailable }
 
@@ -52,6 +54,8 @@ struct BoonRow: View {
     let file: URL?
     let library: BoonLibrary?
     let state: State
+    /// The purchases the user linked to it, of any character.
+    let uses: [AccessLinkUse]
     let open: (URL) -> Void
 
     var body: some View {
@@ -61,6 +65,10 @@ struct BoonRow: View {
                 Text(boon.summary).font(.caption).foregroundStyle(.secondary).lineLimit(3)
                 if let uses = usesText {
                     Text(uses).font(.caption).foregroundStyle(.secondary)
+                }
+                if !uses.isEmpty {
+                    Label("Used for \(uses.summary)", systemImage: "checkmark.circle.fill")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
             }
             Spacer(minLength: 8)
