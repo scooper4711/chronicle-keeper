@@ -6,7 +6,8 @@ public struct SheetMismatch: Hashable, Sendable, Identifiable {
     public enum Kind: String, Hashable, Sendable, CaseIterable {
         /// The sheet names another character than the session was reported for.
         case character
-        /// The sheet is for another adventure than the session.
+        /// The sheet is for another adventure than the session; or, for a sheet added ahead of its report, for
+        /// an adventure paizo.com already lists for the character.
         case adventure
         /// The sheet's XP isn't what paizo.com's record gives, or isn't XP the adventure can give.
         case xp
@@ -49,7 +50,7 @@ public struct SheetChecker: Sendable {
     /// Every way a reading disagrees with a session, cleared or not: the confirmation shows them before the
     /// reading is kept, so a misread is corrected there (R1.11).
     public func mismatches(of reading: SheetReading, with session: PlayedSession) -> [SheetMismatch] {
-        [character(reading), adventure(reading, session), xp(reading, session), funds(reading, session)]
+        [character(reading, session), adventure(reading, session), xp(reading, session), funds(reading, session)]
             .compactMap { $0 }
     }
 
@@ -57,14 +58,14 @@ public struct SheetChecker: Sendable {
 
     /// Only the character's own part of the number is compared: every character of a player shares the Organized
     /// Play part, and names get mangled.
-    private func character(_ reading: SheetReading) -> SheetMismatch? {
+    private func character(_ reading: SheetReading, _ session: PlayedSession) -> SheetMismatch? {
         let number = record.id.split(separator: "-", maxSplits: 1).map(String.init)
         guard let part = reading.characterPart, number.count == 2, part != number[1] else { return nil }
         let sheets = named("\(number[0])-\(part)", shownAs: part)
-        let reported = named(record.id, shownAs: number[1])
+        let own = named(record.id, shownAs: number[1])
+        let whose = session.isReported ? "paizo.com reported this session for \(own)." : "You added it to \(own)."
         return SheetMismatch(
-            .character, value: part,
-            message: "The sheet is for character number \(sheets). paizo.com reported this session for \(reported).")
+            .character, value: part, message: "The sheet is for character number \(sheets). \(whose)")
     }
 
     /// "2002, Pip Underbough", or only the number when it isn't one of the user's characters.
@@ -74,11 +75,25 @@ public struct SheetChecker: Sendable {
 
     /// A session whose title has no code can't be compared.
     private func adventure(_ reading: SheetReading, _ session: PlayedSession) -> SheetMismatch? {
+        guard session.isReported else { return alreadyReported(reading) }
         guard let code = reading.code, let reported = AdventureClassifier.code(of: session.adventure),
               code != reported else { return nil }
         return SheetMismatch(
             .adventure, value: code,
             message: "The sheet is for \(code). This session is \(session.adventure.title).")
+    }
+
+    /// A sheet added ahead of its report goes to the session paizo.com lists for its adventure (R1.15). One that
+    /// is still waiting beside such a session means that session has a sheet already, or that the number is wrong:
+    /// a character plays an adventure once for credit.
+    private func alreadyReported(_ reading: SheetReading) -> SheetMismatch? {
+        guard let code = reading.code, let listed = record.sessions.first(where: { progress in
+            progress.isReported && AdventureClassifier.code(of: progress.session.adventure) == code
+        }) else { return nil }
+        return SheetMismatch(
+            .adventure, value: "listed:\(code)",
+            message: "paizo.com already lists \(listed.session.adventure.title) for this character. A character "
+                + "plays an adventure once for credit, so check the scenario number.")
     }
 
     /// XP the adventure can't give isn't counted (R2.11), and the warning says so. Otherwise the sheet's XP is
@@ -95,6 +110,8 @@ public struct SheetChecker: Sendable {
                 .xp, value: String(xp),
                 message: "The sheet gives \(written) XP, which this adventure can't give, so it isn't counted.")
         }
+        // A session paizo.com doesn't list has no record to compare with.
+        guard session.isReported else { return nil }
         let reported = calculator.progress(of: session, settings: CharacterSettings())
         let isCertain = reported.xpSource == .rules && reported.trackSource != .characterDefault
         guard isCertain, reported.xp != xp else { return nil }

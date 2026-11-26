@@ -146,4 +146,40 @@ struct SheetCheckerTests {
         misread.clearedWarnings = ["character:2002"]
         #expect(checker(misread).mismatches(of: misread, with: session).map(\.kind) == [.character])
     }
+
+    // MARK: - A sheet added ahead of its report (R1.14)
+
+    /// Valeria with a sheet paizo.com has no session for, beside the fixture's session of #6-04.
+    private func unreported(_ reading: SheetReading) -> (SheetChecker, PlayedSession) {
+        let roster = UnreportedFactory.roster(sheets: ["a": reading])
+        let record = roster.characters[0]
+        return (SheetChecker(record: record, roster: roster), record.sessions[0].session)
+    }
+
+    @Test func anUnreportedSheetIsComparedWithNoRecord() {
+        // 2 XP on a session of the default track would disagree with a record's 4.
+        let (checker, sheet) = unreported(UnreportedFactory.reading { $0.xp = 2; $0.characterPart = "2001" })
+        #expect(checker.warnings(for: sheet).isEmpty)
+    }
+
+    @Test func anUnreportedSheetStillCantGiveImpossibleXP() {
+        let (checker, sheet) = unreported(UnreportedFactory.reading { $0.xp = 7 })
+        #expect(checker.warnings(for: sheet).map(\.kind) == [.xp])
+    }
+
+    @Test func anUnreportedSheetForAnotherCharacterSaysWhoItWasAddedTo() throws {
+        let (checker, sheet) = unreported(UnreportedFactory.reading { $0.characterPart = "2002" })
+        let warning = try #require(checker.warnings(for: sheet).first)
+        #expect(warning.kind == .character)
+        #expect(warning.message == "The sheet is for character number 2002, Pip Underbough. "
+            + "You added it to 2001, Valeria Stonebrook.")
+    }
+
+    @Test func anUnreportedSheetOfAnAdventurePaizoAlreadyListsSaysSo() throws {
+        let (checker, sheet) = unreported(UnreportedFactory.reading(code: "6-04"))
+        let warning = try #require(checker.warnings(for: sheet).first)
+        #expect(warning.kind == .adventure)
+        #expect(warning.id == "adventure:listed:6-04")
+        #expect(warning.message.hasPrefix("paizo.com already lists #6-04: An Enkindled Carnival for this character."))
+    }
 }
