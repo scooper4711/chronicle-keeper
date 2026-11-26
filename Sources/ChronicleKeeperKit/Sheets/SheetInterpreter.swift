@@ -9,6 +9,11 @@ import Foundation
 /// less leaves the field nil, and the app then behaves as it does without a sheet.
 public enum SheetInterpreter {
     public static func reading(of lines: [RecognizedLine], source: SheetReading.Source) -> SheetReading {
+        locatedReading(of: lines, source: source).reading
+    }
+
+    /// The reading with where on the page each value was found, for showing it to the user (R1.11).
+    public static func locatedReading(of lines: [RecognizedLine], source: SheetReading.Source) -> LocatedReading {
         let sheet = SheetLines(lines: lines)
         var reading = SheetReading(source: source)
         reading.code = sheet.code
@@ -16,7 +21,24 @@ public enum SheetInterpreter {
         reading.eventCode = sheet.eventCode
         reading.xp = sheet.xp
         reading.funds = sheet.funds
-        return reading
+        return LocatedReading(reading: reading, places: sheet.places)
+    }
+}
+
+/// A value of a sheet that the user confirms (R1.11).
+public enum SheetField: String, Hashable, Sendable, CaseIterable {
+    case characterNumber, xp, funds
+}
+
+/// What was read from a sheet, and where on its page each confirmed value was found.
+public struct LocatedReading: Hashable, Sendable {
+    public var reading: SheetReading
+    /// In fractions of the page, `y` from the top; only the values that were read.
+    public var places: [SheetField: CGRect]
+
+    public init(reading: SheetReading = SheetReading(), places: [SheetField: CGRect] = [:]) {
+        self.reading = reading
+        self.places = places
     }
 }
 
@@ -57,13 +79,10 @@ private struct SheetLines {
     /// part's leading "2" themselves, beside the three digits the player writes.
     var characterNumber: (player: String?, part: String?) {
         guard let player = single(.organizedPlayNumber) else { return (nil, nil) }
-        let partLabel = single(.characterNumber)
-        let rightEdge = (partLabel ?? player).box.maxX + Reach.sideways
-        let boundary = partLabel.map { (player.box.maxX + $0.box.minX) / 2 }
+        let boundary = single(.characterNumber).map { (player.box.maxX + $0.box.minX) / 2 }
         var playerRuns: [String] = []
         var partRuns: [String] = []
-        for line in lines.sorted(by: { $0.box.minX < $1.box.minX }) where SheetLabel.of(line) == nil
-            && isJustAbove(line, player) && (player.box.minX - Reach.sideways...rightEdge).contains(line.box.midX) {
+        for line in characterNumberLines(above: player) {
             let runs = SheetNumber.digitRuns(in: line.text)
             if let boundary, line.box.midX >= boundary {
                 partRuns += runs
@@ -73,6 +92,15 @@ private struct SheetLines {
             }
         }
         return (Self.playerNumber(from: playerRuns), Self.characterPart(from: partRuns))
+    }
+
+    /// What is in the two boxes above the character number's labels, left to right.
+    private func characterNumberLines(above player: RecognizedLine) -> [RecognizedLine] {
+        let rightEdge = (single(.characterNumber) ?? player).box.maxX + Reach.sideways
+        return lines.sorted { $0.box.minX < $1.box.minX }.filter { line in
+            SheetLabel.of(line) == nil && isJustAbove(line, player)
+                && (player.box.minX - Reach.sideways...rightEdge).contains(line.box.midX)
+        }
     }
 
     private static func playerNumber(from runs: [String]) -> String? {
@@ -146,6 +174,32 @@ private struct SheetLines {
             let bottom = below ?? own.box.maxY + Reach.tallestBox
             return bottom > own.box.maxY ? own.box.maxY...bottom : nil
         }
+    }
+
+    // MARK: - Where the values are
+
+    /// Where each value that was read is on the page.
+    var places: [SheetField: CGRect] {
+        var places: [SheetField: CGRect] = [:]
+        let number = characterNumber
+        if number.player != nil || number.part != nil, let player = single(.organizedPlayNumber) {
+            places[.characterNumber] = Self.union(characterNumberLines(above: player))
+        }
+        if xp != nil, case .line(let line) = content(ofBoxFor: .xpGained) { places[.xp] = line.box }
+        if funds != nil { places[.funds] = Self.union(fundsLines) }
+        return places.filter { !$0.value.isNull }
+    }
+
+    /// The gold box's line and, where the sheet has the box, the Earn Income one.
+    private var fundsLines: [RecognizedLine] {
+        [SheetLabel.fundsGained, .earnIncome].compactMap { label in
+            guard labels[label] != nil, case .line(let line) = content(ofBoxFor: label) else { return nil }
+            return line
+        }
+    }
+
+    private static func union(_ lines: [RecognizedLine]) -> CGRect {
+        lines.reduce(CGRect.null) { $0.union($1.box) }
     }
 
     // MARK: - Helpers

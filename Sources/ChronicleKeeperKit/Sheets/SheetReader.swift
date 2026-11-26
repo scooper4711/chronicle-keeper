@@ -63,6 +63,29 @@ public enum SheetPage {
     }
 }
 
+extension SheetPage {
+    /// The PDF with every page turned clockwise by a number of quarter turns (negative for counterclockwise), as
+    /// the user turns a sheet that came in sideways; nil when it isn't a PDF.
+    public static func turned(_ pdf: Data, quarterTurns: Int) -> Data? {
+        guard let document = PDFDocument(data: pdf), document.pageCount > 0 else { return nil }
+        for index in 0..<document.pageCount {
+            guard let page = document.page(at: index) else { continue }
+            page.rotation = (((page.rotation + quarterTurns * 90) % 360) + 360) % 360
+        }
+        return document.dataRepresentation()
+    }
+
+    /// A box given in fractions of the page as it is shown (`y` from the top), in the page's own points: the
+    /// reverse of `PDFTextLines.unitBox`, for marking on the page where a value was read.
+    public static func pageBox(of unitBox: CGRect, on page: PDFPage) -> CGRect {
+        let media = page.bounds(for: .mediaBox)
+        let upright = PDFTextLines.turned(unitBox, by: 360 - page.rotation)
+        return CGRect(
+            x: media.minX + upright.minX * media.width, y: media.maxY - upright.maxY * media.height,
+            width: upright.width * media.width, height: upright.height * media.height)
+    }
+}
+
 /// Reads a chronicle sheet's PDF (R1.10): from its own text where that gives a reward, otherwise by text
 /// recognition on a picture of the page.
 public struct SheetReader: Sendable {
@@ -73,12 +96,17 @@ public struct SheetReader: Sendable {
     }
 
     public func reading(of pdf: Data) async -> SheetReading {
-        let written = SheetInterpreter.reading(of: PDFTextLines.lines(of: pdf), source: .pdfText)
-        guard !Self.isComplete(written), let image = SheetPage.image(of: pdf),
+        await locatedReading(of: pdf).reading
+    }
+
+    /// The reading with where on the page each value was found (R1.11).
+    public func locatedReading(of pdf: Data) async -> LocatedReading {
+        let written = SheetInterpreter.locatedReading(of: PDFTextLines.lines(of: pdf), source: .pdfText)
+        guard !Self.isComplete(written.reading), let image = SheetPage.image(of: pdf),
               let lines = try? await recognizer.lines(in: image) else { return written }
-        let recognized = SheetInterpreter.reading(of: lines, source: .recognized)
+        let recognized = SheetInterpreter.locatedReading(of: lines, source: .recognized)
         // A blank sheet's own text still names the adventure, where recognition may find nothing at all.
-        return recognized.isEmpty ? written : recognized
+        return recognized.reading.isEmpty ? written : recognized
     }
 
     /// Whether the PDF's own text gave a reward, as a sheet a program filled in does: a scan gives nothing, and a

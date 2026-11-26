@@ -20,6 +20,8 @@ public final class CharacterStore {
     public private(set) var chronicleFiles: [String: URL] = [:]
     /// Where chronicle PDFs are kept; nil until the app has looked up iCloud.
     public private(set) var chronicleLibrary: ChronicleLibrary?
+    /// Reads chronicle sheets (R1.10); tests give it a stand-in for text recognition.
+    public var sheetReader = SheetReader()
 
     /// What each character may claim of the free rewards, by character number (see `CharacterStore+Rewards`).
     public internal(set) var claimableRewards: [String: [ClaimableReward]] = [:]
@@ -186,12 +188,13 @@ public final class CharacterStore {
         chronicleFiles[session.id] = url
     }
 
-    /// Removes a session's chronicle PDF.
+    /// Removes a session's chronicle PDF, and what was read from it.
     public func removeChronicle(from session: PlayedSession, characterNumber: String) {
         guard let library = chronicleLibrary else { return }
         let url = chronicleFiles[session.id] ?? library.fileURL(characterNumber: characterNumber, session: session)
         guard attempt({ try library.remove(at: url) }) != nil else { return }
         chronicleFiles[session.id] = nil
+        forgetReading(of: session, characterNumber: characterNumber)
     }
 
     /// Finds each session's sheet, moving any that 1.0.0 filed by the character's name to where it goes now.

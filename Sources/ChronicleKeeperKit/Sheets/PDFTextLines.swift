@@ -73,7 +73,7 @@ public enum PDFTextLines {
     }
 
     /// The box where a page turned clockwise by `degrees` shows it.
-    private static func turned(_ box: CGRect, by degrees: Int) -> CGRect {
+    static func turned(_ box: CGRect, by degrees: Int) -> CGRect {
         switch ((degrees % 360) + 360) % 360 {
         case 90: CGRect(x: 1 - box.maxY, y: box.minX, width: box.height, height: box.width)
         case 180: CGRect(x: 1 - box.maxX, y: 1 - box.maxY, width: box.width, height: box.height)
