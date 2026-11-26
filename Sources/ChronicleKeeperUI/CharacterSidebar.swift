@@ -4,6 +4,8 @@ import SwiftUI
 /// Every character, grouped by campaign.
 struct CharacterSidebar: View {
     let roster: CharacterRoster
+    /// The free rewards each character may claim, by character number: a character with some has a sparkle.
+    var claimable: [String: [ClaimableReward]] = [:]
     @Binding var selection: CharacterRecord.ID?
 
     var body: some View {
@@ -11,7 +13,7 @@ struct CharacterSidebar: View {
             ForEach(roster.campaigns, id: \.self) { campaign in
                 Section(campaign.displayName) {
                     ForEach(roster.characters(in: campaign)) { record in
-                        CharacterRow(record: record).tag(record.id)
+                        CharacterRow(record: record, claimable: claimable[record.id] ?? []).tag(record.id)
                     }
                 }
             }
@@ -40,12 +42,21 @@ struct CharacterSidebar: View {
 /// A character's portrait, name, number and level.
 struct CharacterRow: View {
     let record: CharacterRecord
+    var claimable: [ClaimableReward] = []
 
     var body: some View {
         HStack(spacing: 10) {
             PortraitView(record: record, side: 36)
             VStack(alignment: .leading, spacing: 3) {
-                Text(record.name).font(.headline).lineLimit(1)
+                HStack(spacing: 4) {
+                    Text(record.name).font(.headline).lineLimit(1)
+                    if !claimable.isEmpty {
+                        // Still, as a sidebar full of shimmer would be restless.
+                        SparkleSymbol(isStill: true).font(.caption)
+                            .help(ClaimText.summary(of: claimable))
+                            .accessibilityLabel(ClaimText.summary(of: claimable))
+                    }
+                }
                 Text(record.id).font(.caption).foregroundStyle(.secondary).monospacedDigit()
                 LevelSummary(level: record.level, compact: true)
             }

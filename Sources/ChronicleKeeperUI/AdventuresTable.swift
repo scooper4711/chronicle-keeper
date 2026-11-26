@@ -183,7 +183,13 @@ struct AdventureCells {
             .accessibilityHint("Shows the session's details")
             .accessibilityIdentifier("session-details")
             ChronicleButton(session: session, characterNumber: record.id, store: store)
+            ClaimSparkle(rewards: claimable)
         }
+    }
+
+    /// The free rewards this session earned that the character hasn't claimed (R3.9).
+    var claimable: [ClaimableReward] {
+        store.claimableRewards(for: record.id).filter { $0.sessionIDs.contains(progress.id) }
     }
 
     var reputation: some View {
