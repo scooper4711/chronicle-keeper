@@ -73,6 +73,7 @@ paizo.com is an old WebObjects site.
   A source the catalog can't attribute stops the import with the list, to be added to the catalog in tabletop-kit.
   A test checks the bundled items against the bundled notices; it runs only where `make items` has run, as the
   repository holds neither.
+- `Sheets/`: reading a chronicle sheet (R1.10); see "Reading a chronicle sheet".
 - `Catalog/`: `AdventureCatalog`, `AdventureFinder`, and the search of the published adventures:
   `AdventureSearching`, `WarhornCatalog`, `WarhornScenario`, `CoverFinder`, `CoverTable` (see "Published adventures").
 - `Storage/`, `Store/`: `CharacterRepository` keeps site data apart from the user's data, keyed by character number
@@ -144,6 +145,49 @@ sending that character, so its copy doesn't overwrite the newer one, and the use
 
 An item the item data sells in batches (candles, 1 cp for 10) is bought by the batch: the purchase is named
 "Candle (10)" (`PricedItem.purchaseName`), its price is the batch's, and its quantity counts batches.
+
+## Reading a chronicle sheet
+
+A sheet is read in three steps (R1.10), all on the device:
+
+1. **Lines.** A `RecognizedLine` is a piece of text and its box, in fractions of the page with `y` from the top.
+   `PDFTextLines` takes them from the PDF itself: its text and the values of filled form fields. Sheets made for
+   online play (rpgchronicles.net and the like) hold their values as page text, so they are read exactly and at
+   once. `VisionTextRecognizer` (the only Vision code, behind the `TextRecognizer` protocol) reads a picture of the
+   page, handwriting included: a scan has no text of its own, as the document scanner hands over pictures.
+   `SheetReader` asks the PDF first and recognition when that gives no code or no reward.
+2. **Format.** `SheetLabel` knows each box's label in every season's wording; `SheetPrinting` knows the rest of the
+   sheet's own printing (the names along the reward column, the signs between its boxes, the "FOR GM ONLY" banner
+   right above the event code), which is never taken for writing. `SheetFormat` works out where the reward boxes
+   are, as that changed:
+
+   | Sheets | Reward labels | The label is |
+   |---|---|---|
+   | Pathfinder season 1, the first of season 2, quests 1 to 12, early bounties | XP Gained, GP Gained, Earn Income | under its box |
+   | Pathfinder, the rest of season 2 | XP Gained and GP Gained only | over its box |
+   | Pathfinder seasons 3 to 7, intros, later quests and bounties | XP Gained, GP Gained | over its box |
+   | Pathfinder season 8 | XP Gained (GM ONLY), Gold Gained (GM ONLY) | under its box |
+   | Starfinder seasons 1 and 2 | XP Gained (GM ONLY), Credits Gained (GM ONLY) | under its box |
+
+   "Final XP" is printed only where the label is under its box and "Total XP" only where it is over; the sheets
+   with neither have no "Starting XP" either, and print the label over. Any other combination settles nothing, and
+   no reward is read. In the top and bottom strips (character number, event code) the label is under its box on
+   every sheet. The gold box's wording says whether the sheet pays in gold or credits.
+3. **Values.** `SheetInterpreter` takes a reward from the box between its label and the next label on the box's
+   side, and only when exactly one written line is there and `SheetNumber` reads it as a clean number. The
+   character number's two boxes may come as one line, and most Pathfinder sheets print its leading "2"
+   themselves. The code comes from the title, at the top of the sheet, through
+   `AdventureClassifier.code(inText:)`, the same function that gives a session's code, so the two compare as text.
+
+Every "never guess" rule is a way of returning nil: a `SheetReading` has only optional values, and the rest of the
+app treats nil as "no sheet".
+
+The reader is tested against a census of every chronicle, `Fixtures/chronicle-formats.json`: for each of the 241
+Pathfinder Society and Starfinder Society (second edition) sheets, its own short printing with positions (titles
+and labels, none of its prose) and the box its layout gives each value. `scripts/chronicle-format-census.py`
+writes it from a checkout of pfs-chronicle-generator, which holds every blank chronicle and a layout for each.
+The tests write a value in each box and a wrong one in every neighboring box, and read the sheet. A layout that
+puts a value outside the box the sheet's own labels give it is left out, and the script lists those.
 
 ## App Store builds
 
