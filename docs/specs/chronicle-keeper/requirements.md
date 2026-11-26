@@ -160,3 +160,6 @@ have none.
   `ChronicleKeeper/<version> (+https://github.com/scooper4711/chronicle-keeper)`, so Paizo can tell the traffic
   apart and block it if it has to. No email address goes in the header.
 - **R9.5** The repository holds no real account data; fixtures are sanitized.
+- **R9.6** Every source book the bundled item data comes from is named in exactly one of the notices the app
+  ships: the ORC License's attribution notice or the Open Game License's Section 15. An import that meets a
+  source it can't attribute fails, so no item ships without its book's notice.
