@@ -99,4 +99,23 @@ struct AdventureClassifierTests {
     func code(title: String, code: String) {
         #expect(AdventureClassifier.code(of: adventure(title)) == code)
     }
+
+    /// The title lines of chronicle sheets, as the seasons print them and as text recognition may give them.
+    @Test(arguments: [
+        ("Pathfinder Society Scenario #1–00:", "1-00"),
+        ("Scenario #2-13:", "2-13"),
+        ("Scenario # 6-04", "6-04"),
+        ("Scenario #1—04", "1-04"),
+        ("Pathfinder Society 8-01: Intro to the Year", "8-01"),
+        ("Quest #22", "Quest 22"),
+        ("Bounty #19:", "Bounty 19")
+    ])
+    func codeFromASheetsTitle(text: String, code: String) {
+        #expect(AdventureClassifier.code(inText: text) == code)
+    }
+
+    @Test(arguments: ["Pathfinder Society Intro: Year of Immortal Influence", "Intro #1:", "Character Chronicle #", ""])
+    func textWithoutACode(text: String) {
+        #expect(AdventureClassifier.code(inText: text) == nil)
+    }
 }

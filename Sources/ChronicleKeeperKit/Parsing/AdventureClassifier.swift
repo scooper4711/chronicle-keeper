@@ -39,10 +39,18 @@ public enum AdventureClassifier {
 
     /// A short code that identifies an adventure across title spellings: "6-04", "Quest 14", "Bounty 19".
     public static func code(of adventure: AdventureReference) -> String? {
-        let title = adventure.title.replacingOccurrences(of: "–", with: "-")
-        if let match = title.firstMatch(of: seasonPattern) { return "\(match.1)-\(match.2)" }
-        if let match = title.firstMatch(of: questPattern) { return "Quest \(match.1)" }
-        if let match = title.firstMatch(of: bountyPattern) { return "Bounty \(match.1)" }
+        code(inText: adventure.title)
+    }
+
+    /// The code in any text that names an adventure, such as the title line of its chronicle sheet: "Pathfinder
+    /// Society Scenario #1–00:", "Scenario # 2-13", "Quest #22", "Bounty #19:" or "Pathfinder Society 8-01: Intro
+    /// to the Year…", which has no "#". The same adventure gets the same code from its session and from its sheet.
+    public static func code(inText text: String) -> String? {
+        let plain = text.replacing(/[–—]/, with: "-").replacing(/#\s+/, with: "#")
+        if let match = plain.firstMatch(of: seasonPattern) { return "\(match.1)-\(match.2)" }
+        if let match = plain.firstMatch(of: questPattern) { return "Quest \(match.1)" }
+        if let match = plain.firstMatch(of: bountyPattern) { return "Bounty \(match.1)" }
+        if let match = plain.firstMatch(of: unmarkedSeasonPattern) { return "\(match.1)-\(match.2)" }
         return nil
     }
 
@@ -90,6 +98,8 @@ public enum AdventureClassifier {
     /// "designed for level 1".
     nonisolated(unsafe) private static let singleLevelPattern = /for level (\d+)/
     nonisolated(unsafe) private static let seasonPattern = /#(\d+)-(\d+)/
+    /// A season and number with no "#", as season 8's sheets print it: "Pathfinder Society 8-01:".
+    nonisolated(unsafe) private static let unmarkedSeasonPattern = /Society (\d+)-(\d+):/
     /// "Quest #3" or "Quest (Series 2) #14", and not a scenario with "Quest" in its name, such as "#3-09: The Quest
     /// for Perfection—Part I - [Some Con] PFS #3-09: …", whose later "#3" would otherwise read as the quest's number.
     nonisolated(unsafe) static let questPattern = /Quest(?: \(Series \d+\))? #(\d+)/
