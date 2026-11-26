@@ -193,6 +193,34 @@ writes it from a checkout of pfs-chronicle-generator, which holds every blank ch
 The tests write a value in each box and a wrong one in every neighboring box, and read the sheet. A layout that
 puts a value outside the box the sheet's own labels give it is left out, and the script lists those.
 
+### Checking a reading
+
+`SheetChecker` compares a reading with its session and the ledger and gives a `SheetMismatch` for each
+disagreement (R1.12): the character's own part of the number, the adventure's code, the XP and the gold. It is
+pure: a character's record and the roster in, warnings out.
+
+- The XP is compared with what paizo.com's record alone gives (no sheet, no override), and only where that is no
+  guess: the Guide's XP for the adventure's kind, on a track the reputation or the campaign's rules settle. XP the
+  adventure can't give gets its own wording, as it isn't counted (R2.11).
+- A mismatch's `id` is its kind and the sheet's value ("character:2002"). Clearing a warning puts the id in the
+  reading's `clearedWarnings`, so the sheet read again with another value warns again, and the same value doesn't.
+- `CharacterRoster` keeps the `EventDates` it worked out, as the checker needs the day a session counts as played
+  to know whether slow track was allowed.
+
+### Keeping a reading
+
+`CharacterStore+Sheets` reads a PDF (`read`, through the store's `SheetReader`, which tests replace), keeps the
+reading the user confirmed (`keep`), clears a warning and takes the sheet's gold over typed gold.
+
+- `keep` fills `wealth.earned` for the session when that is empty, or still holds what the earlier reading put
+  there: gold a reading filled in is the sheet's, so a corrected reading corrects it. Gold the user typed stays
+  (R5.11).
+- Removing a sheet removes its reading and leaves the gold and the user's corrections.
+- The confirmation (R1.11) works on a `SheetDraft`: the three fields as text. It says which fields hold text that
+  isn't a value, and makes the corrected reading. `SheetInterpreter.locatedReading` gives, with the reading, where
+  on the page each of the three values was found (`LocatedReading.places`), which the confirmation outlines.
+  `SheetPage.turned` turns a PDF's pages for a sheet that came in sideways, and the sheet is then read again.
+
 ## App Store builds
 
 TestFlight and the App Store get two builds under one bundle ID, uploaded from `main`:

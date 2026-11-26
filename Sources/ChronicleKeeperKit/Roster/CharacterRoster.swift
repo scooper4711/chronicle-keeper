@@ -17,6 +17,8 @@ public struct CharacterRecord: Hashable, Sendable, Identifiable {
 public struct CharacterRoster: Sendable {
     public let characters: [CharacterRecord]
     public let unmatchedSessions: [PlayedSession]
+    /// When each session counts as played, worked out from the whole account's sessions.
+    public let eventDates: EventDates
     /// Each character's boons, by character number.
     public private(set) var boonsByCharacter: [String: [Boon]] = [:]
     /// Boons whose character name matches no character, or more than one.
@@ -44,6 +46,7 @@ public struct CharacterRoster: Sendable {
             return Self.record(summary, progress, settings)
         }
         unmatchedSessions = unmatched
+        self.eventDates = eventDates
     }
 
     /// Gives each boon to the character it names. The Boons tab shows only names, so a name two characters share
