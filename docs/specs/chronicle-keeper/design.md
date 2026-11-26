@@ -412,6 +412,25 @@ orientation tag, so a portrait photo would otherwise land sideways (as 1.0.0's c
 PDF as it is, on a page whose longer side is a letter sheet's 11 inches. The scanner is iOS only and isn't offered
 where `VNDocumentCameraViewController.isSupported` is false, such as the Simulator.
 
+### The toolbar and the app's own symbols
+
+The main window's toolbar has "Who Can Play…" and Refresh. "Who Can Play…" has the app's own symbol: a chronicle
+sheet beside a magnifying glass with a person in it. No system symbol says "which of my characters can play
+this", and the one used before (`person.2.badge.gearshape`) read as account settings.
+
+- The symbol is an SF Symbols template (Ultralight, Regular and Black, from which the system makes the other
+  weights), so a toolbar sizes and tints it like a system symbol on the Mac, the iPad and the iPhone.
+- It lives in `ChronicleKeeperUI/Resources/Symbols.xcassets`, the package's only asset catalog, as
+  `who.can.play`, and is loaded with `Image("who.can.play", bundle: .module)`. Both builds compile the catalog:
+  Xcode for the iPhone and iPad, and `swift build` for the Mac, whose resource bundle `scripts/build-app.sh`
+  copies into the app.
+- **The Mac's dimmed buttons.** macOS draws a toolbar button dimmed while its window is in the background. A
+  button made then, as every button is when the app starts, kept that look once the window was in front, as if
+  disabled, until something else redrew it (Refresh came right after the first refresh, "Who Can Play…" never).
+  So each button's identity includes whether the window is active (`MainWindow.windowActivity`, from
+  `controlActiveState`), which makes it anew when that changes. Measured on a capture of the window: gray 172
+  before, 108 after, beside the system's own sidebar button at 99.
+
 ## Artwork
 
 Rexard art may be used inside the app only through the private `toolkit-artwork` submodule (`Artwork/`), never
