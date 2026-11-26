@@ -24,9 +24,9 @@ public enum DemoAccount {
             number: "\(playerNumber)-2004", campaign: .pathfinder2, name: "Zenobia Everbright",
             factions: [
                 NamedValue(name: "Envoy's Alliance", value: 31), NamedValue(name: "Grand Archive", value: 27),
-                NamedValue(name: "Horizon Hunters", value: 52), NamedValue(name: "Radiant Oath", value: 18),
+                NamedValue(name: "Horizon Hunters", value: 64), NamedValue(name: "Radiant Oath", value: 18),
                 NamedValue(name: "Verdant Wheel", value: 40), NamedValue(name: "Vigilant Seal", value: 23)],
-            standing: [NamedValue(name: "Fame", value: 191)]),
+            standing: [NamedValue(name: "Fame", value: 203)]),
         CharacterSummary(
             number: "\(playerNumber)-1301", campaign: .pathfinder1, name: "Bartholomew Quillfeather",
             factions: [

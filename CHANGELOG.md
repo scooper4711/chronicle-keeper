@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Item prices from the pf2e data, for picking purchases
 - The demo characters have ledgers
 - An adventure's kind and XP show under its title
+- Each faction shows the status the character's reputation has earned (Liked, Admired, Revered, or the Starfinder
+  tier), and how much the next one still needs
 
 ### Fixed
 - Typed amounts are read with the device's decimal mark

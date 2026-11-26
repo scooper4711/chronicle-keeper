@@ -56,6 +56,10 @@ adventures played, faction reputation, XP and level.
   after the sessions really played that day, and the date is marked as worked out wherever it shows, with the
   reason. An event code in use for longer than a week (a store's or lodge's regular games) dates nothing, nor does
   an empty one, and such a session stays undated and counts as the oldest.
+- **R2.10** Each faction's reputation shows the status the Guide gives it, under the faction's name: in Pathfinder
+  Society (second edition) Ignored from 0, Liked from 20, Admired from 60 and Revered from 120; in Starfinder
+  Society (first edition) Tier 0 to Tier 4, from 0, 5, 15, 25 and 45. Its explanation says how much reputation the
+  next status still needs. Campaigns without such a ladder, and Fame and Total Reputation, show none.
 
 ## 3. Using the record
 

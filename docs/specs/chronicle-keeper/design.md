@@ -29,6 +29,9 @@ paizo.com is an old WebObjects site.
 - `Rules/CampaignRules`: XP and reputation per kind and edition, XP per level (second edition 12, first edition 3),
   starting levels, factions, the SFS2 slow-track date. Values come from the Guide to Organized Play on
   lorespire.paizo.com and are noted next to the code.
+- `Rules/ReputationLadder`: the statuses a faction's reputation passes through and where each begins (R2.10), from
+  the Guides' "Factions and Reputation" (pfs2guide) and "Reputation Tiers" (sfsguide) pages. `CampaignRules` hands
+  out the campaign's ladder, which is empty where the campaign has none.
 - `Progress/`: `ProgressCalculator` (track inference, XP, level), `CreditApplier` (the held-Chronicle queue,
   batch-flush and cap from R2.6-R2.8: sessions played below their adventure's own range are queued, in the order
   played, and applied as a batch once the character's level reaches it, each capped at that adventure's own
@@ -221,7 +224,8 @@ for every session.
 ## Interface
 
 A `NavigationSplitView`: campaigns, then characters (portrait, level, XP bar), then a detail view (header,
-reputation grid, adventures table with a track override menu, boons, settings). The table's title cell carries a
+reputation grid, adventures table with a track override menu, boons, settings). Each faction's tile in the grid
+(`ReputationTile`) has its status under its name, and says in its help tag how far the next one is (R2.10). The table's title cell carries a
 small gray caption, "Scenario · 4 XP (4 lost) · 2 Rep" (`SessionCaption`), instead of kind, XP and reputation columns.
 Adventures, Gold/Credits & Purchases, Boons and Your Notes and Corrections each fold away under their title
 (`CollapsibleSection`); whether each is folded is kept in the user defaults (`section.<id>.collapsed`), for every
