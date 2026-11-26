@@ -30,6 +30,9 @@ public struct Purchase: Hashable, Codable, Sendable, Identifiable {
     public var soldAfter: String?
     /// When it was added, which orders the purchases made after the same adventure.
     public var addedAt: Date
+    /// The boon or Chronicle Sheet the user says makes it legal (R5.10); nil when it has none. Selling the purchase
+    /// keeps it.
+    public var accessLink: AccessLink?
     /// Fields a newer version saved that this one doesn't know; written back as they were.
     public var unknownFields = UnknownFields()
 
@@ -61,7 +64,7 @@ public struct Purchase: Hashable, Codable, Sendable, Identifiable {
 
 extension Purchase {
     private enum CodingKeys: String, CodingKey, CaseIterable {
-        case id, itemID, name, level, rarity, unitPrice, quantity, boughtAfter, soldAfter, addedAt
+        case id, itemID, name, level, rarity, unitPrice, quantity, boughtAfter, soldAfter, addedAt, accessLink
     }
 
     public init(from decoder: Decoder) throws {
@@ -76,6 +79,7 @@ extension Purchase {
         boughtAfter = try values.decodeIfPresent(String.self, forKey: .boughtAfter) ?? ""
         soldAfter = try values.decodeIfPresent(String.self, forKey: .soldAfter)
         addedAt = try values.decodeIfPresent(Date.self, forKey: .addedAt) ?? .distantPast
+        accessLink = try values.decodeIfPresent(AccessLink.self, forKey: .accessLink)
         unknownFields = try UnknownFields(from: decoder, known: Set(CodingKeys.allCases.map(\.stringValue)))
     }
 
@@ -92,6 +96,7 @@ extension Purchase {
         try values.encode(boughtAfter, forKey: .boughtAfter)
         try values.encodeIfPresent(soldAfter, forKey: .soldAfter)
         try values.encode(addedAt, forKey: .addedAt)
+        try values.encodeIfPresent(accessLink, forKey: .accessLink)
     }
 }
 
@@ -164,6 +169,15 @@ public struct CharacterWealth: Hashable, Codable, Sendable {
 
     public mutating func undoSale(of id: String) {
         purchases[id]?.soldAfter = nil
+    }
+
+    /// Says that a boon or Chronicle Sheet makes a purchase legal (R5.10), in place of any it was linked to.
+    public mutating func link(_ id: String, to link: AccessLink) {
+        purchases[id]?.accessLink = link
+    }
+
+    public mutating func unlink(_ id: String) {
+        purchases[id]?.accessLink = nil
     }
 }
 

@@ -123,7 +123,7 @@ struct PurchaseLegalityTests {
     @Test func itemsThatArentCommonAreMarkedWithTheReason() {
         let marks = PurchaseLegality.marks(for: item(level: 1, rarity: .uncommon), characterLevel: 1)
         #expect(marks == [.notCommon(.uncommon)])
-        #expect(marks[0].explanation == "Uncommon: needs Access, such as from a Chronicle.")
+        #expect(marks[0].explanation == "Uncommon: needs Access, such as from a boon or a Chronicle Sheet.")
         #expect(LegalityMark.aboveLevel(itemLevel: 5, limit: 2).explanation.contains("(2)"))
     }
 

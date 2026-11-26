@@ -29,7 +29,8 @@ enum SessionFactory {
         date: Date? = Date(timeIntervalSince1970: 1_780_000_000),
         sessionNumber: Int = 1,
         eventCode: String = "1234",
-        characterName: String = "Valeria Stonebrook"
+        characterName: String = "Valeria Stonebrook",
+        playerNumber: String = "123456-2001"
     ) -> PlayedSession {
         var fields = PlayedSessionFields()
         fields.date = date
@@ -38,7 +39,7 @@ enum SessionFactory {
         fields.points = points
         fields.eventCode = eventCode
         fields.sessionNumber = sessionNumber
-        fields.playerNumber = "123456-2001"
+        fields.playerNumber = playerNumber
         fields.characterName = characterName
         fields.reputation = reputation
         fields.isGameMaster = points.gmCredits > 0
