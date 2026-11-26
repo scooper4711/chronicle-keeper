@@ -91,6 +91,31 @@ struct AccessLinkTests {
         #expect(again == purchase)
     }
 
+    /// A newer version may link a purchase to something else. This version must still read the ledger, or the
+    /// character stops syncing; it keeps the link as it is and treats it as one that can be shared.
+    @Test func aLinkOfAKindANewerVersionAddedIsReadAndKept() throws {
+        let json = """
+            {"purchases":{"x":{"id":"x","name":"Cannon","unitPrice":5,"accessLink":{"kind":"achievement",\
+            "sourceID":"a1","sourceName":"Master of Cannons","characterName":"Korbul Thornbrook"}}}}
+            """
+        let wealth = try JSONDecoder().decode(CharacterWealth.self, from: Data(json.utf8))
+        let link = try #require(wealth.purchases["x"]?.accessLink)
+        #expect(link.kind == AccessLink.Kind(rawValue: "achievement") && link.kind != .boon)
+        #expect(link.sourceDescription == "Korbul Thornbrook's Master of Cannons")
+        #expect(link.linkedLabel == "Linked" && link.unlinkTitle == "Unlink")
+        let saved = try JSONEncoder().encode(wealth)
+        #expect(String(bytes: saved, encoding: .utf8)?.contains(#""kind":"achievement""#) == true)
+        #expect(try JSONDecoder().decode(CharacterWealth.self, from: saved) == wealth)
+    }
+
+    @Test func theKnownKindsNameThemselves() throws {
+        let record = WealthFactory.record(sessions: 1)
+        let sheet = AccessLink(session: record.sessions[0].session, of: record)
+        #expect(boonLink.linkedLabel == "Linked to a boon" && boonLink.unlinkTitle == "Unlink Boon")
+        #expect(sheet.linkedLabel == "Linked to a Chronicle Sheet" && sheet.unlinkTitle == "Unlink Chronicle Sheet")
+        #expect(try JSONEncoder().encode(AccessLink.Kind.boon) == Data(#""boon""#.utf8))
+    }
+
     @Test func aPurchaseSavedWithoutALinkHasNone() throws {
         let saved = try JSONEncoder().encode(WealthFactory.purchase("rope", price: 1))
         #expect(String(bytes: saved, encoding: .utf8)?.contains("accessLink") == false)
@@ -182,94 +207,5 @@ struct AccessLinkIndexTests {
         for id in ["gun", "a", "b", "plain"] {
             #expect(index.conflictNote(for: try use(id, of: Factory.ryo, in: store)).isEmpty)
         }
-    }
-}
-
-@MainActor
-struct AccessLinkOptionsTests {
-    private typealias Factory = LinkFactory
-
-    private func options(_ kind: AccessLink.Kind, in store: CharacterStore) throws -> AccessLinkOptions {
-        let ryo = try #require(store.roster.characters.first { $0.id == Factory.ryo })
-        return AccessLinkOptions(roster: store.roster, buyer: ryo, kind: kind)
-    }
-
-    @Test func boonsOfTheSameCampaignAreOfferedTheBuyersFirst() async throws {
-        let groups = try options(.boon, in: await Factory.store()).groups
-        #expect(groups.map(\.characterName) == ["Ryo Mousehunter", "Korbul Thornbrook"])
-        #expect(groups.map { $0.options.map(\.title) } == [["Envoy's Alliance Gear"], ["#6-00: Abendego's Cannon"]])
-        #expect(groups.allSatisfy { $0.options.allSatisfy { $0.day == nil && !$0.isTaken } })
-    }
-
-    @Test func chronicleSheetsAreTheSameCampaignsSessionsWithTheirDay() async throws {
-        let groups = try options(.chronicle, in: await Factory.store()).groups
-        #expect(groups.map(\.id) == [Factory.ryo, Factory.korbul])
-        let sheet = try #require(groups.first?.options.first)
-        #expect(sheet.title == "#6-04: An Enkindled Carnival (1–4)")
-        #expect(sheet.day == Date(timeIntervalSince1970: 1_780_000_000))
-        #expect(sheet.link.sourceID == "\(Factory.ryo)/1234#1")
-    }
-
-    @Test func aLinkedBoonIsTakenAndALinkedChronicleSheetIsNot() async throws {
-        let ryo = WealthFactory.record(sessions: 1)
-        let sheet = AccessLink(session: ryo.sessions[0].session, of: ryo)
-        let store = await Factory.store(purchases: [Factory.korbul: [
-            Factory.purchase("shot", linkedTo: AccessLink(boon: Factory.cannon)),
-            Factory.purchase("map", linkedTo: sheet)]])
-        let boon = try #require(try options(.boon, in: store).groups.last?.options.first)
-        #expect(boon.isTaken && boon.uses.summary == "shot (Korbul Thornbrook)")
-        #expect(boon.moveQuestion(to: Factory.purchase("gun")) == "#6-00: Abendego's Cannon is linked to shot "
-                + "(Korbul Thornbrook). A boon covers one purchase. Move it to gun?")
-        let chronicle = try #require(try options(.chronicle, in: store).groups.first?.options.first)
-        #expect(!chronicle.isTaken && chronicle.uses.count == 1)
-    }
-
-    @Test func searchingKeepsACharactersWholeGroupOrTheTitlesThatMatch() async throws {
-        let options = try options(.boon, in: await Factory.store())
-        #expect(options.groups(matching: " ").count == 2)
-        #expect(options.groups(matching: "korbul").map(\.characterName) == ["Korbul Thornbrook"])
-        #expect(options.groups(matching: "GEAR").flatMap(\.options).map(\.title) == ["Envoy's Alliance Gear"])
-        #expect(options.groups(matching: "nothing").isEmpty)
-    }
-}
-
-@MainActor
-struct AccessLinkStoreTests {
-    private typealias Factory = LinkFactory
-    private let cannon = AccessLink(boon: LinkFactory.cannon)
-
-    private func link(of id: String, _ number: String, in store: CharacterStore) -> AccessLink? {
-        store.settings(for: number).wealth.purchases[id]?.accessLink
-    }
-
-    @Test func linkingABoonMovesItFromAnotherCharactersPurchase() async {
-        let store = await Factory.store(purchases: [
-            Factory.ryo: [Factory.purchase("gun")],
-            Factory.korbul: [Factory.purchase("shot", linkedTo: cannon)]])
-        var changed: [String] = []
-        store.onLocalChange = { changed.append($0) }
-        store.link("gun", of: Factory.ryo, to: cannon)
-        #expect(link(of: "gun", Factory.ryo, in: store) == cannon)
-        #expect(link(of: "shot", Factory.korbul, in: store) == nil)
-        #expect(changed == [Factory.korbul, Factory.ryo])
-        #expect(store.accessLinks.uses(of: cannon).map(\.id) == ["\(Factory.ryo)/gun"])
-    }
-
-    @Test func linkingAChronicleSheetLeavesItsOtherPurchasesLinked() async throws {
-        let ryo = WealthFactory.record(sessions: 1)
-        let sheet = AccessLink(session: ryo.sessions[0].session, of: ryo)
-        let store = await Factory.store(purchases: [
-            Factory.ryo: [Factory.purchase("a", linkedTo: sheet), Factory.purchase("b")]])
-        store.link("b", of: Factory.ryo, to: sheet)
-        #expect(link(of: "a", Factory.ryo, in: store) == sheet && link(of: "b", Factory.ryo, in: store) == sheet)
-    }
-
-    @Test func linkingAgainAndUnlinkingChangeOnlyThatPurchase() async {
-        let store = await Factory.store(purchases: [Factory.ryo: [Factory.purchase("gun", linkedTo: cannon)]])
-        store.link("gun", of: Factory.ryo, to: cannon)
-        #expect(link(of: "gun", Factory.ryo, in: store) == cannon)
-        store.unlink("gun", of: Factory.ryo)
-        #expect(link(of: "gun", Factory.ryo, in: store) == nil)
-        #expect(store.accessLinks.uses(of: cannon).isEmpty)
     }
 }

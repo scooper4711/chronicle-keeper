@@ -46,6 +46,7 @@ public struct AccessLinkOptions: Sendable {
             let options = switch kind {
             case .boon: Self.boons(of: character, in: roster, index: index)
             case .chronicle: Self.chronicles(of: character, index: index)
+            default: [AccessLinkOption]()
             }
             return AccessLinkGroup(characterNumber: character.id, characterName: character.name, options: options)
         }.filter { !$0.options.isEmpty }

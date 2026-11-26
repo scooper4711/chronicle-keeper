@@ -127,7 +127,9 @@ as it was, and an older version moving or selling a purchase keeps what a newer 
 
 A purchase's link to the boon or Chronicle Sheet that makes it legal (R5.10) is such a field: `Purchase.accessLink`,
 an `AccessLink` holding the kind, the source's ID and, copied in so the row reads the same offline, the source's
-name and its character's. A boon's ID is `Boon.id` (paizo.com's own character and reward keys, the same across
+name and its character's. The kind is a string, not an enum: one a newer version adds (a third thing to link
+to) is kept as read, shown by the copied names and treated as shareable, where an enum would make the ledger
+unreadable and hold the whole character back from syncing. A boon's ID is `Boon.id` (paizo.com's own character and reward keys, the same across
 refreshes); a Chronicle Sheet's is the character number and the session's `keyWithinCharacter`, as a character can
 be renamed. It rides in `wealth`, so it syncs with no change to the CloudKit schema, and a build from before it
 keeps it. Nothing stores the other direction: `AccessLinkIndex` reads every character's purchases and answers

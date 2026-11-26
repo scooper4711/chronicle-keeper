@@ -4,8 +4,18 @@ import Foundation
 /// another character in the same campaign. The app doesn't check that it grants the item: the user vouches for it.
 /// The names are copied in, so the purchase reads the same offline and after paizo.com stops listing the source.
 public struct AccessLink: Hashable, Codable, Sendable {
-    public enum Kind: String, Hashable, Codable, Sendable, CaseIterable {
-        case boon, chronicle
+    /// What a purchase is linked to. Not an enum, so that a kind a newer version adds is kept as it was read: this
+    /// version still reads the ledger, shows the link by the names copied into it, and writes it back unchanged.
+    /// An enum would fail on it, and one unreadable link stops the whole character from syncing.
+    public struct Kind: RawRepresentable, Hashable, Codable, Sendable {
+        public static let boon = Kind(rawValue: "boon")
+        public static let chronicle = Kind(rawValue: "chronicle")
+
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
     }
 
     public var kind: Kind
@@ -46,10 +56,30 @@ public struct AccessLink: Hashable, Codable, Sendable {
     public var key: String { "\(kind.rawValue):\(sourceID)" }
 
     /// "Korbul Thornbrook's boon Abendego's Cannon", or "…'s Chronicle Sheet for #6-00: Abendego's Cannon".
+    /// A kind this version doesn't know is named only by what it copied in.
     public var sourceDescription: String {
         switch kind {
         case .boon: "\(characterName)'s boon \(sourceName)"
         case .chronicle: "\(characterName)'s Chronicle Sheet for \(sourceName)"
+        default: "\(characterName)'s \(sourceName)"
+        }
+    }
+
+    /// What the purchase's check is called: "Linked to a boon".
+    public var linkedLabel: String {
+        switch kind {
+        case .boon: "Linked to a boon"
+        case .chronicle: "Linked to a Chronicle Sheet"
+        default: "Linked"
+        }
+    }
+
+    /// The menu item that takes the link off: "Unlink Boon".
+    public var unlinkTitle: String {
+        switch kind {
+        case .boon: "Unlink Boon"
+        case .chronicle: "Unlink Chronicle Sheet"
+        default: "Unlink"
         }
     }
 }
