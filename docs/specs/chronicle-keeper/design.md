@@ -65,8 +65,14 @@ paizo.com is an old WebObjects site.
 - Item prices: `make items` (`scripts/import-items.sh`) runs the `ItemPrices` tool (`ItemPriceImport` target) on the
   pf2e release pinned in `pf2e.release`. It reads both games' `equipment` packs (not `virtual-items` or
   `bestiary-items`; weapons, armor, shields, gear, consumables, backpacks and kits that have a coin or credit price)
-  and writes `Resources/Items/items.json` and the ORC and OGL licenses, which git ignores. App and archive builds
+  and writes `Resources/Items/items.json` and the ORC and OGL notices, which git ignores. App and archive builds
   run it; a `CHANNEL=appstore` build fails without it. `ItemPriceList.bundled` loads it through `Bundle.module`.
+  The notices come from tabletop-kit's `SourceAttribution` (R9.6): the import tallies each item's `source`, and
+  `NoticeWriter` writes the ORC notice and the OGL's Section 15 naming every one of those books from the kit's source
+  catalog. pf2e's own notice files aren't copied: they name about half the Pathfinder books and no Starfinder book.
+  A source the catalog can't attribute stops the import with the list, to be added to the catalog in tabletop-kit.
+  A test checks the bundled items against the bundled notices; it runs only where `make items` has run, as the
+  repository holds neither.
 - `Catalog/`: `AdventureCatalog`, `AdventureFinder`, and the search of the published adventures:
   `AdventureSearching`, `WarhornCatalog`, `WarhornScenario`, `CoverFinder`, `CoverTable` (see "Published adventures").
 - `Storage/`, `Store/`: `CharacterRepository` keeps site data apart from the user's data, keyed by character number

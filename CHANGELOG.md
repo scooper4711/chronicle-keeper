@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ledger groups have titles, and a picked item's price can be overridden; a name nothing matches is a custom item
   with its own price
 - Item prices from the pf2e data, for picking purchases
+- The ORC License and Open Game License notices name every source book the item prices come from
 - The demo characters have ledgers
 - An adventure's kind and XP show under its title
 - Each faction shows the status the character's reputation has earned (Liked, Admired, Revered, or the Starfinder

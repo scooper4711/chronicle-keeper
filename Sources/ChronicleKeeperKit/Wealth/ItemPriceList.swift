@@ -93,7 +93,8 @@ public struct ItemPriceList: Sendable {
         return (firstName, first.level) < (secondName, second.level)
     }
 
-    /// The folder with the ORC and OGL license files `make items` copied beside the list, or nil without them.
+    /// The folder with the ORC and OGL notices `make items` wrote beside the list, naming every source book of the
+    /// items, or nil without them.
     public static var licensesFolder: URL? {
         Bundle.module.url(forResource: "Licenses", withExtension: nil, subdirectory: "Items")
     }
