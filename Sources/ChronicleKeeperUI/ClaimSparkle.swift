@@ -26,17 +26,32 @@ struct ClaimSparkle: View {
     }
 }
 
-/// The sparkle itself, shimmering unless the device reduces motion. `isStill` holds it still where many show at
-/// once, as in the sidebar.
+/// The sparkle itself, which breathes, fading and coming back at the pace of someone asleep, unless the device
+/// reduces motion. `isStill` holds it still where many show at once, as in the sidebar.
 struct SparkleSymbol: View {
     var isStill = false
     @Environment(\.accessibilityReduceMotion) private var reducesMotion
 
     var body: some View {
-        Image(systemName: "sparkles")
-            .foregroundStyle(Self.gold)
-            .symbolEffect(.variableColor.iterative, options: .repeating, isActive: !isStill && !reducesMotion)
+        if isStill || reducesMotion {
+            symbol
+        } else {
+            symbol.phaseAnimator([1.0, Self.faintest]) { symbol, opacity in
+                symbol.opacity(opacity)
+            } animation: { _ in
+                .easeInOut(duration: Self.breath / 2)
+            }
+        }
     }
+
+    private var symbol: some View {
+        Image(systemName: "sparkles").foregroundStyle(Self.gold)
+    }
+
+    /// One breath out and in: twelve a minute, a sleeper's pace.
+    static let breath: TimeInterval = 5
+    /// How far it fades at the end of a breath out; it stays easy to see.
+    static let faintest = 0.4
 
     /// Dark enough to read on a light background, which system yellow isn't.
     static let gold = Color(red: 0.85, green: 0.58, blue: 0.0)
