@@ -44,10 +44,12 @@ adventures played, faction reputation, XP and level.
     takes the format from the sheet's own labels. It is tested against every Pathfinder Society and Starfinder
     Society (second edition) chronicle. First edition sheets are best effort.
 - **R1.11** One screen confirms the picture and what was read, with one button. It shows the page, which the user
-  can zoom and rotate left or right, and editable fields for the character number, the XP and the gold or
-  credits, filled with what was read. Text recognition misreads handwriting with full confidence, so nothing read
-  is used before the user has seen it there. A PDF goes through the same screen. A sheet attached before this
-  version can be read later, from its menu.
+  can zoom and rotate left or right, with the places the values were read from outlined, and editable fields for
+  the character number, the XP and the gold or credits, filled with what was read. Text recognition misreads
+  handwriting with full confidence, so nothing read is used before the user has seen it there. A value that
+  disagrees with paizo.com's record or the ledger says so beside its field, so a misread is corrected before it
+  becomes a warning (R1.12). A PDF goes through the same screen. A sheet attached before this version can be read
+  later, from its menu, and one that was read can be checked and corrected again.
 - **R1.12** A sheet and paizo.com's record can disagree: GMs make mistakes reporting and filling in sheets. The app
   then warns, in words, and the user can clear each warning once satisfied; nothing is blocked.
   - The sheet names another character than the session was reported for. Characters are compared by number, never
@@ -205,9 +207,11 @@ have none.
   - The link is part of the ledger (R5.9). Two devices can each link one boon before they sync: both purchases
     then keep their link, and both say that the boon is linked twice, for the user to settle.
 - **R5.11** A chronicle sheet's gold or credits (R1.10) fill the adventure's field in the ledger when that field
-  is empty, and never replace what the user typed. Where they differ the app says so (R1.12) and offers to take
-  the sheet's amount. Only the first sheet format has an Earn Income box, which is added to the gold; on later
-  sheets the GM may have left Earn Income out, which is for the user to see in the confirmation (R1.11).
+  is empty, and never replace what the user typed. An amount the sheet filled in is marked as the sheet's, and
+  follows the sheet when its reading is corrected. Where the sheet and a typed amount differ the app says so
+  (R1.12) and offers to take the sheet's amount. Only the first sheet format has an Earn Income box, which is added
+  to the gold; on later sheets the GM may have left Earn Income out, which is for the user to see in the
+  confirmation (R1.11).
 
 ## 9. Conduct
 

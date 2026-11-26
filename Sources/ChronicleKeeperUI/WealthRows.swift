@@ -106,7 +106,13 @@ struct OpeningLine: View {
 
     var body: some View {
         LedgerLineLayout(balance: line.balance, column: .income, context: context) {
-            Text(label)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(label)
+                if case .session(let progress) = group.place {
+                    SheetFundsNote(
+                        sheet: SessionSheet(session: progress.session, record: context.record, store: context.store))
+                }
+            }
         } amount: {
             field
         } actions: {

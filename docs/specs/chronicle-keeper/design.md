@@ -221,6 +221,30 @@ reading the user confirmed (`keep`), clears a warning and takes the sheet's gold
   on the page each of the three values was found (`LocatedReading.places`), which the confirmation outlines.
   `SheetPage.turned` turns a PDF's pages for a sheet that came in sideways, and the sheet is then read again.
 
+### The confirmation and the warnings
+
+`SheetConfirmation` is the one screen of R1.11, and every way of adding a sheet ends in it: "Attach PDF…", "Scan
+Sheet…", a PDF dropped on a session (`ChronicleDropTarget`, R1.13) and "Read Sheet…" for a sheet that is already
+attached. `SessionSheet` is what these views share: the session, its character and the store.
+
+- The page is `SheetPageView`, PDFKit's own `PDFView` wrapped for SwiftUI, so zooming is the same on the Mac, the
+  iPad and the iPhone. The outlines around the values read are annotations on the copy shown; the PDF that is kept
+  is the user's file as it came, turned if they turned it.
+- Turning the page reads the sheet again, since a sideways page reads as nothing. Fields the user has typed in
+  keep what they typed.
+- The fields' warnings come from `SheetChecker.mismatches` on the values as they stand, so correcting a misread
+  number takes its warning away before anything is kept.
+- The system's document scanner can't carry the fields: its own screens find the sheet's edges and let the user
+  crop and retake. So a scan is the scanner, then this screen, which comes up when the scanner has gone. There is
+  no other review of the picture.
+- Keep saves the PDF, then the reading. A sheet read again is saved only when it was turned.
+
+Uncleared warnings show in three places: the sheet's button in the adventures table becomes the warning's sign,
+the session's Chronicle Sheet section lists each in words with Clear Warning (`SheetReadingSummary`), and the
+ledger shows the gold warning under the adventure's field with "Use the Sheet's Amount" (`SheetFundsNote`), or
+"From the Chronicle Sheet" when the amount is the sheet's. The demo's sheet has a reading that names another
+demo character (`DemoChronicles.reading`), so the demo and the UI tests show a warning.
+
 ## App Store builds
 
 TestFlight and the App Store get two builds under one bundle ID, uploaded from `main`:

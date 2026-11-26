@@ -3,42 +3,45 @@ import PDFKit
 import QuickLook
 import SwiftUI
 
-/// A session's chronicle sheet under its details, as a message shows its attachment: the pages themselves, with a
-/// menu to open, share or remove the sheet, or to attach one.
+/// A session's chronicle sheet under its details, as a message shows its attachment: what was read from it and its
+/// warnings, the pages themselves, and a menu to open, share, read or remove the sheet, or to attach one. A PDF
+/// can be dropped on it (R1.13).
 struct ChronicleSheetSection: View {
-    let session: PlayedSession
-    let characterNumber: String
-    let store: CharacterStore
+    let sheet: SessionSheet
     @State private var preview: URL?
-
-    private var file: URL? { store.chronicleFiles[session.id] }
+    /// The attached sheet, while the user checks what was read from it.
+    @State private var candidate: SheetCandidate?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Label("Chronicle Sheet", systemImage: "paperclip").font(.headline)
                 Spacer()
-                ChronicleMenu(session: session, characterNumber: characterNumber, store: store) { isAttached in
+                ChronicleMenu(sheet: sheet) { isAttached in
                     Label(isAttached ? "Sheet" : "Attach", systemImage: isAttached ? "ellipsis.circle" : "plus")
                 }
                 .menuStyle(.button).buttonStyle(.bordered).fixedSize()
                 .accessibilityIdentifier("chronicle-sheet-menu")
             }
-            if let file {
+            SheetReadingSummary(sheet: sheet) { Task { candidate = await sheet.attachedCandidate() } }
+            if let file = sheet.file {
                 // A sheet attached in place of another gets its own pages.
-                ChroniclePages(file: file, library: store.chronicleLibrary) { preview = file }.id(file)
+                ChroniclePages(file: file, library: sheet.store.chronicleLibrary) { preview = file }.id(file)
             } else {
                 Text(Self.invitation).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .chronicleDropTarget(for: sheet)
         .quickLookPreview($preview)
+        .sheetConfirmation($candidate, for: sheet)
     }
 
     private static var invitation: String {
         #if os(iOS)
         "No chronicle sheet is attached. Attach the PDF from your GM, or scan the paper sheet."
         #else
-        "No chronicle sheet is attached. Attach the PDF from your GM."
+        "No chronicle sheet is attached. Attach the PDF from your GM, or drop it here."
         #endif
     }
 }
@@ -133,22 +136,8 @@ enum ChroniclePageImages {
     private static func render(_ file: URL) -> Sheet {
         guard let document = PDFDocument(url: file), document.pageCount > 0 else { return .unreadable }
         let pages = (0..<min(document.pageCount, pageLimit)).compactMap { index in
-            document.page(at: index).flatMap(image(of:))
+            document.page(at: index).flatMap { SheetPage.image(of: $0, width: pixelWidth) }
         }
         return pages.isEmpty ? .unreadable : .pages(pages, pageCount: document.pageCount)
-    }
-
-    private static func image(of page: PDFPage) -> CGImage? {
-        let bounds = page.bounds(for: .mediaBox)
-        let isSideways = page.rotation % 180 != 0
-        let size = isSideways ? CGSize(width: bounds.height, height: bounds.width) : bounds.size
-        guard size.width > 0 else { return nil }
-        let picture = page.thumbnail(
-            of: CGSize(width: pixelWidth, height: pixelWidth * size.height / size.width), for: .mediaBox)
-        #if os(macOS)
-        return picture.cgImage(forProposedRect: nil, context: nil, hints: nil)
-        #else
-        return picture.cgImage
-        #endif
     }
 }
