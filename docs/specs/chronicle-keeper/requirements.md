@@ -62,6 +62,48 @@ adventures played, faction reputation, XP and level.
 - **R1.13** On the Mac, and on an iPad with Files beside the app, a PDF dropped on a session's row or on its
   Chronicle Sheet section is attached to that session, through the same confirmation. One file at a time; a
   session that has a sheet asks before replacing it.
+- **R1.14** A player gets the chronicle sheet at the table, often days before the GM reports the session. "Add
+  Chronicle…" on a character takes a sheet whose session paizo.com doesn't list yet: scanned or attached, and
+  confirmed on the same screen (R1.11), which then also asks for the scenario number and the day played. The sheet
+  can't be kept without a scenario number, as that is what its session is found by (R1.15).
+  - The sheet shows as a row of its own among the adventures and counts right away: its XP toward the level
+    (what was read or typed; otherwise the normal XP for its kind of adventure), its gold in the ledger, and
+    purchases can be placed after it. It counts as played in "Who can play...?" (R3.2), and is held or capped like
+    any session (R2.6, R2.7).
+  - It doesn't count for rewards to claim (R3.9): paizo.com hands none out for a session it doesn't have.
+    Reputation and Fame stay as paizo.com reports them.
+  - An unreported row never passes for a reported one. Its title is in another color; "Not reported yet" and the
+    day it was added stand where "GM credit" goes; it has an "Unreported" badge, which says the same to VoiceOver
+    and on a hover; the section's title counts such rows ("Adventures (12 · 2 not reported)"). The totals that
+    include one say so: under the level in the character's header, as a badge beside the character in the
+    sidebar, and in the ledger group's title. Its details say at the top that its XP and gold come from the
+    chronicle sheet, and leave out what only paizo.com knows (Game Master, reputation, points, event).
+  - The adventure is named by its number until its name is known: from another character's session of the same
+    adventure, or looked up in the catalog (R3.8), which also gives its levels and cover.
+  - The user can remove such a sheet at any time: some sessions are never reported, and a sheet can be added
+    twice or to the wrong character. The app then asks whether to delete the chronicle or to attach it to another
+    adventure, and offers for that only the character's reported adventures that have no chronicle sheet.
+    Deleting removes the row, the PDF, what was read and its gold; purchases made after it stay, in the ledger's
+    last group (R5.8), which the app says first. Attaching keeps everything, as in R1.15.
+- **R1.15** When paizo.com lists the session, the sheet becomes that session's.
+  - A character plays an adventure once for credit. So a sheet and a session of the same character with the same
+    scenario number are the same session, whatever their dates, and a sheet never goes to a session with another
+    scenario number. This holds when a refresh brings the session and when a sheet is added for an adventure
+    paizo.com already lists. Four sheets from one convention day land on the right sessions whatever order the
+    GMs report in. A session that has a chronicle sheet keeps it: a second sheet for it stays unreported, with a
+    warning that paizo.com already lists the adventure.
+  - The row then is the reported session, and everything the user kept for the sheet is the session's: what was
+    read, its gold, the correction to its track or XP, the purchases bought and sold after it, and the links from
+    purchases to it (R5.10), on every character. Gold the user typed for the reported session and a correction
+    they made to it stay, and the sheet's warnings (R1.12) compare with them.
+  - This is done at once, on whichever device reads the account first, and syncs (R4.2). The PDF follows on a
+    device that has it: one that iCloud hasn't brought down yet still shows as the session's sheet and is moved
+    when it has come. Nothing counts twice meanwhile.
+  - A sheet with no session under its own character, whose scenario number and event code are those of a session
+    of another of the user's characters in the same campaign, is not moved on its own. The app says so and offers
+    to move the sheet to that character or to keep waiting for a corrected report. Moved, the sheet, what was
+    read, its gold and its correction go to that character's session; the purchases made after it are the first
+    character's own and stay in that ledger's last group.
 
 ## 2. Progress
 
@@ -105,7 +147,8 @@ adventures played, faction reputation, XP and level.
 
 - **R3.1** Level and XP show in every overview.
 - **R3.2** "Who can play...?" lists the characters in an adventure's campaign who haven't played it and whose level
-  is in its range, with the rest shown dimmed and the reason. Repeatable adventures never count as played.
+  is in its range, with the rest shown dimmed and the reason. Repeatable adventures never count as played. A
+  chronicle sheet added ahead of its report counts as played (R1.14).
 - **R3.3** Each character has notes, a portrait and a character sheet link.
 - **R3.4** Boon PDFs can be opened, shared and printed.
 - **R3.5** A demo account with fictional data runs without a Paizo account or the network.
@@ -129,14 +172,16 @@ adventures played, faction reputation, XP and level.
   adventure without a number (a standalone adventure, an Adventure Path volume, an intro) gets its cover from a
   table the app ships with, and is never asked for. A catalog that can't be reached leaves the account as it is,
   without a message. Warhorn is sent the text typed into "Who can play...?" and the numbers of the adventures in
-  the sessions, and nothing that says whose they are: no title, and never the event a session was played at.
+  the sessions and in the chronicle sheets added ahead of their report (R1.14), and nothing that says whose they
+  are: no title, and never the event a session was played at.
 - **R3.9** The app signals each free reward a character may claim on paizo.com and hasn't yet.
   - A Chronicle Boon is one when the character has a session of the adventure it names (as player or as Game
     Master with credit), by its number or else by its title. A Game Reward is one when the character has the
     reputation it asks for (a status such as Liked, R2.10, or a number) with the named faction or with any faction,
     has played the number of sessions it asks for, or has played the adventures it names (one of them for "OR",
     each of them for "AND").
-  - A reward the character already has, by the name the Boons tab lists, is never signaled.
+  - A reward the character already has, by the name the Boons tab lists, is never signaled. Nor is one for a
+    session paizo.com doesn't list yet (R1.14).
   - An adventure's "Boon A", "Boon B" and "Boon C" are alternatives: the Chronicle Sheet says which one was earned.
     A character who has one of them isn't eligible for the others, so nothing is signaled; a character who has
     none gets one signal that names the choices.
@@ -155,7 +200,9 @@ adventures played, faction reputation, XP and level.
 ## 4. Data
 
 - **R4.1** A refresh replaces the site's data and never touches the user's own data (overrides, default track,
-  starting level, notes, links, portraits).
+  starting level, notes, links, portraits), with one exception: what the user kept for a chronicle sheet added
+  ahead of its report is filed under the session when a refresh brings it (R1.15). Nothing of it is changed or
+  lost.
 - **R4.2** The user's own data syncs between their devices through iCloud when the build has iCloud turned on, with
   edits on two devices both surviving. Site data doesn't sync.
 
@@ -186,7 +233,8 @@ have none.
 - **R5.7** A purchase is marked, with the reason in words, when its item level is above the character's level at
   that point (minimum 2) or its rarity isn't common. Moving the purchase re-checks it. Linking it clears the
   marks (R5.10).
-- **R5.8** Purchases tied to a session paizo.com no longer lists are kept and shown in a last group, never dropped.
+- **R5.8** Purchases tied to a session paizo.com no longer lists, or to a chronicle sheet the user deleted (R1.14),
+  are kept and shown in a last group, never dropped.
 - **R5.9** The ledger is the user's own data (R4.1, R4.2): a refresh never touches it, and it syncs. A device on an
   older version that saves the character's other settings never erases it.
 - **R5.10** The user can link a marked purchase to what makes it legal: a boon, or a Chronicle Sheet (a session).

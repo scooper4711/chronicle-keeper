@@ -48,10 +48,11 @@ paizo.com is an old WebObjects site.
   batch-flush and cap from R2.6-R2.8: sessions played below their adventure's own range are queued, in the order
   played, and applied as a batch once the character's level reaches it, each capped at that adventure's own
   highest level), `CharacterSettings` (the user's own data).
-- `Roster/`: `CharacterRoster`, `CharacterMatcher`, and `EventDates` (R2.9), which the roster builds from every
-  session and hands to each character's `ProgressCalculator`. The date a session counts as played on is
-  `SessionProgress.date`, a `SessionDate` that says whether it was inferred; `PlayedSession.date` stays what
-  paizo.com said, so nothing saved or synced passes a guess off as the site's.
+- `Roster/`: `CharacterRoster`, `CharacterMatcher`, `UnreportedSessions` (the sessions made from chronicle sheets
+  added ahead of their report, R1.14; see "Sheets added ahead of their report") and `EventDates` (R2.9), which the
+  roster builds from every reported session and hands to each character's `ProgressCalculator`. The date a session
+  counts as played on is `SessionProgress.date`, a `SessionDate` that says whether it was inferred;
+  `PlayedSession.date` stays what paizo.com said, so nothing saved or synced passes a guess off as the site's.
 - `Wealth/`: the ledger (R5). Amounts are `Int` copper pieces (`Money`; a credit is 10). `CharacterWealth` holds the
   starting funds override, the gold entered per session key and the purchases by ID; a `Purchase` places itself and its
   sale with `boughtAfter` and `soldAfter`, both session keys (empty for starting gold). `RewardTables` extends
@@ -211,8 +212,9 @@ pure: a character's record and the roster in, warnings out.
 
 ### Keeping a reading
 
-`CharacterStore+Sheets` reads a PDF (`read`, through the store's `SheetReader`, which tests replace), keeps the
-reading the user confirmed (`keep`), clears a warning and takes the sheet's gold over typed gold.
+`CharacterStore+Chronicles` attaches, removes and finds the PDFs. `CharacterStore+Sheets` reads a PDF (`read`, through
+the store's `SheetReader`, which tests replace), keeps the reading the user confirmed (`keep`), clears a warning and
+takes the sheet's gold over typed gold.
 
 - `keep` fills `wealth.earned` for the session when that is empty, or still holds what the earlier reading put
   there: gold a reading filled in is the sheet's, so a corrected reading corrects it. Gold the user typed stays
@@ -246,6 +248,71 @@ the session's Chronicle Sheet section lists each in words with Clear Warning (`S
 ledger shows the gold warning under the adventure's field with "Use the Sheet's Amount" (`SheetFundsNote`), or
 "From the Chronicle Sheet" when the amount is the sheet's. The demo's sheet has a reading that names another
 demo character (`DemoChronicles.reading`), so the demo and the UI tests show a warning.
+
+### Sheets added ahead of their report
+
+A sheet whose session paizo.com doesn't list yet (R1.14) is stored as nothing new: its reading goes in the same
+`sheetReadings`, under the key `unreported/<id>` (`UnreportedSheet`), and its gold, its correction and the
+purchases after it are filed under that key like any session's. The reading also holds what makes the session:
+`playedOn`, `addedAt` and, once looked up, the adventure's `title` and `levels`. So it rides in `wealth` and syncs
+with no change to the CloudKit schema; a build from before it keeps the key (`UnknownFields`) and shows nothing
+for it.
+
+- **The session.** `UnreportedSessions` builds a `PlayedSession` from each such reading, and `CharacterRoster`
+  hands it to `ProgressCalculator` with the reported ones, so XP, level, the held-Chronicle rules, the ledger,
+  "Who can play...?" and the access links treat it as a session without knowing better.
+  `PlayedSession.unreportedID` is all that tells it apart: its `id` and `keyWithinCharacter` are the unreported
+  key, and `isReported` is false. `RewardEligibility` counts reported sessions only.
+  - The adventure is another session's `AdventureReference` when any character has played the same number
+    (paizo.com's own title, levels and product); else the name and levels a catalog gave; else a title made from
+    the number (`AdventureClassifier.title(forCode:)`: "#6-04", "Quest #14"), which reads back as the same code
+    and kind. Levels from a catalog travel as a description the classifier reads (`LevelRange.summaryText`).
+  - The day is kept as text ("2026-11-21", `SheetDay`), so it stays the day the user chose in any time zone, and
+    becomes midnight on the United States' west coast, as paizo.com dates a session: a sheet and a session of one
+    day sort as one day. The date on a sheet isn't read: 11/12 is two different days to two GMs, and the reader
+    never guesses. The day starts as today and the user sets it.
+- **The name.** `CharacterStore.nameUnreportedSheets` asks the catalog covers come from
+  (`CoverFinder.adventure(code:in:)`) for each sheet known only by its number, after a sheet is kept and after a
+  refresh, and keeps the title and levels in the reading and the cover with the account. A failed lookup is asked
+  again next time; the demo has no catalog, and its sheet is of an adventure another demo character played.
+- **The PDF** waits in `Chronicles/Pending/<character number>/<id>.pdf`
+  (`ChronicleLibrary.fileURL` gives that for an unreported session, so attaching, replacing and removing need
+  nothing of their own). `namedFiles` looks one folder deep and never sees it.
+- **The match.** `PendingSheetMatcher` is pure: every character's sessions in, matches out. A character plays an
+  adventure once for credit, so the rule is the same character and the same scenario number, with no test of
+  dates; a session that has a sheet (a PDF or a reading) is left alone. Among several sessions of one number
+  (data paizo.com shouldn't have, but does), the one with the sheet's event code is preferred, then the oldest,
+  and each takes one sheet. `elsewhere` lists the sheets with no session of their own whose number and event code
+  are those of a session of another character in the campaign; those are offered, never taken.
+- **Adopting.** `CharacterStore.adoptReportedSheets` runs wherever the files are looked for (after loading, after
+  a refresh, when the library is known) and when a sheet is kept. For each match `CharacterSettings.adopt` lifts
+  out what is filed under the unreported key (`SheetTransfer`: reading, gold, correction) and files it under the
+  session, where gold and a correction the session already has stay; `CharacterWealth.movePurchases` re-keys
+  `boughtAfter` and `soldAfter`; and `relink` points every character's purchases linked to the sheet at the
+  session. Two devices doing this from the same account arrive at the same data.
+  - **Data first, file after.** Only the user's data moves in that step, so a device holding just iCloud's
+    placeholder of the PDF adopts too and nothing counts twice. The reading remembers where the PDF waited
+    (`pendingFile`), and `locatedFiles` moves it to the session's place when it is on this device
+    (`ChronicleLibrary.adopt`, which asks iCloud for it otherwise); until then the pending file is the
+    session's sheet. The plan first had the adoption wait for the file, which would have shown the adventure
+    twice on every device without it.
+- **The user's ways out.** `deleteUnreportedSheet` removes the PDF and everything filed under the key except the
+  purchases, which the ledger then lists last (R5.8). `attach(_:)` files a sheet under a session the user chose
+  (one of `sessionsWithoutSheet`) or under another character's session (`sessionElsewhere`): the same transfer,
+  to another character's settings in the second case, where the purchases stay behind. "Keep Waiting" puts the
+  match's id among the reading's `clearedWarnings`.
+- **Checking.** `SheetChecker` has no record to compare an unreported sheet's XP with, so only XP the adventure
+  can't give is reported; the character warning says whom the sheet was added to; and a sheet waiting beside a
+  reported session of its number says that paizo.com already lists the adventure.
+
+In the interface the marking is `UnreportedBadge`, `Color.unreported` and the words in `UnreportedText` (kit, so
+they are tested): the row's title, status line and badge (`AdventureCells`), the section's title, the note under
+the level, the sidebar's badge, the ledger group's title and `UnreportedBanner` in the details. "Add Chronicle…"
+(`AddChronicleMenu`) is the row's own `ChronicleMenu` on a session that doesn't exist yet: an unreported session
+with a new id and an empty reading, which `SheetConfirmation` then fills, with a scenario number and a day
+(`SheetDraft.code`, `SheetDraft.day`). Removing goes through `UnreportedRemoval`, which asks and, for attaching,
+shows `AdventureChooser`. `SessionDetailView` goes back to the character when its unreported session is gone.
+The demo's second character has such a sheet (`DemoChronicles.unreportedReading`).
 
 ## App Store builds
 
