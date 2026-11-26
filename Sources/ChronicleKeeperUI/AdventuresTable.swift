@@ -97,6 +97,7 @@ struct AdventureRow: View {
                 cells.caption
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .chronicleDropTarget(for: cells.sheet)
             cells.trackMenu
             cells.progressCell
         }
@@ -125,6 +126,7 @@ struct CompactAdventureRow: View {
             .foregroundStyle(.secondary)
         }
         .font(.callout)
+        .chronicleDropTarget(for: cells.sheet)
     }
 }
 
@@ -136,6 +138,9 @@ struct AdventureCells {
     let store: CharacterStore
 
     private var session: PlayedSession { progress.session }
+
+    /// The session's chronicle sheet, for its button and for a PDF dropped on the row (R1.13).
+    var sheet: SessionSheet { SessionSheet(session: session, record: record, store: store) }
 
     var date: some View {
         SessionDateCell(date: progress.date, eventName: session.eventName)
@@ -182,7 +187,7 @@ struct AdventureCells {
             .help("Show everything about this session")
             .accessibilityHint("Shows the session's details")
             .accessibilityIdentifier("session-details")
-            ChronicleButton(session: session, characterNumber: record.id, store: store)
+            ChronicleButton(sheet: sheet)
             ClaimSparkle(rewards: claimable)
         }
     }
@@ -248,6 +253,7 @@ enum TrackExplanation {
     static func of(_ source: TrackSource) -> String {
         switch source {
         case .override: "You set this track."
+        case .chronicle: "From the XP on the Chronicle Sheet."
         case .inferred: "Worked out from the reputation the session gave."
         case .campaignRule: "The campaign had no slow track when this was played."
         case .characterDefault: "The character's default track: the session doesn't show which track it was."

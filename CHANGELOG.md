@@ -21,6 +21,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   adventure, on the faction, in the sidebar and in a "Ready to Claim" list at the top of Boons
 - A purchase marked as maybe not Society legal can be linked to the boon or the Chronicle Sheet that allows it,
   yours or another character's, which turns its warning into a green check
+- A chronicle sheet is read when you attach or scan it: its XP, its gold or credits and the character number,
+  on your device. One screen shows the page beside what was read, to check and correct before you keep it
+- A sheet's XP counts for its session and its gold fills the ledger. Where the sheet and paizo.com's record
+  disagree (another character, another adventure, other XP or gold), a warning says so, and you can clear it
+- Drop a chronicle PDF on an adventure's row or its Chronicle Sheet section to attach it
+- "Read Sheet…" in a sheet's menu reads one you attached earlier
 
 ### Fixed
 - Typed amounts are read with the device's decimal mark

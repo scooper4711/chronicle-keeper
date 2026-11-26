@@ -17,7 +17,11 @@ enum SessionExplanation {
             return "\(XPText.of(progress.xpLost)) XP didn't count: the character's level can't pass this "
                 + "adventure's own highest level (see the Guide to Organized Play's \"Applying Credit\")."
         }
-        return progress.xpSource == .estimated ? "Estimated from the Achievement Points" : ""
+        switch progress.xpSource {
+        case .estimated: return "Estimated from the Achievement Points"
+        case .chronicle: return "From the Chronicle Sheet"
+        case .rules, .override: return ""
+        }
     }
 }
 

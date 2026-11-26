@@ -24,13 +24,44 @@ adventures played, faction reputation, XP and level.
   more than one, is reported.
 - **R1.8** The user can attach their own chronicle sheet PDF to any session, or scan a paper one on the iPhone or
   iPad, replacing what was there before. Before a scan is saved, the user sees each page as it will be saved and
-  can rotate, crop or rescan it; the PDF shows each page the way up the user left it. Chronicle PDFs are never fetched from paizo.com: they are the
+  can rotate, crop or rescan it, and then confirms the page and what was read from it on one screen (R1.11); the
+  PDF shows each page the way up the user left it. Chronicle PDFs are never fetched from paizo.com: they are the
   user's own files, kept and synced the same way as boon PDFs (R4.2).
 - **R1.9** The Boons tab's free reward lists are read too: Chronicle Boons and Game Rewards, for Pathfinder Society
   (second edition) and Starfinder Society (first edition). They are the same for every player and change rarely, so
   they are read once and then again only when the copy is older than 30 days, after a refresh and without holding it
   up. Opening a list is a request to read it, with no character chosen: nothing is bought, and R9.1 holds. A list
   that can't be read leaves the saved copy and shows no message.
+- **R1.10** The app reads a chronicle sheet when it is attached or scanned: the adventure's number, the character
+  number (the Organized Play number and the character's own part), the XP gained, the gold or credits gained and
+  the event code. Reading happens on the device and nothing is sent anywhere. A sheet a program filled in is read
+  from the PDF's own text; a scanned one by text recognition, handwriting included.
+  - It never guesses. A value is read only when its label is on the sheet once, the sheet's format says where the
+    label's box is, exactly one thing is written in that box, and that is a clean number. Anything less leaves the
+    value unread.
+  - An unread value changes nothing: XP, track and the ledger's gold are then exactly as without a sheet.
+  - Paizo moved the reward boxes' labels over the years (under the box, over it, then under again), so the reader
+    takes the format from the sheet's own labels. It is tested against every Pathfinder Society and Starfinder
+    Society (second edition) chronicle. First edition sheets are best effort.
+- **R1.11** One screen confirms the picture and what was read, with one button. It shows the page, which the user
+  can zoom and rotate left or right, with the places the values were read from outlined, and editable fields for
+  the character number, the XP and the gold or credits, filled with what was read. Text recognition misreads
+  handwriting with full confidence, so nothing read is used before the user has seen it there. A value that
+  disagrees with paizo.com's record or the ledger says so beside its field, so a misread is corrected before it
+  becomes a warning (R1.12). A PDF goes through the same screen. A sheet attached before this version can be read
+  later, from its menu, and one that was read can be checked and corrected again.
+- **R1.12** A sheet and paizo.com's record can disagree: GMs make mistakes reporting and filling in sheets. The app
+  then warns, in words, and the user can clear each warning once satisfied; nothing is blocked.
+  - The sheet names another character than the session was reported for. Characters are compared by number, never
+    by name, and by the character's own part of the number: every character of a player shares the Organized Play
+    part.
+  - The sheet is for another adventure than the session it is attached to.
+  - The sheet's XP isn't what paizo.com's record gives (R2.11), or isn't XP the adventure can give.
+  - The sheet's gold isn't what the user typed in the ledger (R5.11).
+  - A cleared warning comes back when the sheet is read again with another value.
+- **R1.13** On the Mac, and on an iPad with Files beside the app, a PDF dropped on a session's row or on its
+  Chronicle Sheet section is attached to that session, through the same confirmation. One file at a time; a
+  session that has a sheet asks before replacing it.
 
 ## 2. Progress
 
@@ -65,6 +96,10 @@ adventures played, faction reputation, XP and level.
   Society (second edition) Ignored from 0, Liked from 20, Admired from 60 and Revered from 120; in Starfinder
   Society (first edition) Tier 0 to Tier 4, from 0, 5, 15, 25 and 45. Its explanation says how much reputation the
   next status still needs. Campaigns without such a ladder, and Fame and Total Reputation, show none.
+- **R2.11** A chronicle sheet's XP (R1.10) counts for its session, ahead of what paizo.com's record implies and
+  behind the user's own override, wherever it is XP the adventure can give: its normal XP, or half of that where
+  slow track is allowed. Half means slow track, the full amount normal. XP the adventure can't give isn't counted
+  and is reported (R1.12). The session says that its track and XP come from the Chronicle Sheet.
 
 ## 3. Using the record
 
@@ -134,9 +169,10 @@ have none.
   720 gp in Pathfinder Society, 150, 750, 2,700 or 7,200 credits in Starfinder Society (the lump-sum option). The
   user can change it.
 - **R5.2** Each adventure has one field for the gold or credits it gave, typed from the chronicle (Earn Income
-  included). No formula feeds the balance: an empty field counts as nothing, and the ledger says how many
-  adventures have none entered. As a placeholder only, the field shows the 10-Treasure-Bundle amount at the level
-  the character played it at (Pathfinder) or the Credits Awarded at that level (Starfinder).
+  included) or filled from it (R5.11). No formula feeds the balance: an empty field counts as nothing, and the
+  ledger says how many adventures have none entered. As a placeholder only, the field shows the
+  10-Treasure-Bundle amount at the level the character played it at (Pathfinder) or the Credits Awarded at that
+  level (Starfinder).
 - **R5.3** A purchase records the item (from the item data, or typed by hand), its level, rarity, unit price and
   quantity, and the adventure it was bought after (or starting gold). Name, level, rarity and price are copied
   into the purchase, so it reads the same without the item data.
@@ -170,6 +206,12 @@ have none.
   - The Boons section shows the purchase a boon is used for, and whose.
   - The link is part of the ledger (R5.9). Two devices can each link one boon before they sync: both purchases
     then keep their link, and both say that the boon is linked twice, for the user to settle.
+- **R5.11** A chronicle sheet's gold or credits (R1.10) fill the adventure's field in the ledger when that field
+  is empty, and never replace what the user typed. An amount the sheet filled in is marked as the sheet's, and
+  follows the sheet when its reading is corrected. Where the sheet and a typed amount differ the app says so
+  (R1.12) and offers to take the sheet's amount. Only the first sheet format has an Earn Income box, which is added
+  to the gold; on later sheets the GM may have left Earn Income out, which is for the user to see in the
+  confirmation (R1.11).
 
 ## 9. Conduct
 

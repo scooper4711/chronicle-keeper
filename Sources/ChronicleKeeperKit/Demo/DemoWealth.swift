@@ -17,21 +17,26 @@ public enum DemoWealth {
         return settings
     }
 
-    /// Gold for her first four adventures only; a Healing Potion (Lesser) (level 3) bought at level 1 is marked, and
-    /// her leather armor is sold once she buys chain mail.
+    /// Gold for her first four adventures, and for the newest from its chronicle sheet; a Healing Potion (Lesser)
+    /// (level 3) bought at level 1 is marked, and her leather armor is sold once she buys chain mail.
     private static var valeria: CharacterWealth {
         let gold = Money.copperPerGold
         var potions = item("Healing Potion (Minor)", level: 1, price: 4 * gold, after: "")
         potions.quantity = 2
         var armor = item("Leather Armor", level: 0, price: 2 * gold, after: "")
         armor.soldAfter = "9004#4"
-        return ledger(
-            earned: ["9001#1": 14 * gold, "9002#2": 20 * gold, "9003#3": 7 * gold, "9004#4": 38 * gold],
+        var wealth = ledger(
+            earned: [
+                "9001#1": 14 * gold, "9002#2": 20 * gold, "9003#3": 7 * gold, "9004#4": 38 * gold,
+                DemoChronicles.sessionKey: DemoChronicles.reading.funds ?? 0
+            ],
             purchases: [
                 item("Longsword", level: 0, price: 1 * gold, after: ""), armor, potions,
                 item("Healing Potion (Lesser)", level: 3, price: 12 * gold, after: "9001#1"),
                 item("Chain Mail", level: 1, price: 6 * gold, after: "9004#4")
             ])
+        wealth.sheetReadings[DemoChronicles.sessionKey] = DemoChronicles.reading
+        return wealth
     }
 
     /// Credits for his first adventure; an uncommon item that his boon gives Access to, so it has a check (R5.10).

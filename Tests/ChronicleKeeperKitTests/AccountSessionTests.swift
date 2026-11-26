@@ -143,4 +143,20 @@ struct DemoChroniclesTests {
         #expect(store.chronicleFiles.count == 1)
         #expect(try Data(contentsOf: sheet).starts(with: Data("%PDF".utf8)))
     }
+
+    /// The demo's sheet names Pip's number on Valeria's session, and its gold is in her ledger.
+    @Test func theDemosSheetHasAReadingWithAWarningToClear() async throws {
+        let store = CharacterStore(repository: InMemoryCharacterRepository(settings: DemoWealth.settings)) {
+            DemoAccount.snapshot()
+        }
+        store.load()
+        await store.refresh()
+        let valeria = try #require(store.roster.characters.first)
+        let newest = try #require(valeria.sessions.first).session
+        #expect(newest.keyWithinCharacter == DemoChronicles.sessionKey)
+        let warnings = store.sheetWarnings(for: newest, record: valeria)
+        #expect(warnings.map(\.kind) == [.character])
+        #expect(warnings.first?.message.contains("Pip Underbough") == true)
+        #expect(valeria.settings.wealth.earned[DemoChronicles.sessionKey] == DemoChronicles.reading.funds)
+    }
 }

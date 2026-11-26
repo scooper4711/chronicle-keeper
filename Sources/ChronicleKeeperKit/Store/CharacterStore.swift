@@ -20,6 +20,8 @@ public final class CharacterStore {
     public private(set) var chronicleFiles: [String: URL] = [:]
     /// Where chronicle PDFs are kept; nil until the app has looked up iCloud.
     public private(set) var chronicleLibrary: ChronicleLibrary?
+    /// Reads chronicle sheets (R1.10); tests give it a stand-in for text recognition.
+    public var sheetReader = SheetReader()
 
     /// What each character may claim of the free rewards, by character number (see `CharacterStore+Rewards`).
     public internal(set) var claimableRewards: [String: [ClaimableReward]] = [:]
@@ -175,23 +177,27 @@ public final class CharacterStore {
         locateChronicleFiles()
     }
 
-    /// Attaches a PDF to one session as its chronicle sheet, replacing any it already had.
-    public func attachChronicle(_ data: Data, to session: PlayedSession, characterNumber: String) {
-        guard let library = chronicleLibrary else { return }
+    /// Attaches a PDF to one session as its chronicle sheet, replacing any it already had. False when it couldn't
+    /// be saved, which shows as an error.
+    @discardableResult
+    public func attachChronicle(_ data: Data, to session: PlayedSession, characterNumber: String) -> Bool {
+        guard let library = chronicleLibrary else { return false }
         let url = library.fileURL(characterNumber: characterNumber, session: session)
         // This call's own outcome: an error left from an earlier failure mustn't stop the sheet showing.
-        guard attempt({ try library.save(data, to: url) }) != nil else { return }
+        guard attempt({ try library.save(data, to: url) }) != nil else { return false }
         // A sheet 1.0.0 filed by name, that it replaces.
         if let replaced = chronicleFiles[session.id], replaced != url { attempt { try library.remove(at: replaced) } }
         chronicleFiles[session.id] = url
+        return true
     }
 
-    /// Removes a session's chronicle PDF.
+    /// Removes a session's chronicle PDF, and what was read from it.
     public func removeChronicle(from session: PlayedSession, characterNumber: String) {
         guard let library = chronicleLibrary else { return }
         let url = chronicleFiles[session.id] ?? library.fileURL(characterNumber: characterNumber, session: session)
         guard attempt({ try library.remove(at: url) }) != nil else { return }
         chronicleFiles[session.id] = nil
+        forgetReading(of: session, characterNumber: characterNumber)
     }
 
     /// Finds each session's sheet, moving any that 1.0.0 filed by the character's name to where it goes now.

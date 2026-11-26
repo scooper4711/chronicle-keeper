@@ -1,7 +1,8 @@
 import Foundation
 
 /// Merges a character's ledger changed on two devices, as `SettingsMerge` does the rest: the gold of each adventure
-/// and each purchase merge on their own, so a purchase added on the iPad and one added on the Mac both survive.
+/// each purchase and each chronicle sheet's reading merge on their own, so a purchase added on the iPad and one
+/// added on the Mac both survive.
 /// Within one purchase, the copy changed here wins whole.
 public enum WealthMerge {
     public static func merge(
@@ -11,6 +12,7 @@ public enum WealthMerge {
             startingFunds: SettingsMerge.pick(local.startingFunds, remote.startingFunds, ancestor.startingFunds),
             earned: perKey(local.earned, remote.earned, ancestor.earned),
             purchases: perKey(local.purchases, remote.purchases, ancestor.purchases))
+        merged.sheetReadings = perKey(local.sheetReadings, remote.sheetReadings, ancestor.sheetReadings)
         merged.unknownFields = SettingsMerge.pick(local.unknownFields, remote.unknownFields, ancestor.unknownFields)
         return merged
     }

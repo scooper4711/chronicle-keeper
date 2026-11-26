@@ -132,6 +132,10 @@ public struct CharacterWealth: Hashable, Codable, Sendable {
     /// empty field, which counts as nothing (R5.2).
     public var earned: [String: Int]
     public var purchases: [String: Purchase]
+    /// What was read from each adventure's chronicle sheet (R1.10), keyed like `earned`. It isn't money, but it
+    /// is kept here because the ledger's JSON is the user's data that every version leaves whole (design.md, "The
+    /// ledger's storage").
+    public var sheetReadings: [String: SheetReading] = [:]
     /// Fields a newer version saved that this one doesn't know; written back as they were.
     public var unknownFields = UnknownFields()
 
@@ -183,7 +187,7 @@ public struct CharacterWealth: Hashable, Codable, Sendable {
 
 extension CharacterWealth {
     private enum CodingKeys: String, CodingKey, CaseIterable {
-        case startingFunds, earned, purchases
+        case startingFunds, earned, purchases, sheetReadings
     }
 
     /// Reads a ledger written by any version: a field missing gets its default, and one this version doesn't
@@ -194,6 +198,7 @@ extension CharacterWealth {
             startingFunds: try values.decodeIfPresent(Int.self, forKey: .startingFunds),
             earned: try values.decodeIfPresent([String: Int].self, forKey: .earned) ?? [:],
             purchases: try values.decodeIfPresent([String: Purchase].self, forKey: .purchases) ?? [:])
+        sheetReadings = try values.decodeIfPresent([String: SheetReading].self, forKey: .sheetReadings) ?? [:]
         unknownFields = try UnknownFields(from: decoder, known: Set(CodingKeys.allCases.map(\.stringValue)))
     }
 
@@ -203,5 +208,7 @@ extension CharacterWealth {
         try values.encodeIfPresent(startingFunds, forKey: .startingFunds)
         try values.encode(earned, forKey: .earned)
         try values.encode(purchases, forKey: .purchases)
+        // Left out while empty, so a ledger without sheets is saved as before.
+        if !sheetReadings.isEmpty { try values.encode(sheetReadings, forKey: .sheetReadings) }
     }
 }

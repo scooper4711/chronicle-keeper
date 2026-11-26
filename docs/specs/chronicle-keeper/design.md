@@ -73,6 +73,7 @@ paizo.com is an old WebObjects site.
   A source the catalog can't attribute stops the import with the list, to be added to the catalog in tabletop-kit.
   A test checks the bundled items against the bundled notices; it runs only where `make items` has run, as the
   repository holds neither.
+- `Sheets/`: reading a chronicle sheet (R1.10); see "Reading a chronicle sheet".
 - `Catalog/`: `AdventureCatalog`, `AdventureFinder`, and the search of the published adventures:
   `AdventureSearching`, `WarhornCatalog`, `WarhornScenario`, `CoverFinder`, `CoverTable` (see "Published adventures").
 - `Storage/`, `Store/`: `CharacterRepository` keeps site data apart from the user's data, keyed by character number
@@ -146,6 +147,105 @@ sending that character, so its copy doesn't overwrite the newer one, and the use
 
 An item the item data sells in batches (candles, 1 cp for 10) is bought by the batch: the purchase is named
 "Candle (10)" (`PricedItem.purchaseName`), its price is the batch's, and its quantity counts batches.
+
+## Reading a chronicle sheet
+
+A sheet is read in three steps (R1.10), all on the device:
+
+1. **Lines.** A `RecognizedLine` is a piece of text and its box, in fractions of the page with `y` from the top.
+   `PDFTextLines` takes them from the PDF itself: its text and the values of filled form fields. Sheets made for
+   online play (rpgchronicles.net and the like) hold their values as page text, so they are read exactly and at
+   once. `VisionTextRecognizer` (the only Vision code, behind the `TextRecognizer` protocol) reads a picture of the
+   page, handwriting included: a scan has no text of its own, as the document scanner hands over pictures.
+   `SheetReader` asks the PDF first, and recognition when the PDF's text gives no reward: a scan, or a printed
+   sheet filled in by hand. Recognition gets a picture 2,400 pixels wide (`SheetPage`): at 1,600 it missed a lone
+   handwritten "4" on a real sheet. PDFKit's `characterBounds(at:)` doesn't count characters the way
+   `PDFPage.string` does, so `PDFTextLines` asks a selection of each word where it is, and joins the words of a
+   line that have no wide gap between them: PDFKit's own lines run the width of the page.
+2. **Format.** `SheetLabel` knows each box's label in every season's wording; `SheetPrinting` knows the rest of the
+   sheet's own printing (the names along the reward column, the signs between its boxes, the "FOR GM ONLY" banner
+   right above the event code), which is never taken for writing. `SheetFormat` works out where the reward boxes
+   are, as that changed:
+
+   | Sheets | Reward labels | The label is |
+   |---|---|---|
+   | Pathfinder season 1, the first of season 2, quests 1 to 12, early bounties | XP Gained, GP Gained, Earn Income | under its box |
+   | Pathfinder, the rest of season 2 | XP Gained and GP Gained only | over its box |
+   | Pathfinder seasons 3 to 7, intros, later quests and bounties | XP Gained, GP Gained | over its box |
+   | Pathfinder season 8 | XP Gained (GM ONLY), Gold Gained (GM ONLY) | under its box |
+   | Starfinder seasons 1 and 2 | XP Gained (GM ONLY), Credits Gained (GM ONLY) | under its box |
+
+   "Final XP" is printed only where the label is under its box and "Total XP" only where it is over; the sheets
+   with neither have no "Starting XP" either, and print the label over. Any other combination settles nothing, and
+   no reward is read. In the top and bottom strips (character number, event code) the label is under its box on
+   every sheet. The gold box's wording says whether the sheet pays in gold or credits.
+3. **Values.** `SheetInterpreter` takes a reward from the box between its label and the next label on the box's
+   side, and only when exactly one written line is there and `SheetNumber` reads it as a clean number. The
+   character number's two boxes may come as one line, and most Pathfinder sheets print its leading "2"
+   themselves. The code comes from the title, at the top of the sheet, through
+   `AdventureClassifier.code(inText:)`, the same function that gives a session's code, so the two compare as text.
+
+Every "never guess" rule is a way of returning nil: a `SheetReading` has only optional values, and the rest of the
+app treats nil as "no sheet".
+
+The reader is tested against a census of every chronicle, `Fixtures/chronicle-formats.json`: for each of the 241
+Pathfinder Society and Starfinder Society (second edition) sheets, its own short printing with positions (titles
+and labels, none of its prose) and the box its layout gives each value. `scripts/chronicle-format-census.py`
+writes it from a checkout of pfs-chronicle-generator, which holds every blank chronicle and a layout for each.
+The tests write a value in each box and a wrong one in every neighboring box, and read the sheet. A layout that
+puts a value outside the box the sheet's own labels give it is left out, and the script lists those.
+
+### Checking a reading
+
+`SheetChecker` compares a reading with its session and the ledger and gives a `SheetMismatch` for each
+disagreement (R1.12): the character's own part of the number, the adventure's code, the XP and the gold. It is
+pure: a character's record and the roster in, warnings out.
+
+- The XP is compared with what paizo.com's record alone gives (no sheet, no override), and only where that is no
+  guess: the Guide's XP for the adventure's kind, on a track the reputation or the campaign's rules settle. XP the
+  adventure can't give gets its own wording, as it isn't counted (R2.11).
+- A mismatch's `id` is its kind and the sheet's value ("character:2002"). Clearing a warning puts the id in the
+  reading's `clearedWarnings`, so the sheet read again with another value warns again, and the same value doesn't.
+- `CharacterRoster` keeps the `EventDates` it worked out, as the checker needs the day a session counts as played
+  to know whether slow track was allowed.
+
+### Keeping a reading
+
+`CharacterStore+Sheets` reads a PDF (`read`, through the store's `SheetReader`, which tests replace), keeps the
+reading the user confirmed (`keep`), clears a warning and takes the sheet's gold over typed gold.
+
+- `keep` fills `wealth.earned` for the session when that is empty, or still holds what the earlier reading put
+  there: gold a reading filled in is the sheet's, so a corrected reading corrects it. Gold the user typed stays
+  (R5.11).
+- Removing a sheet removes its reading and leaves the gold and the user's corrections.
+- The confirmation (R1.11) works on a `SheetDraft`: the three fields as text. It says which fields hold text that
+  isn't a value, and makes the corrected reading. `SheetInterpreter.locatedReading` gives, with the reading, where
+  on the page each of the three values was found (`LocatedReading.places`), which the confirmation outlines.
+  `SheetPage.turned` turns a PDF's pages for a sheet that came in sideways, and the sheet is then read again.
+
+### The confirmation and the warnings
+
+`SheetConfirmation` is the one screen of R1.11, and every way of adding a sheet ends in it: "Attach PDF…", "Scan
+Sheet…", a PDF dropped on a session (`ChronicleDropTarget`, R1.13) and "Read Sheet…" for a sheet that is already
+attached. `SessionSheet` is what these views share: the session, its character and the store.
+
+- The page is `SheetPageView`, PDFKit's own `PDFView` wrapped for SwiftUI, so zooming is the same on the Mac, the
+  iPad and the iPhone. The outlines around the values read are annotations on the copy shown; the PDF that is kept
+  is the user's file as it came, turned if they turned it.
+- Turning the page reads the sheet again, since a sideways page reads as nothing. Fields the user has typed in
+  keep what they typed.
+- The fields' warnings come from `SheetChecker.mismatches` on the values as they stand, so correcting a misread
+  number takes its warning away before anything is kept.
+- The system's document scanner can't carry the fields: its own screens find the sheet's edges and let the user
+  crop and retake. So a scan is the scanner, then this screen, which comes up when the scanner has gone. There is
+  no other review of the picture.
+- Keep saves the PDF, then the reading. A sheet read again is saved only when it was turned.
+
+Uncleared warnings show in three places: the sheet's button in the adventures table becomes the warning's sign,
+the session's Chronicle Sheet section lists each in words with Clear Warning (`SheetReadingSummary`), and the
+ledger shows the gold warning under the adventure's field with "Use the Sheet's Amount" (`SheetFundsNote`), or
+"From the Chronicle Sheet" when the amount is the sheet's. The demo's sheet has a reading that names another
+demo character (`DemoChronicles.reading`), so the demo and the UI tests show a warning.
 
 ## App Store builds
 
