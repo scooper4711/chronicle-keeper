@@ -122,6 +122,9 @@ struct SessionFacts: View {
             if !session.notes.isEmpty {
                 SessionFact("Notes on paizo.com", text: session.notes)
             }
+            if !cells.claimable.isEmpty {
+                SessionFact("Ready to Claim") { ClaimableRewardsList(rewards: cells.claimable) }
+            }
         }
     }
 

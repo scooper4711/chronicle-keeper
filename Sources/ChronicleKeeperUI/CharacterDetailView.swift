@@ -13,13 +13,15 @@ struct CharacterDetailView: View {
             VStack(alignment: .leading, spacing: 24) {
                 CharacterHeader(record: record, store: store)
                 if record.campaign.showsReputation {
-                    ReputationGrid(summary: record.summary)
+                    ReputationGrid(summary: record.summary, claimable: store.claimableRewards(for: record.id))
                 }
                 AdventuresTable(record: record, store: store)
                 if CampaignRules(campaign: record.campaign).hasLedger {
                     WealthSection(record: record, store: store)
                 }
-                BoonsSection(boons: store.roster.boons(for: record.id), store: store)
+                BoonsSection(
+                    boons: store.roster.boons(for: record.id), claimable: store.claimableRewards(for: record.id),
+                    store: store)
                 CharacterSettingsForm(record: record, store: store)
             }
             .padding(20)
@@ -191,6 +193,8 @@ struct PortraitButton<Choices: View>: View {
 /// Paizo's own reputation and Fame totals, as the Summary tab shows them.
 struct ReputationGrid: View {
     let summary: CharacterSummary
+    /// The free rewards the character may claim; a faction's tile sparkles for the ones its reputation earned.
+    var claimable: [ClaimableReward] = []
 
     /// The statuses reputation earns in the character's campaign (R2.10); Fame and Total Reputation earn none.
     private var ladder: ReputationLadder { CampaignRules(campaign: summary.campaign).reputationLadder }
@@ -205,6 +209,9 @@ struct ReputationGrid: View {
                     ReputationTile(value: value, height: tileHeight, status: ladder.status(for: value.value))
                         .help(ladder.distanceToNextStatus(from: value.value))
                         .accessibilityHint(ladder.distanceToNextStatus(from: value.value))
+                        .overlay(alignment: .topTrailing) {
+                            ClaimSparkle(rewards: claimable.filter { $0.faction == value.name }).padding(8)
+                        }
                 }
                 ForEach(summary.standing, id: \.name) { value in
                     ReputationTile(value: value, height: tileHeight)

@@ -38,7 +38,7 @@ struct CharacterBrowser: View {
 
     private var splitView: some View {
         NavigationSplitView {
-            CharacterSidebar(roster: store.roster, selection: $selection)
+            CharacterSidebar(roster: store.roster, claimable: store.claimableRewards, selection: $selection)
                 .navigationSplitViewColumnWidth(min: 240, ideal: 280)
             #if os(iOS)
                 // On the iPhone only the sidebar's own toolbar shows while it is on screen.

@@ -18,6 +18,12 @@ paizo.com is an old WebObjects site.
   number. The natural key is event code + session number + character.
 - **Boons tab**: a plain table after "Boons you have purchased:"; each row has a `downloadBoonPDF` link taking
   opaque character and reward IDs. A response that doesn't start with `%PDF` means not available yet.
+  Above it, one block per point type: a character `select` and a link "Rewards purchaseable with <point type>
+  (click to expand)". The link is an Ajax update like the Sessions pager's (`onclick="AUL.update('_2', {}, …)"`,
+  its `href` the component URL), and answers with a table `Name | Description | Price | Point Type | Character`,
+  one reward per row with a Purchase button in the last cell, whether or not a character is chosen. Only the four
+  free lists are read (R1.9): `Chronicle Boons - PFS(2ed)`, `Game Rewards - PFS(2ed)`, `Chronicle Boons - SFS` and
+  `Game Rewards - SFS`. The selects and every Purchase button share one form, which the app never submits (R9.1).
 
 ## Kit
 
@@ -32,6 +38,12 @@ paizo.com is an old WebObjects site.
 - `Rules/ReputationLadder`: the statuses a faction's reputation passes through and where each begins (R2.10), from
   the Guides' "Factions and Reputation" (pfs2guide) and "Reputation Tiers" (sfsguide) pages. `CampaignRules` hands
   out the campaign's ladder, which is empty where the campaign has none.
+- `Rewards/`: what a character may claim (R3.9). `RewardRequirementParser` turns a reward's name and description
+  into a `RewardRequirement` (adventures played, reputation, sessions, or unknown); `RewardEligibility` checks it
+  against a character's sessions, reputation and boons and returns `ClaimableReward`s. Both are pure. The wordings
+  they know are the ones in the lists of 26 November 2026, kept as a test fixture whose census test fails when a
+  reading changes. `RewardCatalog` (the lists and when they were read) is saved beside the account, in
+  `rewards.json`, and survives signing out, as it holds nothing of the account.
 - `Progress/`: `ProgressCalculator` (track inference, XP, level), `CreditApplier` (the held-Chronicle queue,
   batch-flush and cap from R2.6-R2.8: sessions played below their adventure's own range are queued, in the order
   played, and applied as a batch once the character's level reaches it, each capped at that adventure's own
@@ -246,7 +258,10 @@ Open, `waitUntilOnDevice` starts the download and checks every quarter second un
 there and its `ubiquitousItemDownloadingStatus` isn't `.notDownloaded`). The section says it is downloading
 meanwhile, and after `ICloudDownload.longest` (a minute) offers to try again. Boons work the same way:
 `BoonFileButtons` shows a spinner while it brings a PDF down for Open or Print, and a crossed-out cloud if it
-doesn't arrive. Both libraries get this, and `hasFile` and the coordinated write, from `ICloudDocumentLibrary`.
+doesn't arrive. Above the boons, "Ready to Claim" lists the free rewards that are waiting (R3.9,
+`ClaimableRewardsList`); `ClaimSparkle` is the same list behind a sparkle, in a popover (a sheet on the iPhone), on
+the adventure's row, the faction's tile and the Boons title, and the sidebar has a still one. The claims come from
+`CharacterStore.claimableRewards`, worked out when the account or the lists change. Both libraries get this, and `hasFile` and the coordinated write, from `ICloudDocumentLibrary`.
 Share hands over the file as it is, since `ShareLink` gives nothing to wait in. The demo account attaches a
 made-up sheet to its newest session (`DemoChronicles`), so the demo and the UI tests show one.
 

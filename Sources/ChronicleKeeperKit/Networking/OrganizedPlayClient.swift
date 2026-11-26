@@ -38,7 +38,8 @@ public protocol BoonSource: Sendable {
     func pdf(for boon: Boon) async throws -> Data?
 }
 
-/// Signs in to paizo.com and reads the player's characters and sessions. It only ever reads.
+/// Signs in to paizo.com and reads the player's characters, sessions and boons, and the lists of free rewards. It
+/// only ever reads.
 public actor OrganizedPlayClient {
     private let http: HTTPClient
     private let credentials: CredentialStore
@@ -87,6 +88,21 @@ public actor OrganizedPlayClient {
 
     static func isPDF(_ data: Data) -> Bool {
         data.starts(with: Data("%PDF".utf8))
+    }
+
+    // MARK: - Reward lists
+
+    /// Opens each list of free rewards on the Boons tab, as the page's own "click to expand" does, and reads it.
+    /// Nothing is chosen or bought: each is a request for the list.
+    public func rewardCatalog() async throws -> RewardCatalog {
+        let page = try await signedInPage(endpoints.boonsPage, operation: "Reading the Boons tab")
+        var offers: [RewardOffer] = []
+        for list in try RewardListParser.links(in: page) {
+            let url = endpoints.ajaxUpdate(path: list.link.path, containerID: list.link.containerID)
+            let response = try await get(url, operation: "Reading the list of \(list.title)", ajax: true)
+            offers += try RewardListParser.offers(in: response.text, list: list.title)
+        }
+        return RewardCatalog(offers: offers, fetchedAt: Date())
     }
 
     // MARK: - Sessions
@@ -147,4 +163,4 @@ public actor OrganizedPlayClient {
     }
 }
 
-extension OrganizedPlayClient: BoonSource {}
+extension OrganizedPlayClient: BoonSource, RewardCatalogSource {}

@@ -8,8 +8,12 @@ public protocol CharacterRepository: Sendable {
     /// The user's data keyed by character number; empty before the user has changed anything.
     func loadSettings() throws -> [String: CharacterSettings]
     func saveSettings(_ settings: [String: CharacterSettings]) throws
-    /// Forgets the site data, as when signing out. The user's own data stays.
+    /// Forgets the site data, as when signing out. The user's own data stays, and so do the reward lists, which
+    /// hold nothing of the account.
     func deleteSnapshot() throws
+    /// The free reward lists as last read, or nil before the first reading.
+    func loadRewardCatalog() throws -> RewardCatalog?
+    func saveRewardCatalog(_ catalog: RewardCatalog) throws
     /// The folder the files are in; nil for a repository that keeps nothing on disk.
     var folder: URL? { get }
 }
@@ -63,6 +67,14 @@ public struct FileCharacterRepository: CharacterRepository {
         try write(settings, to: "settings.json", operation: "Saving your settings")
     }
 
+    public func loadRewardCatalog() throws -> RewardCatalog? {
+        try read(RewardCatalog.self, from: "rewards.json", operation: "Loading the reward lists")
+    }
+
+    public func saveRewardCatalog(_ catalog: RewardCatalog) throws {
+        try write(catalog, to: "rewards.json", operation: "Saving the reward lists")
+    }
+
     public func deleteSnapshot() throws {
         let file = directory.appendingPathComponent("account.json")
         guard FileManager.default.fileExists(atPath: file.path) else { return }
@@ -110,6 +122,7 @@ public final class InMemoryCharacterRepository: CharacterRepository, @unchecked 
     private let lock = NSLock()
     private var snapshot: AccountSnapshot?
     private var settings: [String: CharacterSettings]
+    private var rewards: RewardCatalog?
 
     /// A repository holding these settings to start with, as the demo account's ledgers.
     public init(settings: [String: CharacterSettings] = [:]) {
@@ -123,5 +136,7 @@ public final class InMemoryCharacterRepository: CharacterRepository, @unchecked 
         lock.withLock { self.settings = settings }
     }
     public func deleteSnapshot() throws { lock.withLock { snapshot = nil } }
+    public func loadRewardCatalog() throws -> RewardCatalog? { lock.withLock { rewards } }
+    public func saveRewardCatalog(_ catalog: RewardCatalog) throws { lock.withLock { rewards = catalog } }
     public var folder: URL? { nil }
 }

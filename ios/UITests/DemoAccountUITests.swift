@@ -71,6 +71,20 @@ final class DemoAccountUITests: XCTestCase {
     }
 
     @MainActor
+    func testRewardsWaitingToBeClaimedAreSignaled() {
+        app.staticTexts["Valeria Stonebrook"].firstMatch.tap()
+        let sparkle = app.buttons["claim-sparkle"].firstMatch
+        XCTAssertTrue(sparkle.waitForExistence(timeout: 10),
+                      "the demo's free rewards were not found: \(app.debugDescription)")
+        saveScreenshots("claim-sparkles")
+        let ready = app.staticTexts["Ready to Claim (3)"]
+        scrollIntoView(ready)
+        XCTAssertTrue(ready.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.buttons["claim-on-paizo"].firstMatch.exists, app.debugDescription)
+        saveScreenshots("ready-to-claim")
+    }
+
+    @MainActor
     func testAnAdventuresChronicleMenuNamesItsActions() {
         app.staticTexts["Valeria Stonebrook"].firstMatch.tap()
         scrollIntoView(app.buttons["session-details"].firstMatch)

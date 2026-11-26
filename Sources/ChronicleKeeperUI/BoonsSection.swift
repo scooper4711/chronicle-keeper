@@ -3,14 +3,22 @@ import PDFKit
 import QuickLook
 import SwiftUI
 
-/// The character's boons from the Boons tab, each with its PDF to open, share or print.
+/// The character's boons from the Boons tab, each with its PDF to open, share or print, under the free rewards that
+/// are waiting to be claimed (R3.9). The sparkle on the title's line shows those while the section is folded.
 struct BoonsSection: View {
     let boons: [Boon]
+    let claimable: [ClaimableReward]
     let store: CharacterStore
     @State private var preview: URL?
 
     var body: some View {
         CollapsibleSection("Boons (\(boons.count))", id: "boons") {
+            ClaimSparkle(rewards: claimable)
+        } content: {
+            if !claimable.isEmpty {
+                Text("Ready to Claim (\(claimable.count))").font(.subheadline.bold())
+                ClaimableRewardsList(rewards: claimable)
+            }
             if boons.isEmpty {
                 Text("No boons on paizo.com for this character.").foregroundStyle(.secondary)
             }
